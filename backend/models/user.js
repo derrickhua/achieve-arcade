@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-const Schema = mongoose.Schema;
+const { Schema } = mongoose;
 
-// Define the User schema
 const UserSchema = new Schema({
   username: {
     type: String,
@@ -17,10 +16,11 @@ const UserSchema = new Schema({
     type: String,
     required: true
   },
-  // Add any additional user fields as needed
-});
+  refreshToken: {
+    type: String
+  }
+}, { timestamps: true }); 
 
-// Create the User model from the schema
 const User = mongoose.model('User', UserSchema);
 
-export default User
+export default User;

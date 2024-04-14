@@ -12,6 +12,7 @@ router.post('/register', [
     register
 ]);
 router.post('/login', login);
+router.post('/refresh-token', refreshAccessToken);
 router.get('/profile', authenticate, getUser);
 router.put('/update', authenticate, updateUser);
 router.delete('/delete', authenticate, deleteUser);
