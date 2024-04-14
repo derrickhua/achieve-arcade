@@ -17,9 +17,9 @@ export const register = async (req, res) => {
 
         // Generate a JWT token
         const token = jwt.sign(
-            { userId: newUser._id }, 
+            { _id: newUser._id }, 
             process.env.JWT_SECRET, 
-            { expiresIn: '1h' }
+            { expiresIn: '5h' }
         );
 
         res.status(201).json({
@@ -36,7 +36,7 @@ export const login = async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (user && await bcrypt.compare(password, user.password)) {
-            const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '5h' });
             res.json({ token });
         } else {
             res.status(401).json({ error: 'Invalid credentials' });
@@ -48,7 +48,7 @@ export const login = async (req, res) => {
 
 export const getUser = async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId);
+        const user = await User.findById(req.user._id);
         res.json(user);
     } catch (error) {
         res.status(500).json({ error: 'Error fetching user profile' });
@@ -58,7 +58,7 @@ export const getUser = async (req, res) => {
 export const updateUser = async (req, res) => {
     const { username, email } = req.body;
     try {
-        const updatedUser = await User.findByIdAndUpdate(req.user.userId, { username, email }, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, { username, email }, { new: true });
         res.json(updatedUser);
     } catch (error) {
         res.status(500).json({ error: 'Error updating user profile' });
@@ -67,7 +67,7 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
     try {
-        await User.findByIdAndDelete(req.user.userId);
+        await User.findByIdAndDelete(req.user._id);
         res.send('User deleted successfully');
     } catch (error) {
         res.status(500).json({ error: 'Error deleting user' });

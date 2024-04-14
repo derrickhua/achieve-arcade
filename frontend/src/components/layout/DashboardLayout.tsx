@@ -19,15 +19,15 @@ import {
   Clock,
 } from "lucide-react"
 
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { Badge } from "../ui/badge"
+import { Button } from "../ui/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
+} from "../ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,10 +35,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
- 
+} from "../ui/dropdown-menu"
+import { Input } from "../ui/input"
+import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet"
+import { signOut } from 'next-auth/react';
+
 interface DashboardProps {
     children: ReactNode;
 }
@@ -48,6 +49,10 @@ export function Dashboard({ children}: DashboardProps) {
     const pathname = usePathname();
 
     const isActive = (path) => pathname === path;
+
+    function handleSignOut(){
+        signOut()
+    }
 
     return (
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
@@ -62,39 +67,39 @@ export function Dashboard({ children}: DashboardProps) {
                     <div className="flex-1">
                         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
                         <Link
-                        href="/"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        href="/dashboard"
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <Home className="h-4 w-4" />
                         Dashboard
                         </Link>
                         <Link
-                            href="/goals"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            href="/dashboard/goals"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
                             <CheckSquare className="h-4 w-4" />
                             Goals
                         </Link>
                         <Link
-                            href="/habit"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            href="/dashboard/habit"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
                             <Calendar className="h-4 w-4" />
                             Habit
                         </Link>
                         <Link
-                            href="/purpose"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
-                        >
-                            <MapPin className="h-4 w-4" />
-                            Purpose
-                        </Link>
-                        <Link
-                            href="/schedule"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            href="/dashboard/schedule"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
                             <Clock className="h-4 w-4" />
                             Schedule
+                        </Link>
+                        <Link
+                            href="/dashboard/purpose"
+                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        >
+                            <MapPin className="h-4 w-4" />
+                            Purpose
                         </Link>
                         </nav>
                     </div>
@@ -139,18 +144,18 @@ export function Dashboard({ children}: DashboardProps) {
                         Habit
                     </Link>
                     <Link
-                        href="/purpose"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
-                    >
-                        <MapPin className="h-4 w-4" />
-                        Purpose
-                    </Link>
-                    <Link
                         href="/schedule"
                         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <Clock className="h-4 w-4" />
                         Schedule
+                    </Link>
+                    <Link
+                        href="/purpose"
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                    >
+                        <MapPin className="h-4 w-4" />
+                        Purpose
                     </Link>
                     </nav>
                     <div className="mt-auto">
@@ -176,7 +181,7 @@ export function Dashboard({ children}: DashboardProps) {
                     <DropdownMenuItem>Settings</DropdownMenuItem>
                     <DropdownMenuItem>Support</DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>Logout</DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleSignOut}>Logout</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
                 </header>

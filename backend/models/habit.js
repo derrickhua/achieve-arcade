@@ -12,7 +12,7 @@ const HabitSchema = new Schema({
     type: String,
     required: true
   },
-  frequency: {
+  habitPeriod: {
     type: String,
     enum: ['Daily', 'Weekly', 'Monthly'],
     required: true
@@ -26,15 +26,13 @@ const HabitSchema = new Schema({
     enum: ['Not Started', 'In Progress', 'Completed'],
     default: 'Not Started'
   },
-  occurrences: {  // Track the actual occurrences of the habit
+  occurrences: [{ type: Date }],  
+  lastCompleted: { type: Date },  
+  consistencyGoal: {  
     type: Number,
-    default: 0
-  },
-  consistencyGoal: {  // Target number of times the habit should be completed in its frequency period
-    type: Number,
-    default: 1  // Assumes at least once per period unless specified otherwise
+    default: 1  
   }
-}, { timestamps: true });  // Including timestamps for creation and update tracking
+}, { timestamps: true });  
 
 // Create the Habit model from the schema
 const Habit = mongoose.model('Habit', HabitSchema);

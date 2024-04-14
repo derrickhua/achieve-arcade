@@ -34,7 +34,7 @@ function ComponentWithSession({ router, children }) {
       router.push('/auth/signin');
     } else if (status === 'authenticated') {
       // If there's a session, redirect to the dashboard
-      router.push('/auth/signin');
+      router.push('/dashboard');
     }
   }, [status]);
 

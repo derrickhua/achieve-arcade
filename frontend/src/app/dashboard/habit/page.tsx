@@ -1,108 +1,128 @@
-import Image from "next/image";
-export default function Home() {
+'use client'
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label" 
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { getHabits, addHabit, updateHabit, deleteHabit, completeHabit } from '@/lib/habit';
+export default function HabitDashboard() {
+  const [habits, setHabits] = useState([]);
+
+  const handleAddHabit = (habit) => {
+    setHabits([...habits, habit]);
+  };
+
   return (
-      <main className="flex h-full flex-col items-center justify-between p-12">
-        <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-          <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-            <a
-              className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{" "}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className="dark:invert"
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
+    <div className="p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">Your Habits</h1>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Add Habit</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Habit</DialogTitle>
+              <DialogDescription>Enter details about your new habit.</DialogDescription>
+            </DialogHeader>
+            <AddHabitForm />
+          </DialogContent>
+        </Dialog>
+      </div>
 
-        <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-          <Image
-            className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {habits.length > 0 ? (
+          habits.map((habit, index) => (
+            <HabitCard key={index} habit={habit} />
+          ))
+        ) : (
+          <p>No habits added yet. Start by adding a new habit!</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
-        <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Docs{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
+function AddHabitForm() {
+  const [name, setName] = useState('');
+  const [frequency, setFrequency] = useState('Daily');
+  const [consistencyGoal, setConsistencyGoal] = useState(1); 
 
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Learn{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      const habitData = { name, frequency, consistencyGoal };
+      const response = await addHabit(habitData);
+      console.log('Habit added:', response.data);
+    } catch (error) {
+      console.error('Error adding habit:', error.response ? error.response.data : error.message);
+    }
+  };
 
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Templates{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Explore starter templates for Next.js.
-            </p>
-          </a>
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 flex flex-col items-center">
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="name">Habit Name</Label>
+        <Input
+          id="name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Enter habit name"
+          required
+        />
+      </div>
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <Label htmlFor="frequency">Habit Period</Label>
+      <p className='text-sm text-muted-foreground'>Time frame in which you aim to complete a habit</p>
+        <Select onValueChange={setFrequency}  value={frequency}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Select Frequency" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="Daily">Daily</SelectItem>
+            <SelectItem value="Weekly">Weekly</SelectItem>
+            <SelectItem value="Monthly">Monthly</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="consistencyGoal">Consistency Goal</Label>
+        <p className='text-sm text-muted-foreground'>The number of times you aim to do the habit within the chosen habit period</p>
+        <Input
+          id="consistencyGoal"
+          type="number"
+          value={consistencyGoal}
+          onChange={(e) => setConsistencyGoal(Number(e.target.value))}
+          min="1"
+          required
+        />
+      </div>
+      <Button type="submit" className='self-end'>Add Habit</Button>
+    </form>
+  );
+}
 
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Deploy{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-              Instantly deploy your Next.js site to a shareable URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+
+function HabitCard({ habit }) {
+  return (
+    <div className="border p-3 rounded">
+      <h2 className="font-semibold">{habit.name}</h2>
+      <p>Frequency: {habit.frequency}</p>
+    </div>
   );
 }

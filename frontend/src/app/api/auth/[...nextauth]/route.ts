@@ -49,7 +49,7 @@ const handler = NextAuth({
       return session;
     }
   },
-  // Define other NextAuth configurations as required
+
 });
 
 export { handler as GET, handler as POST };

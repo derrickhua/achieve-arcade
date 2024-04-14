@@ -4,9 +4,9 @@ import Link from "next/link"
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Button } from "../../../components/ui/button"
+import { Input } from "../../../components/ui/input"
+import { Label } from "../../../components/ui/label"
 
 export default function Authentication() {
   const [email, setEmail] = useState('');
@@ -31,8 +31,8 @@ export default function Authentication() {
 
   return (
     
-    <form onSubmit={handleLogin} className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] h-full">
-      <div className="flex items-center justify-center py-12">
+    <form onSubmit={handleLogin} className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] h-full ">
+      <div className="flex items-center justify-center py-12 h-full">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Login</h1>
@@ -87,7 +87,7 @@ export default function Authentication() {
       </div>
       <div className="hidden bg-muted lg:block">
         <Image
-          src="/tempus.jpg"
+          src="/travel.png"
           alt="Image"
           width="1792"
           height="1024"
