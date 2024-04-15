@@ -1,55 +1,102 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import axios from 'axios';
+import { refreshAccessToken } from '../../../../lib/user';
 
-const handler = NextAuth({
+const authHandler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      id: 'login',
+      name: 'Login',
       credentials: {
-        email: { label: "Email", type: "email", placeholder: "you@example.com" },
+        email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" }
       },
       authorize: async (credentials) => {
         try {
-          const { data } = await axios.post('http://localhost:8000/api/users/login', {
-            email: credentials.email,
-            password: credentials.password
+          const response = await axios.post("http://localhost:8000/api/users/login", credentials, {
+            headers: {
+              "Content-Type": "application/json"
+            }
           });
-
-          if (data.token) {
-            return { email: credentials.email, token: data.token };
+          
+          const user = response.data;
+          
+          if (response.status === 200 && user.accessToken) {
+            return user;
           } else {
-            return null; 
+            throw new Error(user.error || "Login failed");
           }
         } catch (error) {
-            console.error('Login failed:', error.response.data.error);
+          if (error.response) {
             throw new Error(error.response.data.error || "Login failed");
-  
+          } else {
+            throw new Error("Login request failed");
+          }
+        }
+      }
+    }),
+    CredentialsProvider({
+      id: 'register',
+      name: 'Register',
+      credentials: {
+        username: { label: "Username", type: "text" },
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
+        timezone: { label: "Timezone", type: "text" }, 
+      },
+      authorize: async (credentials) => {
+        try {
+          const response = await axios.post("http://localhost:8000/api/users/register", credentials, {
+            headers: {
+              "Content-Type": "application/json"
+            }
+          });
+          
+          const user = response.data;
+          
+          if (response.status === 200 && user.accessToken) {
+            return user;
+          } else {
+            throw new Error(user.error || "Registration failed");
+          }
+        } catch (error) {
+          if (error.response) {
+            throw new Error(error.response.data.error || "Registration failed");
+          } else {
+            throw new Error("Registration request failed");
+          }
         }
       }
     })
   ],
-  session: {
-    strategy: "jwt"
-  },
-  jwt:{
-    secret: 'HELLOMYNAMEISDERRICK'
-  },
   callbacks: {
     jwt: async ({ token, user }) => {
       if (user) {
-        token.accessToken = user.token;
+        token.accessToken = user.accessToken;
+        token.refreshToken = user.refreshToken;
+      }
+
+      if (Date.now() / 1000 > token.accessTokenExpires) {
+        const refreshedToken = await refreshAccessToken(token);
+    
+        if (refreshedToken.accessToken) {
+            token.accessToken = refreshedToken.accessToken;
+            token.accessTokenExpires = Date.now() + refreshedToken.expiresIn * 1000;
+        }
       }
       return token;
     },
     session: async ({ session, token }) => {
-      // Attach the access token to the session object
       session.accessToken = token.accessToken;
       return session;
     }
   },
-
+  secret: process.env.NEXTAUTH_SECRET,
+  jwt: {
+    secret: process.env.JWT_SECRET,
+  },
 });
 
-export { handler as GET, handler as POST };
+export const GET = async (req, res) => authHandler(req, res);
+export const POST = async (req, res) => authHandler(req, res);

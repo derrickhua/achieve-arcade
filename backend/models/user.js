@@ -18,6 +18,10 @@ const UserSchema = new Schema({
   },
   refreshToken: {
     type: String
+  },
+  timezone: {  // New field for storing the user's timezone
+    type: String,
+    required: true
   }
 }, { timestamps: true }); 
 

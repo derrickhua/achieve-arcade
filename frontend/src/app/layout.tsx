@@ -36,7 +36,7 @@ function ComponentWithSession({ router, children }) {
       // If there's a session, redirect to the dashboard
       router.push('/dashboard');
     }
-  }, [status]);
+  }, [status, router]);
 
   return (
     <html lang='en'>

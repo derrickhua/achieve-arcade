@@ -3,31 +3,37 @@ import Image from "next/image"
 import Link from "next/link"
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
-
+import { useRouter } from "next/navigation";
 import { Button } from "../../../components/ui/button"
 import { Input } from "../../../components/ui/input"
 import { Label } from "../../../components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function Authentication() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [errors, setErrors] = useState({});
+  const router = useRouter();
 
   const handleLogin = async (event) => {
     event.preventDefault(); // Prevent default form submission
-    const result = await signIn('credentials', {
+    const result = await signIn('login', {
       redirect: false, // Do not redirect on success, handle it below
       email,
-      password
+      password,
     });
-
+  
     if (result.error) {
-      // Handle errors, e.g., show an error message
       console.error(result.error);
+      setAlertMessage(result.error);
+      setShowAlert(true);
     } else {
-      // Optionally redirect or do something on successful login
-      window.location.href = '/dashboard'; // Redirect to the dashboard
+      router.push('/dashboard');
     }
   };
+  
 
   return (
     
@@ -73,13 +79,18 @@ export default function Authentication() {
             <Button type="submit" className="w-full">
               Login
             </Button>
-            <Button variant="outline" className="w-full" onClick={() => signIn('google')}>
-              Login with Google
-            </Button>
+            {showAlert && (
+                <Alert variant='destructive'>
+                <AlertTitle>Error!</AlertTitle>
+                <AlertDescription>
+                    {alertMessage}
+                </AlertDescription>
+                </Alert>
+            )}
           </div>
           <div className="mt-4 text-center text-sm">
             Don't have an account?{" "}
-            <Link href="/signup" className="underline">
+            <Link href="/auth/register" className="underline">
               Sign up
             </Link>
           </div>

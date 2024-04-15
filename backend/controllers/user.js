@@ -8,48 +8,88 @@ const generateTokens = (userId) => {
     return { accessToken, refreshToken };
 };
 
-export const refreshAccessToken = async (req, res) => {
+/**
+ * Refreshes the access token using a provided refresh token.
+ * 
+ * This function verifies the provided refresh token, checks its validity against
+ * the stored token in the database, and issues a new set of access and refresh tokens
+ * if the provided token is valid. If the refresh token is missing, invalid, or expired,
+ * it throws an error that is handled by centralized error handling middleware.
+ *
+ * @param {Request} req - The request object, containing the refresh token in the body.
+ * @param {Response} res - The response object used to return the new tokens.
+ * @param {Function} next - The next middleware function in the stack, used for error handling.
+ * 
+ * @returns {void} Returns new tokens if successful or passes an error to the next middleware.
+ */
+export const refreshAccessToken = async (req, res, next) => {
     const { refreshToken } = req.body;
     if (!refreshToken) {
-        return res.status(401).json({ error: "Refresh Token required" });
+        const error = new Error("Refresh Token required");
+        error.status = 401; // Unauthorized
+        return next(error);
     }
 
     try {
         const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
         const user = await User.findById(decoded._id);
         if (!user) {
-            return res.status(404).json({ error: "No user found with this id" });
+            const error = new Error("No user found with this id");
+            error.status = 404; // Not Found
+            throw error;
         }
 
         // Optionally check if the received refreshToken matches the one stored in the database
         if (user.refreshToken && user.refreshToken !== refreshToken) {
-            return res.status(403).json({ error: "Invalid refresh token" });
+            const error = new Error("Invalid refresh token");
+            error.status = 403; // Forbidden
+            throw error;
         }
-        
+
         // Issue new tokens
         const tokens = generateTokens(user._id);
+        console.log('New tokens:', tokens);
         res.json(tokens);
     } catch (error) {
-        res.status(403).json({ error: "Invalid or expired refresh token" });
+        if (!error.status) {
+            error.status = 403; // Invalid or expired refresh token
+            error.message = "Invalid or expired refresh token";
+        }
+        next(error);
     }
 };
 
-export const register = async (req, res) => {
-    const { username, email, password } = req.body;
+/**
+ * Registers a new user with the provided credentials.
+ * If the user already exists or there's an issue with user creation, it throws errors
+ * that are handled by centralized error handling middleware to maintain consistency.
+ *
+ * @param {Request} req - The request object containing username, email, password, and timezone.
+ * @param {Response} res - The response object used to send back the registration status.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const register = async (req, res, next) => {
+    const { username, email, password, timezone } = req.body;
+
     try {
-        // Check if user already exists
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.status(409).json({ error: 'User already exists' });
+            const error = new Error('User already exists');
+            error.status = 409; // Conflict
+            throw error;
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({ username, email, password: hashedPassword });
+        const newUser = new User({
+            username,
+            email,
+            password: hashedPassword,
+            timezone
+        });
         await newUser.save();
 
         // Generate JWT tokens
         const { accessToken, refreshToken } = generateTokens(newUser._id);
-
 
         res.status(201).json({
             message: 'User registered successfully',
@@ -57,49 +97,115 @@ export const register = async (req, res) => {
             refreshToken
         });
     } catch (error) {
-        res.status(500).json({ error: 'Error registering new user' });
+        if (!error.status) {
+            error.status = 500; // Internal Server Error
+            error.message = 'Error registering new user';
+        }
+        next(error); // Pass the error to the error handling middleware
     }
 };
 
-export const login = async (req, res) => {
+/**
+ * Authenticates a user based on email and password.
+ * If authentication is successful, it generates and returns access and refresh tokens.
+ * If authentication fails, it throws an error that is handled by centralized error handling middleware.
+ *
+ * @param {Request} req - The request object, containing user's email and password.
+ * @param {Response} res - The response object used to send back the tokens.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const login = async (req, res, next) => {
     const { email, password } = req.body;
+
     try {
         const user = await User.findOne({ email });
-        if (user && await bcrypt.compare(password, user.password)) {
-            const { accessToken, refreshToken } = generateTokens(user._id);
-            res.json({ accessToken, refreshToken });
-        } else {
-            res.status(401).json({ error: 'Invalid credentials' });
+        if (!user) {
+            const error = new Error('Invalid credentials');
+            error.status = 401;
+            throw error;
         }
+
+        const passwordIsValid = await bcrypt.compare(password, user.password);
+        if (!passwordIsValid) {
+            const error = new Error('Invalid credentials');
+            error.status = 401;
+            throw error;
+        }
+
+        const { accessToken, refreshToken } = generateTokens(user._id);
+        res.json({ accessToken, refreshToken });
     } catch (error) {
-        res.status(500).json({ error: 'Error logging in user' });
+        if (!error.status) {
+            error.status = 500;
+            error.message = 'Error logging in user';
+        }
+        next(error);
     }
 };
 
-export const getUser = async (req, res) => {
+/**
+ * Retrieves the user profile based on the user's ID stored in the request.
+ * Throws an error if there is a problem fetching the user from the database.
+ *
+ * @param {Request} req - The request object containing the user's authentication information.
+ * @param {Response} res - The response object used to send back the user's data.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const getUser = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id);
+        if (!user) {
+            const error = new Error('User not found');
+            error.status = 404;
+            throw error;
+        }
         res.json(user);
     } catch (error) {
-        res.status(500).json({ error: 'Error fetching user profile' });
+        next(error);
     }
 };
 
-export const updateUser = async (req, res) => {
+/**
+ * Updates the user profile with new data provided in the request body.
+ * If there's an error during the update, it throws an error to be handled by the middleware.
+ *
+ * @param {Request} req - The request object containing the user's data to update.
+ * @param {Response} res - The response object used to send back the updated user's data.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const updateUser = async (req, res, next) => {
     const { username, email } = req.body;
     try {
         const updatedUser = await User.findByIdAndUpdate(req.user._id, { username, email }, { new: true });
+        if (!updatedUser) {
+            const error = new Error('User not found');
+            error.status = 404;
+            throw error;
+        }
         res.json(updatedUser);
     } catch (error) {
-        res.status(500).json({ error: 'Error updating user profile' });
+        next(error);
     }
 };
 
-export const deleteUser = async (req, res) => {
+/**
+ * Deletes the user based on the user's ID from the authentication information.
+ * If there's an issue during deletion, it throws an error to be handled by the middleware.
+ *
+ * @param {Request} req - The request object containing the user's authentication information.
+ * @param {Response} res - The response object used to confirm the deletion.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const deleteUser = async (req, res, next) => {
     try {
-        await User.findByIdAndDelete(req.user._id);
+        const deletedUser = await User.findByIdAndDelete(req.user._id);
+        if (!deletedUser) {
+            const error = new Error('User not found');
+            error.status = 404;
+            throw error;
+        }
         res.send('User deleted successfully');
     } catch (error) {
-        res.status(500).json({ error: 'Error deleting user' });
+        next(error);
     }
 };

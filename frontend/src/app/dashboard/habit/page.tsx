@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label" 
@@ -18,16 +18,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getHabits, addHabit, updateHabit, deleteHabit, completeHabit } from '@/lib/habit';
+import HabitCard from '@/components/habit/HabitCard';
+
+interface Habit {
+  id: string;
+  name: string;
+  streak: number;
+}
+
 export default function HabitDashboard() {
   const [habits, setHabits] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
+  
 
-  const handleAddHabit = (habit) => {
-    setHabits([...habits, habit]);
-  };
+  useEffect(() => {
+    const fetchHabits = async () => {
+      setIsLoading(true);
+      try {
+        const response = await getHabits();
+        setHabits(response.data);  // Assuming the API returns an array of habits
+        setIsLoading(false);
+      } catch (error) {
+        setError('Failed to fetch habits.');
+        setIsLoading(false);
+      }
+    };
+
+    fetchHabits();
+  }, []);
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Your Habits</h1>
         <Dialog>
@@ -44,7 +68,7 @@ export default function HabitDashboard() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex w-full gap-4 p-4 h-full">
         {habits.length > 0 ? (
           habits.map((habit, index) => (
             <HabitCard key={index} habit={habit} />
@@ -59,17 +83,20 @@ export default function HabitDashboard() {
 
 function AddHabitForm() {
   const [name, setName] = useState('');
-  const [frequency, setFrequency] = useState('Daily');
+  const [habitPeriod, setHabitPeriod] = useState('Daily');  // Renamed from frequency to habitPeriod
   const [consistencyGoal, setConsistencyGoal] = useState(1); 
-
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const habitData = { name, frequency, consistencyGoal };
+      // Update the object to match backend schema
+      const habitData = { name, habitPeriod, consistencyGoal };
       const response = await addHabit(habitData);
       console.log('Habit added:', response.data);
     } catch (error) {
-      console.error('Error adding habit:', error.response ? error.response.data : error.message);
+      setShowAlert(true);
+      setAlertMessage('Error adding habit. Please try again.')
     }
   };
 
@@ -87,16 +114,15 @@ function AddHabitForm() {
         />
       </div>
       <div className="grid w-full max-w-sm items-center gap-1.5">
-      <Label htmlFor="frequency">Habit Period</Label>
-      <p className='text-sm text-muted-foreground'>Time frame in which you aim to complete a habit</p>
-        <Select onValueChange={setFrequency}  value={frequency}>
+        <Label htmlFor="habitPeriod">Habit Period</Label>  {/* Updated from frequency to habitPeriod */}
+        <p className='text-sm text-muted-foreground'>Time frame in which you aim to complete a habit</p>
+        <Select onValueChange={setHabitPeriod} value={habitPeriod}>
           <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select Frequency" />
+            <SelectValue placeholder="Select Period" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="Daily">Daily</SelectItem>
             <SelectItem value="Weekly">Weekly</SelectItem>
-            <SelectItem value="Monthly">Monthly</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -113,16 +139,14 @@ function AddHabitForm() {
         />
       </div>
       <Button type="submit" className='self-end'>Add Habit</Button>
+      {showAlert && (
+                <Alert variant='destructive'>
+                <AlertTitle>Error!</AlertTitle>
+                <AlertDescription>
+                    {alertMessage}
+                </AlertDescription>
+                </Alert>
+      )}
     </form>
-  );
-}
-
-
-function HabitCard({ habit }) {
-  return (
-    <div className="border p-3 rounded">
-      <h2 className="font-semibold">{habit.name}</h2>
-      <p>Frequency: {habit.frequency}</p>
-    </div>
   );
 }
