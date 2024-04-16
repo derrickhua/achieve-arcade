@@ -98,14 +98,16 @@ export default function Authentication() {
 
     const register = async ({ username, email, password }: UserData): Promise<any> => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      console.log(username, email, password, timezone)
       const result = await signIn('register', {
           username,
           email,
           password,
           timezone,
           redirect: false,
+
       });
-  
+      
       if (result.error) {
           console.error('Registration failed:', result.error);
           throw new Error(result.error);

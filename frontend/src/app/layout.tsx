@@ -17,7 +17,9 @@ export default function RootLayout({
 
   return (
     <SessionProvider>
-      <ComponentWithSession router={router} children={children} />
+      <ComponentWithSession router={router} >
+        {children}
+      </ComponentWithSession>
     </SessionProvider>
   );
 }

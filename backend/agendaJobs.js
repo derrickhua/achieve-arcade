@@ -1,5 +1,6 @@
-import Habit from '../models/habit.js';
-import User from '../models/user.js';
+import Habit from "./models/habit.js";
+import User from "./models/user.js";
+import moment from "moment-timezone";
 
 export const defineAndScheduleJobs = async (agenda) => {
     // Define the job
@@ -24,6 +25,7 @@ export const defineAndScheduleJobs = async (agenda) => {
   
     // Schedule a job for each user
     for (const user of users) {
-      agenda.schedule('next Monday at 12:00am', 'calculate streaks', { userId: user._id }).tz(user.timezone);
+      const nextMonday = moment().tz(user.timezone).startOf('week').add(1, 'week').toDate();
+      agenda.schedule(nextMonday, 'calculate streaks', { userId: user._id });
     }
 };

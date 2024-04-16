@@ -3,25 +3,11 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const generateTokens = (userId) => {
-    const accessToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '30m' }); // 15 minutes for access token
-    const refreshToken = jwt.sign({ _id: userId }, process.env.REFRESH_TOKEN_SECRET, { expiresIn: '60d' }); // 7 days for refresh token
+    const accessToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '30m' }); 
+    const refreshToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '60d' }); 
     return { accessToken, refreshToken };
 };
 
-/**
- * Refreshes the access token using a provided refresh token.
- * 
- * This function verifies the provided refresh token, checks its validity against
- * the stored token in the database, and issues a new set of access and refresh tokens
- * if the provided token is valid. If the refresh token is missing, invalid, or expired,
- * it throws an error that is handled by centralized error handling middleware.
- *
- * @param {Request} req - The request object, containing the refresh token in the body.
- * @param {Response} res - The response object used to return the new tokens.
- * @param {Function} next - The next middleware function in the stack, used for error handling.
- * 
- * @returns {void} Returns new tokens if successful or passes an error to the next middleware.
- */
 export const refreshAccessToken = async (req, res, next) => {
     const { refreshToken } = req.body;
     if (!refreshToken) {
@@ -31,7 +17,7 @@ export const refreshAccessToken = async (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
         const user = await User.findById(decoded._id);
         if (!user) {
             const error = new Error("No user found with this id");
@@ -58,6 +44,7 @@ export const refreshAccessToken = async (req, res, next) => {
         next(error);
     }
 };
+
 
 /**
  * Registers a new user with the provided credentials.

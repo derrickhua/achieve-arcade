@@ -52,7 +52,6 @@ export const addHabit = async (req, res, next) => {
 export const getHabits = async (req, res, next) => {
     try {
         const habits = await Habit.find({ user: req.user._id });
-
         // Fetch heatmap data and all-time performance rates for each habit
         const habitsWithData = await Promise.all(habits.map(async (habit) => {
             try {
@@ -73,8 +72,6 @@ export const getHabits = async (req, res, next) => {
                 throw error;
             }
         }));
-
-        console.log('Got habits with additional data');
         res.json(habitsWithData);
     } catch (error) {
         // Delegate any errors caught during processing to the error handling middleware

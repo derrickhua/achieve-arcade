@@ -23,32 +23,42 @@ import { getHabits, addHabit, updateHabit, deleteHabit, completeHabit } from '@/
 import HabitCard from '@/components/habit/HabitCard';
 
 interface Habit {
-  id: string;
+  _id: string;
   name: string;
   streak: number;
+  habitPeriod: string;
+  latestGoal: {
+    goal: number;
+    effectiveDate: string;
+  };
+  performanceRate: {
+    consistencyRate: number;
+    totalCompletions: number;
+    totalPossibleCompletions: number;
+  };
+  heatmapData: Array<any>; // Specify more detailed types as needed
 }
 
 export default function HabitDashboard() {
   const [habits, setHabits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  
 
   useEffect(() => {
-    const fetchHabits = async () => {
-      setIsLoading(true);
-      try {
-        const response = await getHabits();
-        setHabits(response.data);  // Assuming the API returns an array of habits
-        setIsLoading(false);
-      } catch (error) {
-        setError('Failed to fetch habits.');
-        setIsLoading(false);
-      }
-    };
-
     fetchHabits();
   }, []);
+
+  const fetchHabits = async () => {
+    setIsLoading(true);
+    try {
+      const response = await getHabits();
+      setHabits(response.data);
+      setIsLoading(false);
+    } catch (error) {
+      setError('Failed to fetch habits.');
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="p-4 h-full">
@@ -68,14 +78,14 @@ export default function HabitDashboard() {
         </Dialog>
       </div>
 
-      <div className="flex w-full gap-4 p-4 h-full">
-        {habits.length > 0 ? (
-          habits.map((habit, index) => (
-            <HabitCard key={index} habit={habit} />
-          ))
-        ) : (
-          <p>No habits added yet. Start by adding a new habit!</p>
-        )}
+      <div className="flex w-full gap-4 p-4 h-[100%] justify-center">
+      {habits.length > 0 ? (
+        habits.map((habit, index) => (
+          <HabitCard key={index} habit={habit} />
+        ))
+      ) : (
+        <p>No habits added yet. Start by adding a new habit!</p>
+      )}
       </div>
     </div>
   );
@@ -83,17 +93,29 @@ export default function HabitDashboard() {
 
 function AddHabitForm() {
   const [name, setName] = useState('');
-  const [habitPeriod, setHabitPeriod] = useState('Daily');  // Renamed from frequency to habitPeriod
-  const [consistencyGoal, setConsistencyGoal] = useState(1); 
+  const [habitPeriod, setHabitPeriod] = useState('Daily');
+  const [consistencyGoal, setConsistencyGoal] = useState(1);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+
   const handleSubmit = async (event) => {
     event.preventDefault();
+    const effectiveDate = new Date(); // Set effective date to today
+    effectiveDate.setHours(0, 0, 0, 0); // Normalize the time to midnight
+
     try {
-      // Update the object to match backend schema
-      const habitData = { name, habitPeriod, consistencyGoal };
+      const habitData = {
+        name,
+        habitPeriod,
+        goal: consistencyGoal,
+        effectiveDate
+      };
       const response = await addHabit(habitData);
-      console.log('Habit added:', response.data);
+      await getHabits();  // Refresh the habits list
+      setName('');
+      setHabitPeriod('Daily');
+      setConsistencyGoal(1);
+      setShowAlert(false);
     } catch (error) {
       setShowAlert(true);
       setAlertMessage('Error adding habit. Please try again.')
@@ -114,7 +136,7 @@ function AddHabitForm() {
         />
       </div>
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="habitPeriod">Habit Period</Label>  {/* Updated from frequency to habitPeriod */}
+        <Label htmlFor="habitPeriod">Habit Period</Label>
         <p className='text-sm text-muted-foreground'>Time frame in which you aim to complete a habit</p>
         <Select onValueChange={setHabitPeriod} value={habitPeriod}>
           <SelectTrigger className="w-full">
@@ -123,6 +145,7 @@ function AddHabitForm() {
           <SelectContent>
             <SelectItem value="Daily">Daily</SelectItem>
             <SelectItem value="Weekly">Weekly</SelectItem>
+            <SelectItem value="Monthly">Monthly</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -140,12 +163,12 @@ function AddHabitForm() {
       </div>
       <Button type="submit" className='self-end'>Add Habit</Button>
       {showAlert && (
-                <Alert variant='destructive'>
-                <AlertTitle>Error!</AlertTitle>
-                <AlertDescription>
-                    {alertMessage}
-                </AlertDescription>
-                </Alert>
+        <Alert variant='destructive'>
+          <AlertTitle>Error!</AlertTitle>
+          <AlertDescription>
+            {alertMessage}
+          </AlertDescription>
+        </Alert>
       )}
     </form>
   );

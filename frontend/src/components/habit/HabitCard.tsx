@@ -1,59 +1,48 @@
 import { completeHabit } from "@/lib/habit";
-import { motion } from "framer-motion"
-import { useState } from "react";
+import React from "react";
+import { Heatmap } from "./HabitHeatMap";
+// Define the Habit interface
 interface Habit {
-    id: string;
-    name: string;
-    streak: number;
+  _id: string;
+  name: string;
+  streak: number;
+  habitPeriod: string;
+  latestGoal: {
+    goal: number;
+    effectiveDate: string;
+  };
+  performanceRate: {
+    consistencyRate: number;
+    totalCompletions: number;
+    totalPossibleCompletions: number;
+  };
+  heatmapData: Array<any>; // Specify more detailed types as needed
 }
 
-interface HabitCardProps {
-    habit: Habit;
-    onStreakUpdate: (updatedHabit: Habit) => void;
+// Define the component using React.FC for functional component typing
+const HabitCard: React.FC<{ habit: Habit }> = ({ habit }) => {
+    console.log(habit)
+  return (
+    <div className="habit-card flex flex-row items-center justify-around p-4 bg-white border rounded-xl mb-4 w-[90%] max-h-[13vh]">
+    <div className="habit-name w-[10%]">
+      <p className="text-[25px]">{habit.name}</p>
+    </div>
+    <div className="habit-streak w-[10%] flex flex-col justify-center items-center">
+      <p>STREAK</p>
+      <p className="text-[25px]">{habit.streak}</p>
+    </div>
+    <div className="habit-heatmap w-[30%] justify-center items-center flex flex-col h-full ">
+      <p>Past Month</p>
+      <Heatmap data={habit.heatmapData} /> 
+    </div>
+    <div className="habit-bar-graph w-[30%]">
+      <p>Bar Graph Placeholder</p>  {/* Placeholder for now */}
+    </div>
+    <div className="habit-performance w-[10%]">
+      {/* <ProgressCircle progress={habit.performanceRate.consistencyRate} total={100} /> Commented out for now */}
+    </div>
+  </div>
+  );
 }
 
-export default function HabitCard({ habit, onStreakUpdate }: HabitCardProps) {
-    const [isHover, setHover] = useState(false);
-    const handleIncrementStreak = async () => {
-        try {
-            const updatedHabit = {...habit, streak: habit.streak + 1};  // Increment locally for immediate feedback
-            await completeHabit(habit.id);  
-            onStreakUpdate(updatedHabit); 
-        } catch (error) {
-            console.error('Failed to increment streak:', error);
-        }
-    };
-
-    return (
-        <motion.div
-            className="border rounded aspect-square max-w-[400px] max-h-[400px] min-w-[150px] min-h-[150px] w-[15vw] h-[15vw] cursor-pointer"
-            whileHover={{
-                scale: 1.2,
-                rotate: 90
-            }}
-            whileTap={{
-                scale: 0.8,
-                rotate: -90,
-                borderRadius: "100%"
-            }}
-            onClick={handleIncrementStreak}
-            initial={{ opacity: 0, scale: 1 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.2 }}
-        >
-            <motion.div
-                className="flex max-w-[400px] max-h-[400px] min-w-[150px] min-h-[150px] w-[15vw] h-[15vw] flex-col items-center justify-center"
-                whileHover={{
-                    rotate: -90  // Rotate in the opposite direction of the parent on hover
-                }}
-                whileTap={{
-                    rotate: 90  // Rotate in the opposite direction of the parent on tap
-                }}
-                transition={{ duration: 0.2 }}  // Ensures that the rotation duration matches the parent's
-            >
-                <h2 className="font-semibold">{habit.name}</h2>
-                <p>Streak: {habit.streak}</p>
-            </motion.div>
-        </motion.div>
-    );
-}
+export default HabitCard;

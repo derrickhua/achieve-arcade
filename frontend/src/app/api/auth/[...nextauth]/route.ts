@@ -46,43 +46,48 @@ const authHandler = NextAuth({
         timezone: { label: "Timezone", type: "text" }, 
       },
       authorize: async (credentials) => {
-        try {
-          const response = await axios.post("http://localhost:8000/api/users/register", credentials, {
-            headers: {
-              "Content-Type": "application/json"
+          try {
+            const response = await axios.post("http://localhost:8000/api/users/register", credentials, {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+            const user = response.data;
+            
+            if (response.status === 201 && user.accessToken) {
+                // Ensure that the correct status code and presence of an accessToken are checked
+                return user;
+            } else {
+                // Log for debugging
+                console.error('Registration failed with status:', response.status, 'and message:', user.error);
+                throw new Error(user.error || "Registration failed");
             }
-          });
-          
-          const user = response.data;
-          
-          if (response.status === 200 && user.accessToken) {
-            return user;
-          } else {
-            throw new Error(user.error || "Registration failed");
-          }
         } catch (error) {
-          if (error.response) {
-            throw new Error(error.response.data.error || "Registration failed");
-          } else {
-            throw new Error("Registration request failed");
-          }
+            // Handle errors more gracefully
+            if (error.response) {
+                console.error('Error in registration:', error.response.data);
+                throw new Error(error.response.data.error || "Registration failed");
+            } else {
+                console.error('Network or other error:', error.message);
+                throw new Error("Registration request failed");
+            }
         }
       }
     })
   ],
-  callbacks: {
+callbacks: {
     jwt: async ({ token, user }) => {
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
       }
-
+      
       if (Date.now() / 1000 > token.accessTokenExpires) {
-        const refreshedToken = await refreshAccessToken(token);
-    
+        const refreshedToken = await refreshAccessToken(token.refreshToken); // Pass only the refresh token
+            
         if (refreshedToken.accessToken) {
-            token.accessToken = refreshedToken.accessToken;
-            token.accessTokenExpires = Date.now() + refreshedToken.expiresIn * 1000;
+          token.accessToken = refreshedToken.accessToken;
+          token.accessTokenExpires = Date.now() + refreshedToken.expiresIn * 1000;
         }
       }
       return token;
