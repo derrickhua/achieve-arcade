@@ -1,0 +1,22 @@
+.cell, .bar {
+    transition: background-color 0.3s ease-in-out;
+}
+
+.cell:hover {
+    background-color: white !important;  /* Use !important to override inline styles */
+    border: 2px solid #98E4A5 !important;
+}
+
+.bar:hover {
+    background-color: white !important;  /* Use !important to override inline styles */
+    border: 1px solid #98E4A5 !important;
+}
+
+
+/* habits.css */
+.habit-card {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 16px;
+}
+

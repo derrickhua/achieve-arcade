@@ -4,14 +4,8 @@ import React, { ReactNode } from 'react';
 import { useRouter, usePathname } from 'next/navigation'
 import {
   Home,
-  LineChart,
   Menu,
-  Package,
-  Package2,
-  Search,
   Hourglass,
-  Users,
-  Bell,
   CircleUser,
   Calendar,
   CheckSquare,

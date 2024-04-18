@@ -40,11 +40,8 @@ export const addHabit = async (req, res, next) => {
     }
 };
 
-
-
-
 /**
- * Retrieves all habits for the user, enriching them with heatmap data and performance rates.
+ * Retrieves all habits for the user, enriching them with heatmap data, performance rates, and weekly occurrences.
  * Each habit's data is enhanced with visual and performance insights.
  * @param {Request} req - The request object, containing user authentication data.
  * @param {Response} res - The response object used to return the list of habits.
@@ -52,15 +49,17 @@ export const addHabit = async (req, res, next) => {
 export const getHabits = async (req, res, next) => {
     try {
         const habits = await Habit.find({ user: req.user._id });
-        // Fetch heatmap data and all-time performance rates for each habit
+        // Fetch heatmap data, all-time performance rates, and weekly occurrences for each habit
         const habitsWithData = await Promise.all(habits.map(async (habit) => {
             try {
                 const heatmapData = await habit.getHeatmapData();
                 const performanceRate = await habit.calculatePerformanceRate('all-time');  // Fetching all-time performance rate
+                const occurrences = habit.getWeeklyOccurrences();  // Fetch weekly occurrences for the habit
                 return {
                     ...habit.toObject(),  // Convert Mongoose document to plain object
                     heatmapData,
-                    performanceRate
+                    performanceRate,
+                    occurrences  // Add weekly occurrences data to the enriched habit object
                 };
             } catch (innerError) {
                 // Log and encapsulate each error related to individual habit data fetching
@@ -78,8 +77,6 @@ export const getHabits = async (req, res, next) => {
         next(error); 
     }
 };
-
-
 
 /**
  * Updates a specific habit based on provided parameters such as new goal or habit name.

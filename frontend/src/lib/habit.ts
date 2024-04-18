@@ -12,7 +12,6 @@ const api = axios.create({
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
     const session = await getSession();
-    console.log(session)
     if (session?.accessToken) {
         config.headers.authorization = `Bearer ${session.accessToken}`;
     } else {

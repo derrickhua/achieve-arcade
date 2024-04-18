@@ -3,48 +3,65 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 const generateTokens = (userId) => {
-    const accessToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '30m' }); 
-    const refreshToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '60d' }); 
-    return { accessToken, refreshToken };
+    const accessTokenExpiresIn = 15 * 60 * 1000; // 15 minutes in milliseconds
+    const accessToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' }); // Access token expires in 2 minutes
+    const refreshToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '60d' }); // Refresh token expires in 60 days
+
+    return {
+        accessToken,
+        refreshToken,
+        accessTokenExpires: Date.now() + accessTokenExpiresIn  
+    };
 };
 
+/**
+ * Refreshes an access token using a refresh token 
+ * This function verifies the refresh token, checks its validity against the user's stored token,
+ * and if valid, issues a new access token and a new refresh token. The new refresh token replaces the old one
+ * to maintain security through token rotation. This function handles various errors such as missing token,
+ * invalid token, expired token, or token mismatch by responding with appropriate HTTP status codes.
+ *
+ * @param {Request} req - The Express request object, which should contain the refresh token cookie.
+ * @param {Response} res - The response object used to send back the new access token and set the new refresh token cookie.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
 export const refreshAccessToken = async (req, res, next) => {
-    const { refreshToken } = req.body;
+    const refreshToken = req.body.refreshToken;
     if (!refreshToken) {
-        const error = new Error("Refresh Token required");
-        error.status = 401; // Unauthorized
-        return next(error);
+        console.log("No refresh token provided");
+        return res.status(401).json({ error: "Refresh Token required" });
     }
 
     try {
+        console.log("Verifying refresh token");
         const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
         const user = await User.findById(decoded._id);
         if (!user) {
-            const error = new Error("No user found with this id");
-            error.status = 404; // Not Found
-            throw error;
+            console.log(`No user found with ID: ${decoded._id}`);
+            return res.status(404).json({ error: "No user found with this id" });
         }
 
-        // Optionally check if the received refreshToken matches the one stored in the database
-        if (user.refreshToken && user.refreshToken !== refreshToken) {
-            const error = new Error("Invalid refresh token");
-            error.status = 403; // Forbidden
-            throw error;
+        if (user.refreshToken !== refreshToken) {
+            console.log("Refresh token does not match user's stored token");
+            return res.status(403).json({ error: "Invalid refresh token" });
         }
 
-        // Issue new tokens
         const tokens = generateTokens(user._id);
-        console.log('New tokens:', tokens);
-        res.json(tokens);
-    } catch (error) {
-        if (!error.status) {
-            error.status = 403; // Invalid or expired refresh token
-            error.message = "Invalid or expired refresh token";
+
+        if (!tokens.accessTokenExpires) {
+            console.error("accessTokenExpires calculation failed, received:", tokens.accessTokenExpires);
+            return res.status(500).json({ error: "Failed to generate valid token expiration" });
         }
-        next(error);
+
+        res.json({
+            accessToken: tokens.accessToken,
+            accessTokenExpires: tokens.accessTokenExpires  // Ensure this is a valid number
+        });
+    } catch (error) {
+        console.error("Error in refreshAccessToken", error);
+        res.status(403).json({ error: "Invalid or expired refresh token" });
     }
 };
-
 
 /**
  * Registers a new user with the provided credentials.
@@ -57,13 +74,10 @@ export const refreshAccessToken = async (req, res, next) => {
  */
 export const register = async (req, res, next) => {
     const { username, email, password, timezone } = req.body;
-
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            const error = new Error('User already exists');
-            error.status = 409; // Conflict
-            throw error;
+            return res.status(409).json({ error: 'User already exists' });  // Use res.status().json() for proper error handling
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -73,24 +87,23 @@ export const register = async (req, res, next) => {
             password: hashedPassword,
             timezone
         });
-        await newUser.save();
 
-        // Generate JWT tokens
-        const { accessToken, refreshToken } = generateTokens(newUser._id);
+        const tokens = generateTokens(newUser._id);
+        newUser.refreshToken = tokens.refreshToken;  // Save the refresh token in the user's record
+        await newUser.save();
 
         res.status(201).json({
             message: 'User registered successfully',
-            accessToken,
-            refreshToken
+            refreshToken: tokens.refreshToken,
+            accessToken: tokens.accessToken,
+            accessTokenExpires: tokens.accessTokenExpires
         });
     } catch (error) {
-        if (!error.status) {
-            error.status = 500; // Internal Server Error
-            error.message = 'Error registering new user';
-        }
-        next(error); // Pass the error to the error handling middleware
+        console.error("Registration error:", error);
+        next(error);
     }
 };
+
 
 /**
  * Authenticates a user based on email and password.
@@ -103,29 +116,28 @@ export const register = async (req, res, next) => {
  */
 export const login = async (req, res, next) => {
     const { email, password } = req.body;
-
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            const error = new Error('Invalid credentials');
-            error.status = 401;
-            throw error;
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         const passwordIsValid = await bcrypt.compare(password, user.password);
         if (!passwordIsValid) {
-            const error = new Error('Invalid credentials');
-            error.status = 401;
-            throw error;
+            return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        const { accessToken, refreshToken } = generateTokens(user._id);
-        res.json({ accessToken, refreshToken });
+        const tokens = generateTokens(user._id);
+        user.refreshToken = tokens.refreshToken;  // Update the refresh token in the user's record
+        await user.save();  // Don't forget to save the updated user record
+
+        res.json({
+            accessToken: tokens.accessToken,
+            refreshToken: tokens.refreshToken,
+            accessTokenExpires: tokens.accessTokenExpires
+        });
     } catch (error) {
-        if (!error.status) {
-            error.status = 500;
-            error.message = 'Error logging in user';
-        }
+        console.error("Login error:", error);
         next(error);
     }
 };

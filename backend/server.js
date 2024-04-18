@@ -1,12 +1,13 @@
 import express from 'express';
 import mongoose from 'mongoose'
 import dotenv from 'dotenv';
-import userRoutes from './routes/user.js';
-import habitRoutes from './routes/habit.js';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import Agenda from 'agenda';
+import cookieParser from 'cookie-parser';
 import { defineAndScheduleJobs } from './agendaJobs.js';
+import userRoutes from './routes/user.js';
+import habitRoutes from './routes/habit.js';
 
 dotenv.config();
 
@@ -40,6 +41,7 @@ db.once('open', function() {
 // Middleware
 app.use(bodyParser.json());
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/users', userRoutes);

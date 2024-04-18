@@ -176,75 +176,96 @@ HabitSchema.methods.incrementCompletion = async function(date) {
 };
 
 /**
- * Retrieves all occurrences of this habit within the current week.
- * This method calculates the start and end of the current week and filters occurrences accordingly.
- * @returns {Array<Object>} An array of occurrences within the current week.
- */
+* Retrieves all occurrences of this habit within the current week.
+* This method calculates the start and end of the current week and filters occurrences accordingly.
+* If there are no recorded occurrences for a particular day, it returns a default object with zero completions.
+* @returns {Array<Object>} An array of occurrences within the current week, including days with zero completions.
+*/
 HabitSchema.methods.getWeeklyOccurrences = function() {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0); 
+ const today = new Date();
+ today.setHours(0, 0, 0, 0); // Reset time part
 
-  const dayOfWeek = today.getDay();
-  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; 
-  const startOfWeek = new Date(today.setDate(today.getDate() + diffToMonday));
-  const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(endOfWeek.getDate() + 6);
+ const dayOfWeek = today.getDay();
+ const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+ const startOfWeek = new Date(today.setDate(today.getDate() + diffToMonday));
+ const endOfWeek = new Date(startOfWeek);
+ endOfWeek.setDate(endOfWeek.getDate() + 6);
 
-  if (!this.occurrences || this.occurrences.length === 0) {
-      return []; // Return an empty array if there are no occurrences
-  }
+ const daysInWeek = Array.from({ length: 7 }).map((_, i) => {
+   const date = new Date(startOfWeek);
+   date.setDate(date.getDate() + i);
+   return { date, completions: 0 }; // Default object structure
+ });
 
-  // Filter occurrences to find those within the current week
-  const weeklyOccurrences = this.occurrences.filter(occurrence => {
-      const occurrenceDate = new Date(occurrence.date);
-      occurrenceDate.setHours(0, 0, 0, 0);
-      return occurrenceDate >= startOfWeek && occurrenceDate <= endOfWeek;
-  });
+ if (!this.occurrences || this.occurrences.length === 0) {
+     return daysInWeek; // Return the default week if there are no occurrences
+ }
 
-  return weeklyOccurrences;
+ // Map occurrences to days of the week
+ return daysInWeek.map(day => {
+   const found = this.occurrences.find(occurrence => {
+     const occurrenceDate = new Date(occurrence.date);
+     occurrenceDate.setHours(0, 0, 0, 0);
+     return occurrenceDate.getTime() === day.date.getTime();
+   });
+   if (found) {
+     return { ...day, completions: found.completions };
+   }
+   return day;
+ });
 };
 
 /**
- * Generates data for a heatmap visualization of habit completions over the last 30 days.
- * This method aggregates completions and ensures each day within the last 30 days is represented.
+ * Generates data for a heatmap visualization of habit completions over the current month and the two previous months.
+ * This method aggregates completions and ensures each day within these three months is represented,
+ * providing a sliding window of data as time progresses.
  * @returns {Promise<Array<Object>>} A promise that resolves with an array of daily completions data.
  */
 HabitSchema.methods.getHeatmapData = async function() {
-  const endDate = new Date();
-  const startDate = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate() - 29); // Last 30 days
-  startDate.setHours(0, 0, 0, 0);
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth();
 
-  const occurrences = await this.model('Habit').aggregate([
-      { $match: { _id: this._id } },
-      { $unwind: "$occurrences" },
-      { $match: {
-          "occurrences.date": { $gte: startDate, $lte: endDate }
-      }},
-      { $group: {
-          _id: "$occurrences.date",
-          completions: { $sum: "$occurrences.completions" }
-      }},
-      { $sort: { _id: 1 } }
-  ]);
+    // Set start date to the first day of the month, two months prior to the current month
+    const startDate = new Date(currentYear, currentMonth - 2, 1);
+    startDate.setHours(0, 0, 0, 0);
 
-  // Create a map of occurrences for quick lookup
-  const occurrenceMap = {};
-  occurrences.forEach(occ => {
-      occurrenceMap[occ._id.toISOString().split('T')[0]] = occ.completions;
-  });
+    // Set end date to the last day of the current month
+    const endDate = new Date(currentYear, currentMonth + 1, 0);
+    endDate.setHours(23, 59, 59, 999);
 
-  // Fill in the gaps
-  const heatmapData = [];
-  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      const dateKey = d.toISOString().split('T')[0];
-      heatmapData.push({
-          date: dateKey,
-          completions: occurrenceMap[dateKey] || 0
-      });
-  }
+    const occurrences = await this.model('Habit').aggregate([
+        { $match: { _id: this._id } },
+        { $unwind: "$occurrences" },
+        { $match: {
+            "occurrences.date": { $gte: startDate, $lte: endDate }
+        }},
+        { $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$occurrences.date" } },
+            completions: { $sum: "$occurrences.completions" }
+        }},
+        { $sort: { _id: 1 } }
+    ]);
 
-  return heatmapData;
+    // Map occurrences to ensure every day is represented in the heatmap
+    const occurrenceMap = {};
+    occurrences.forEach(occ => {
+        occurrenceMap[occ._id] = occ.completions;
+    });
+
+    // Fill in the gaps
+    const heatmapData = [];
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+        const dateKey = d.toISOString().split('T')[0];
+        heatmapData.push({
+            date: dateKey,
+            completions: occurrenceMap[dateKey] || 0
+        });
+    }
+
+    return heatmapData;
 };
+  
 
 /**
  * Calculates the performance rate of the habit over a specified duration ('monthly' or 'all-time').

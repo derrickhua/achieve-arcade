@@ -19,6 +19,7 @@ export default function Authentication() {
 
   const handleLogin = async (event) => {
     event.preventDefault(); // Prevent default form submission
+    
     const result = await signIn('login', {
       redirect: false, // Do not redirect on success, handle it below
       email,

@@ -1,6 +1,22 @@
 import { completeHabit } from "@/lib/habit";
 import React from "react";
-import { Heatmap } from "./HabitHeatMap";
+import HabitHeatmap from "./HabitHeatMap";
+import HabitBarGraph from "./HabitBarGraph";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import './habits.css';
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
+import { sampleConsistencyGoals, sampleHabitPeriod, sampleHeatmapData, sampleOccurrences, samplePerformanceRate } from "./HabitSampleData";
+import HabitPerformance from "./HabitPerformance";
 // Define the Habit interface
 interface Habit {
   _id: string;
@@ -11,6 +27,8 @@ interface Habit {
     goal: number;
     effectiveDate: string;
   };
+  consistencyGoals: Array<any>;
+  occurrences: Array<any>; 
   performanceRate: {
     consistencyRate: number;
     totalCompletions: number;
@@ -19,30 +37,43 @@ interface Habit {
   heatmapData: Array<any>; // Specify more detailed types as needed
 }
 
-// Define the component using React.FC for functional component typing
+
 const HabitCard: React.FC<{ habit: Habit }> = ({ habit }) => {
-    console.log(habit)
+  console.log(habit);
   return (
-    <div className="habit-card flex flex-row items-center justify-around p-4 bg-white border rounded-xl mb-4 w-[90%] max-h-[13vh]">
-    <div className="habit-name w-[10%]">
-      <p className="text-[25px]">{habit.name}</p>
-    </div>
-    <div className="habit-streak w-[10%] flex flex-col justify-center items-center">
-      <p>STREAK</p>
-      <p className="text-[25px]">{habit.streak}</p>
-    </div>
-    <div className="habit-heatmap w-[30%] justify-center items-center flex flex-col h-full ">
-      <p>Past Month</p>
-      <Heatmap data={habit.heatmapData} /> 
-    </div>
-    <div className="habit-bar-graph w-[30%]">
-      <p>Bar Graph Placeholder</p>  {/* Placeholder for now */}
-    </div>
-    <div className="habit-performance w-[10%]">
-      {/* <ProgressCircle progress={habit.performanceRate.consistencyRate} total={100} /> Commented out for now */}
-    </div>
-  </div>
+      <div className="habit-card bg-white border rounded-xl mb-4 p-4 grid grid-cols-12 gap-4 max-h-[15vh] min-h-[200px]">
+          <div className="habit-name col-span-12 md:col-span-3 flex flex-col justify-center text-[30px]">
+          <ResizablePanelGroup direction="vertical">
+            <ResizablePanel className="my-2 stardom">{habit.name}</ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel className="text-[18px] mt-2 garamond">streak: {habit.streak}🔥</ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel className="text-[18px] mt-2 garamond">
+              <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  consistency goal 🛈: {habit.latestGoal.goal} / {habit.habitPeriod}
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>The total number of habits that should be completed within the habit period.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            </ResizablePanel>
+          </ResizablePanelGroup>
+          </div>
+          <div className="habit-heatmap col-span-12 md:col-span-4 flex justify-center items-center"> {/* Adjusted col-span */}
+              <HabitHeatmap data={sampleHeatmapData} />
+          </div>
+          <div className="habit-bar-graph col-span-12 md:col-span-3 flex justify-center items-center"> {/* Adjusted col-span */}
+              <HabitBarGraph occurrences={sampleOccurrences} consistencyGoals={sampleConsistencyGoals} habitPeriod={sampleHabitPeriod} />
+          </div>
+          <div className="habit-progress-circle garamond col-span-12 md:col-span-2 flex justify-center items-center">
+            <HabitPerformance performanceRate={samplePerformanceRate} />
+          </div>
+      </div>
   );
-}
+};
 
 export default HabitCard;
