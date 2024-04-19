@@ -147,33 +147,36 @@ export const deleteHabit = async (req, res, next) => {
 };
 
 /**
- * Marks a habit as completed for the current date.
- * Updates habit's occurrences and recalculates the streak based on the completion.
- * @param {Request} req - The request object, containing the habit ID.
+ * Updates the completion count for a specified date for a habit.
+ * If decreasing, it ensures completions don't go below zero. Also updates the streak.
+ * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
  * @param {Response} res - The response object used to return the updated habit.
  */
-export const completeHabit = async (req, res, next) => {
+export const updateHabitCompletion = async (req, res, next) => {
     const { habitId } = req.params;
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);  // Normalize the date for consistent comparison.
+    const { completionChange, date } = req.body; // Include date in the request body
 
     try {
         const habit = await Habit.findById(habitId);
         if (!habit) {
-            const error = new Error('Habit not found');
-            error.status = 404;
-            throw error;  // Throw the error to be caught by the catch block
+            return res.status(404).json({ message: 'Habit not found' });
         }
 
-        await habit.incrementCompletion(currentDate);
-        console.log('Habit completion updated:', habit);
+        // Parse the date string to a Date object
+        const targetDate = new Date(date);
+        targetDate.setHours(0, 0, 0, 0);  // Normalize the date
+
+        const updateResult = await habit.changeCompletion(targetDate, completionChange);
+
+        if (!updateResult.success) {
+            throw new Error(updateResult.message);
+        }
+
+        console.log('Habit completion updated:', habit.occurrences);
         res.json(habit);
     } catch (error) {
-        if (error instanceof mongoose.Error.ValidationError || error instanceof mongoose.Error.CastError) {
-            error.status = 400; 
-            error.message = error instanceof mongoose.Error.CastError ? 'Invalid ID format.' : error.message;
-        }
-        next(error);  
+        console.error('Error updating habit completion:', error);
+        res.status(400).json({ message: error.message });
     }
 };
 

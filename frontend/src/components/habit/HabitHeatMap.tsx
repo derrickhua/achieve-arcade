@@ -161,8 +161,9 @@ const HabitHeatmap = ({ data, cellSize = 15, maxCompletions = 10 }: HabitHeatmap
                                             }}
                                         />
                                     </TooltipTrigger>
-                                    <TooltipContent>
+                                    <TooltipContent className='flex flex-col justify-center items-center'>
                                         <p>{dayData.date || 'No Data'}</p>
+                                        <p>activity: {dayData.completions}</p>
                                     </TooltipContent>
                                 </Tooltip>
                             );

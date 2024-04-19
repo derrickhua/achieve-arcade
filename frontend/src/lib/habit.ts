@@ -39,9 +39,16 @@ export const addHabit = async (habitData) => {
     }
 };
 
-// API method to complete a habit
-export const completeHabit = async (habitId) => {
-  return api.post(`/${habitId}/complete`);
+// API method to update habit completions for today
+export const updateHabitCompletion = async (habitId, completionChange, date) => {
+  try {
+    const response = await api.post(`/${habitId}/update`, { completionChange, date });
+    console.log('Response from updateHabitCompletion:', response.data);
+    return response;
+  } catch (error) {
+    console.error('Error updating habit completion:', error.response ? error.response.data : error.message);
+    throw error;
+  }
 };
 
 // API method to update a habit

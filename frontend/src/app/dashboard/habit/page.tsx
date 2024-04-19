@@ -78,14 +78,14 @@ export default function HabitDashboard() {
         </Dialog>
       </div>
 
-      <div className="flex w-full gap-4 p-4 h-[100%] justify-center">
-      {habits.length > 0 ? (
-        habits.map((habit, index) => (
-          <HabitCard key={index} habit={habit} />
-        ))
-      ) : (
-        <p>No habits added yet. Start by adding a new habit!</p>
-      )}
+      <div className="flex w-full gap-4 p-4 justify-center habits-container">
+        {habits.length > 0 ? (
+          habits.map((habit, index) => (
+            <HabitCard key={index} habit={habit} />
+          ))
+        ) : (
+          <p>No habits added yet. Start by adding a new habit!</p>
+        )}
       </div>
     </div>
   );

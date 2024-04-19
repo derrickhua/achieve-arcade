@@ -139,42 +139,33 @@ HabitSchema.methods.calculateStreak = async function() {
 };
 
 /**
- * Increments the completion count for a given date. If no occurrence exists for that date,
- * it creates a new one. It also increments the streak counter.
- * @param {Date} date - The date on which to increment the completion.
+ * Sets the completion count for a given date. If no occurrence exists for that date,
+ * it creates a new one. If occurrence exists, it sets the completions to the specified count.
+ * @param {Date} date - The date on which to change the completion.
+ * @param {number} change - The new completion count to set.
  * @returns {Promise<Object>} A promise that resolves with the operation result.
  */
-HabitSchema.methods.incrementCompletion = async function(date) {
-  const targetDate = new Date(date);
-  targetDate.setHours(0, 0, 0, 0); // Normalize the date for consistent comparison
+HabitSchema.methods.changeCompletion = async function(date, change) {
+    const targetDate = new Date(date);
+    targetDate.setHours(0, 0, 0, 0); // Normalize the date for consistent comparison
 
-  let occurrence = this.occurrences.find(o => {
-      const occurrenceDate = new Date(o.date);
-      occurrenceDate.setHours(0, 0, 0, 0);
-      return occurrenceDate.getTime() === targetDate.getTime();
-  });
+    let occurrence = this.occurrences.find(o => {
+        const occurrenceDate = new Date(o.date);
+        occurrenceDate.setHours(0, 0, 0, 0);
+        return occurrenceDate.getTime() === targetDate.getTime();
+    });
 
-  if (occurrence) {
-      // Increment the completions
-      occurrence.completions += 1;
-  } else {
-      // Add a new occurrence for this date with initial completions set to 1
-      this.occurrences.push({
-          date: targetDate,
-          completions: 1
-      });
-  }
+    if (occurrence) {
+        // Set completions to change or 0 if change is negative
+        occurrence.completions = Math.max(0, change);
+    } else {
+        // Create new occurrence with completions set to change or 0 if change is negative
+        this.occurrences.push({ date: targetDate, completions: Math.max(0, change) });
+    }
 
-  this.streak += 1;
-
-  try {
-      await this.save();
-      return { success: true, message: "Completions and streak updated successfully." };
-  } catch (error) {
-      return { success: false, message: "Error updating completions and streak: " + error.message };
-  }
+    await this.save();
+    return { success: true, message: "Completions updated successfully." };
 };
-
 /**
 * Retrieves all occurrences of this habit within the current week.
 * This method calculates the start and end of the current week and filters occurrences accordingly.

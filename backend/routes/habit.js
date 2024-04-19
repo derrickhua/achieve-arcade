@@ -4,7 +4,7 @@ import {
     getHabits,
     updateHabit,
     deleteHabit,
-    completeHabit
+    updateHabitCompletion
 } from '../controllers/habit.js';
 import authenticate from '../middleware/authenticate.js';
 
@@ -20,7 +20,7 @@ router.get('/', getHabits);
 router.post('/', addHabit);
 
 // POST to complete a habit for today (or specified date in the body potentially)
-router.post('/:habitId/complete', completeHabit);
+router.post('/:habitId/update', updateHabitCompletion);
 
 // PUT to update an existing habit
 router.put('/:habitId', updateHabit);
