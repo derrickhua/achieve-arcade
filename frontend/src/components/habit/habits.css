@@ -16,23 +16,21 @@
 /* habits.css */
 .habit-card {
     background-color: white;
-    border: solid 1px #ccc;
     border-radius: 15px;
-    margin-bottom: 16px;
     padding: 16px;
     display: grid;
     grid-template-columns: repeat(12, 1fr);
     gap: 16px;
-    max-height: 15vh;
-    min-height: 200px;
+
+    max-width: 1170px;
   }
   
 .habit-card.collapsed {
     padding: 8px;
     grid-template-columns: 1fr; /* Simplify the grid to a single column */
-    min-height: 100px; /* Reduce the minimum height */
+    min-height: 180px; 
     max-width: 320px !important;
-    max-height: 170px; /* Remove max height restriction */
+    max-height: 180px; 
 }
 
   /* Media Query to adjust layout for screens smaller than 1100px */

@@ -115,10 +115,12 @@
 
 .habits-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 16px; /* Adjust gap as necessary */
   padding: 4px; /* Optional padding for better appearance */
-  max-height: 80vh; /* Set a max height to enable scrolling */
+  align-items: center;
+  position: relative;
+  max-height: 80vh;
   overflow-y: auto; /* Enable vertical scrolling if content overflows */
 }
 
@@ -130,10 +132,13 @@
   }
 }
 
-@media (max-width: 650px) {
+@media (max-width: 875px) {
   .habits-container {
     grid-template-columns: 1fr; /* Single column layout for smaller devices */
     justify-items: center; /* Horizontally center the items */
     align-items: start; /* Align items to the start vertically */
   }
 }
+
+/* .goals-container {
+} */

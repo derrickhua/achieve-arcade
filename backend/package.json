@@ -11,7 +11,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.20.6",
     "agenda": "^5.0.0",
+    "axios": "^1.6.8",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
@@ -20,6 +22,7 @@
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.2",
     "moment-timezone": "^0.5.45",
-    "mongoose": "^8.3.1"
+    "mongoose": "^8.3.1",
+    "openai": "^4.38.2"
   }
 }

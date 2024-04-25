@@ -8,7 +8,7 @@ import cookieParser from 'cookie-parser';
 import { defineAndScheduleJobs } from './agendaJobs.js';
 import userRoutes from './routes/user.js';
 import habitRoutes from './routes/habit.js';
-
+import goalRoutes from './routes/goal.js';
 dotenv.config();
 
 const app = express();
@@ -46,9 +46,7 @@ app.use(cookieParser());
 // Routes
 app.use('/api/users', userRoutes);
 app.use('/api/habits', habitRoutes);
-// Protected routes example
-// app.use('/api/protected', authenticate, protectedRoutes);
-
+app.use('/api/goals', goalRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
@@ -86,3 +84,9 @@ app.use((err, req, res, next) => {
 // Start server
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`Server is running on port ${port}`));
+
+// Log memory usage every 30 seconds
+setInterval(() => {
+  const memoryUsage = process.memoryUsage();
+  console.log('Memory usage:', memoryUsage);
+}, 10000);

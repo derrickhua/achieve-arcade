@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
-    const session = await getSession();
+    const session:any = await getSession();
     if (session?.accessToken) {
         config.headers.authorization = `Bearer ${session.accessToken}`;
     } else {
@@ -30,10 +30,9 @@ export const getHabits = async () => {
 export const addHabit = async (habitData) => {
     console.log('Sending habitData:', habitData);
     try {
-        const response = await api.post('/', habitData);  
-        console.log('Response from addHabit:', response.data);
+        const response:any = await api.post('/', habitData);  
         return response;
-    } catch (error) {
+    } catch (error:any) {
         console.error('Error adding habit:', error.response ? error.response.data : error.message);
         throw error;
     }
@@ -42,10 +41,10 @@ export const addHabit = async (habitData) => {
 // API method to update habit completions for today
 export const updateHabitCompletion = async (habitId, completionChange, date) => {
   try {
-    const response = await api.post(`/${habitId}/update`, { completionChange, date });
+    const response:any = await api.post(`/${habitId}/update`, { completionChange, date });
     console.log('Response from updateHabitCompletion:', response.data);
     return response;
-  } catch (error) {
+  } catch (error:any) {
     console.error('Error updating habit completion:', error.response ? error.response.data : error.message);
     throw error;
   }

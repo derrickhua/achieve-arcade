@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label" 
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -19,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { getHabits, addHabit, updateHabit, deleteHabit, completeHabit } from '@/lib/habit';
+import { getHabits, addHabit, deleteHabit } from '@/lib/habit';
 import HabitCard from '@/components/habit/HabitCard';
 
 interface Habit {
@@ -37,6 +39,10 @@ interface Habit {
     totalPossibleCompletions: number;
   };
   heatmapData: Array<any>; // Specify more detailed types as needed
+}
+
+interface AddHabitFormProps {
+  fetchHabits: () => Promise<void>;
 }
 
 export default function HabitDashboard() {
@@ -60,6 +66,15 @@ export default function HabitDashboard() {
     }
   };
 
+  const handleDeleteHabit = async (habitId:string) => {
+    try {
+      await deleteHabit(habitId);
+      setHabits(habits.filter(habit => habit._id !== habitId));
+    } catch (error) {
+      setError('Failed to delete the habit.');
+    }
+  };
+  
   return (
     <div className="p-4 h-full">
       <div className="flex justify-between items-center mb-4">
@@ -73,15 +88,15 @@ export default function HabitDashboard() {
               <DialogTitle>Add New Habit</DialogTitle>
               <DialogDescription>Enter details about your new habit.</DialogDescription>
             </DialogHeader>
-            <AddHabitForm />
+            <AddHabitForm fetchHabits={fetchHabits}/>
           </DialogContent>
         </Dialog>
       </div>
 
-      <div className="flex w-full gap-4 p-4 justify-center habits-container">
+      <div className="flex  habits-container flex-col">
         {habits.length > 0 ? (
           habits.map((habit, index) => (
-            <HabitCard key={index} habit={habit} />
+            <HabitCard key={index} habit={habit} deleteHabit={handleDeleteHabit}/>
           ))
         ) : (
           <p>No habits added yet. Start by adding a new habit!</p>
@@ -91,7 +106,7 @@ export default function HabitDashboard() {
   );
 }
 
-function AddHabitForm() {
+const AddHabitForm: React.FC<AddHabitFormProps> = ({ fetchHabits }) => {
   const [name, setName] = useState('');
   const [habitPeriod, setHabitPeriod] = useState('Daily');
   const [consistencyGoal, setConsistencyGoal] = useState(1);
@@ -100,22 +115,22 @@ function AddHabitForm() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const effectiveDate = new Date(); // Set effective date to today
-    effectiveDate.setHours(0, 0, 0, 0); // Normalize the time to midnight
-
+    const habitData = {
+      name,
+      habitPeriod,
+      goal: consistencyGoal,
+      effectiveDate: new Date().toISOString() // setting the effective date to today
+    };
+  
     try {
-      const habitData = {
-        name,
-        habitPeriod,
-        goal: consistencyGoal,
-        effectiveDate
-      };
       const response = await addHabit(habitData);
-      await getHabits();  // Refresh the habits list
-      setName('');
-      setHabitPeriod('Daily');
-      setConsistencyGoal(1);
-      setShowAlert(false);
+      if (response.status === 201) {
+        await fetchHabits();  
+        setName('');
+        setHabitPeriod('Daily');
+        setConsistencyGoal(1);
+        setShowAlert(false);
+      }
     } catch (error) {
       setShowAlert(true);
       setAlertMessage('Error adding habit. Please try again.')

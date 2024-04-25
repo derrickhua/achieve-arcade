@@ -14,9 +14,7 @@ export const defineAndScheduleJobs = async (agenda) => {
       for (const habit of habits) {
         // Calculate the streak
         const streak = await habit.calculateStreak();
-  
-        // Here you can do something with the calculated streak
-        console.log(`Streak for habit ${habit._id} of user ${userId}: ${streak}`);
+
       }
     });
   

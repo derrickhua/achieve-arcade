@@ -17,22 +17,23 @@ import {
 } from "@/components/ui/resizable"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { sampleConsistencyGoals, sampleHabitPeriod, sampleHeatmapData, sampleOccurrences, samplePerformanceRate } from "./HabitSampleData";
 import { X, Minus, Plus } from 'lucide-react';
-import { deleteHabit } from "@/lib/habit";
 import { useState } from "react";
 
 interface Occurrence {
   date: string;
   completions: number;
 }
-// Define the Habit interface
+
 interface Habit {
   _id: string;
   name: string;
@@ -49,11 +50,10 @@ interface Habit {
     totalCompletions: number;
     totalPossibleCompletions: number;
   };
-  heatmapData: Array<any>; // Specify more detailed types as needed
+  heatmapData: Array<any>;
 }
 
-
-const HabitCard: React.FC<{ habit: Habit }> = ({ habit }) => {
+const HabitCard: React.FC<{ habit: Habit, deleteHabit: (id: string) => void }> = ({ habit, deleteHabit }) => {
   const [collapsed, setIsCollapsed] = useState(false);  
 
   const toggleCollapse = () => setIsCollapsed(!collapsed);  // Toggle function for collapse
@@ -67,7 +67,7 @@ const HabitCard: React.FC<{ habit: Habit }> = ({ habit }) => {
     completions: 0
   };
   return (
-    <div className={`habit-card relative ${collapsed ? 'collapsed' : ''}`}>
+    <div className={`habit-card shadow-lg relative ${collapsed ? 'collapsed' : ''}`}>
         <button className="absolute right-10 top-2 text-gray-500" onClick={toggleCollapse}>
             {
               collapsed ? <Plus /> : <Minus />
@@ -86,11 +86,13 @@ const HabitCard: React.FC<{ habit: Habit }> = ({ habit }) => {
               This action cannot be undone. This will permanently delete the habit and remove its data from our servers.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex justify-end space-x-2">
-            <button onClick={() => deleteHabit(habit._id)} className="bg-red-500 hover:bg-red-600 text-white rounded px-4 py-2">
-              Delete
-            </button>
-          </div>
+          <DialogClose asChild>
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => deleteHabit(habit._id)} className="bg-red-500 hover:bg-red-600 text-white rounded px-4 py-2">
+                Delete
+              </button>
+            </div>
+          </DialogClose>
         </DialogContent>
       </Dialog>
       <div className="habit-name col-span-12 md:col-span-3 flex flex-col justify-center text-[30px]">

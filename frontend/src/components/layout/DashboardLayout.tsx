@@ -12,16 +12,8 @@ import {
   MapPin,
   Clock,
 } from "lucide-react"
-
-import { Badge } from "../ui/badge"
+import Image from 'next/image'
 import { Button } from "../ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "../ui/card"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,8 +45,8 @@ export function Dashboard({ children}: DashboardProps) {
             <div className="hidden border-r bg-muted/40 md:block">
                 <div className="flex h-full max-h-screen flex-col gap-2">
                     <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
-                        <Link href="/" className="flex items-center gap-2 font-semibold">
-                        <Hourglass className="h-6 w-6" />
+                        <Link href="/dashboard" className="flex items-center gap-2 font-semibold">
+                        <Image src='/tempuslogo.png' width={30} height={30} alt="Tempus Logo" />
                         <span className="">Tempus</span>
                         </Link>
                     </div>
@@ -62,37 +54,37 @@ export function Dashboard({ children}: DashboardProps) {
                         <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
                         <Link
                         href="/dashboard"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/dashboard') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
-                        <Home className="h-4 w-4" />
+                        <Home className="h-5 w-5" />
                         Dashboard
                         </Link>
                         <Link
                             href="/dashboard/goals"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/dashboard/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
-                            <CheckSquare className="h-4 w-4" />
+                            <CheckSquare className="h-5 w-5" />
                             Goals
                         </Link>
                         <Link
                             href="/dashboard/habit"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/dashboard/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
-                            <Calendar className="h-4 w-4" />
+                            <Calendar className="h-5 w-5" />
                             Habit
                         </Link>
                         <Link
                             href="/dashboard/schedule"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/dashboard/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
-                            <Clock className="h-4 w-4" />
+                            <Clock className="h-5 w-5" />
                             Schedule
                         </Link>
                         <Link
                             href="/dashboard/purpose"
-                            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/dashboard/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                            className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/dashboard/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                         >
-                            <MapPin className="h-4 w-4" />
+                            <MapPin className="h-5 w-5" />
                             Purpose
                         </Link>
                         </nav>
@@ -118,37 +110,37 @@ export function Dashboard({ children}: DashboardProps) {
                     <nav className="grid gap-2 text-lg font-medium">
                     <Link
                         href="/"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
-                        <Home className="h-4 w-4" />
+                        <Home className="h-5 w-5" />
                         Dashboard
                     </Link>
                     <Link
                         href="/goals"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
-                        <CheckSquare className="h-4 w-4" />
+                        <CheckSquare className="h-5 w-5" />
                         Goals
                     </Link>
                     <Link
                         href="/habit"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-5 w-5" />
                         Habit
                     </Link>
                     <Link
                         href="/schedule"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
-                        <Clock className="h-4 w-4" />
+                        <Clock className="h-5 w-5" />
                         Schedule
                     </Link>
                     <Link
                         href="/purpose"
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${isActive('/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
-                        <MapPin className="h-4 w-4" />
+                        <MapPin className="h-5 w-5" />
                         Purpose
                     </Link>
                     </nav>
