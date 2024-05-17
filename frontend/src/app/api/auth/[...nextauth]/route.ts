@@ -119,5 +119,5 @@ const authHandler = NextAuth({
   },
 });
 
-export const GET = async (req, res) => authHandler(req, res);
-export const POST = async (req, res) => authHandler(req, res);
+export const GET = async (req:any, res:any) => authHandler(req, res);
+export const POST = async (req:any, res:any) => authHandler(req, res);

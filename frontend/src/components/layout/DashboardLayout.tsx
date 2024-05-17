@@ -36,8 +36,10 @@ export function Dashboard({ children}: DashboardProps) {
 
     const isActive = (path) => pathname === path;
 
-    function handleSignOut(){
-        signOut()
+    async function handleSignOut(){
+        signOut(
+            {redirect: false}
+        )
     }
 
     return (
@@ -109,35 +111,35 @@ export function Dashboard({ children}: DashboardProps) {
                     <SheetContent side="left" className="flex flex-col">
                     <nav className="grid gap-2 text-lg font-medium">
                     <Link
-                        href="/"
+                        href="/dashboard"
                         className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <Home className="h-5 w-5" />
                         Dashboard
                     </Link>
                     <Link
-                        href="/goals"
+                        href="/dashboard/goals"
                         className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/goals') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <CheckSquare className="h-5 w-5" />
                         Goals
                     </Link>
                     <Link
-                        href="/habit"
+                        href="/dashboard/habit"
                         className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/habit') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <Calendar className="h-5 w-5" />
                         Habit
                     </Link>
                     <Link
-                        href="/schedule"
+                        href="/dashboard/schedule"
                         className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/schedule') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <Clock className="h-5 w-5" />
                         Schedule
                     </Link>
                     <Link
-                        href="/purpose"
+                        href="/dashboard/purpose"
                         className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all ${isActive('/purpose') ? 'text-primary bg-muted' : 'text-muted-foreground hover:text-primary'}`}
                     >
                         <MapPin className="h-5 w-5" />

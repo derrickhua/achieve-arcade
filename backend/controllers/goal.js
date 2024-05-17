@@ -1,5 +1,6 @@
 import Goal from '../models/goal.js';
 
+import mongoose from 'mongoose';
 /**
  * Create a new goal with initial properties and automatically generated milestones.
  * @param {Object} req - The request object containing the user's goal details.
@@ -48,15 +49,15 @@ export const getAllGoals = async (req, res, next) => {
         const goals = await Goal.find({ user: req.user._id });
         const enhancedGoals = await Promise.all(goals.map(async (goal) => {
             const completedMilestones = goal.milestones.filter(m => m.completed);
-            const adherentMilestones = completedMilestones.filter(m => m.completionDate && m.deadline && (m.completionDate <= m.deadline)).length;
-            const milestoneDeadlineAdherencePercentage = (adherentMilestones / completedMilestones.length) * 100;
-
+            const adherentMilestones = completedMilestones.filter(m => m.completionDate && m.deadline && (new Date(m.completionDate) <= new Date(m.deadline))).length;
+            const milestoneDeadlineAdherencePercentage = completedMilestones.length > 0 ? (adherentMilestones / completedMilestones.length) * 100 : 0;
+            
             const goalDeadlineAdherence = goal.completed && goal.updatedAt && goal.deadline && (goal.updatedAt <= goal.deadline);
 
-            const totalDaysPlanned = goal.deadline ? (goal.deadline - goal.createdAt) / (1000 * 3600 * 24) : 0;
-            const daysUntilCompletion = goal.completed ? (goal.updatedAt - goal.createdAt) / (1000 * 3600 * 24) : undefined;
-            const goalVelocity = daysUntilCompletion !== undefined ? (daysUntilCompletion / totalDaysPlanned) * 100 : undefined;
-
+            const totalDaysPlanned = goal.deadline ? (new Date(goal.deadline).getTime() - new Date(goal.createdAt).getTime()) / (1000 * 3600 * 24) : 0;
+            const daysUntilCompletion = goal.status === 'Completed' ? (new Date(goal.updatedAt).getTime() - new Date(goal.createdAt).getTime()) / (1000 * 3600 * 24) : 0;
+            const goalVelocity = totalDaysPlanned > 0 ? (daysUntilCompletion / totalDaysPlanned) * 100 : 0;
+            
             return {
                 ...goal.toJSON(), // Convert Mongoose document to JSON
                 metrics: {
@@ -66,11 +67,10 @@ export const getAllGoals = async (req, res, next) => {
                         completed: completedMilestones.length
                     },
                     deadlineAdherence: {
-                        goal: goalDeadlineAdherence ? 100 : 0, // 100% if on time, 0% otherwise
-                        milestones: milestoneDeadlineAdherencePercentage || 0, // Handle NaN if no milestones are completed
+                        goal: goal.status === 'Completed' && new Date(goal.updatedAt) <= new Date(goal.deadline) ? 100 : 0,
+                        milestones: milestoneDeadlineAdherencePercentage
                     },
-                    goalVelocity: goalVelocity,
-                    statusOverview: goal.status
+                    goalVelocity
                 }
             };
         }));
@@ -209,31 +209,53 @@ export const getGoalMilestones = async (req, res) => {
 export const completeMilestone = async (req, res) => {
     const { goalId, milestoneId } = req.params;
     try {
-        const goal = await Goal.findById(goalId);
-        const milestone = goal.milestones.id(milestoneId);
-        if (!milestone) {
-        return res.status(404).json({ message: "Milestone not found" });
+        // Step 1: Atomically mark the milestone as completed
+        const updateResult = await Goal.updateOne(
+            { "_id": goalId, "milestones._id": milestoneId },
+            {
+                "$set": {
+                    "milestones.$.completed": true,
+                    "milestones.$.completionDate": new Date()
+                }
+            }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            return res.status(404).json({ message: "Milestone not found" });
         }
 
-        milestone.completed = true;
-        milestone.completionDate = new Date();  // Set the completion date to now
-
-        // Recalculate the overall progress
+        // Step 2: Recalculate progress without needing a separate update if possible
+        const goal = await Goal.findById(goalId);
         const totalMilestones = goal.milestones.length;
         const completedMilestones = goal.milestones.filter(m => m.completed).length;
-        goal.progress = (completedMilestones / totalMilestones) * 100;
+        const progress = (completedMilestones / totalMilestones) * 100;
 
-        // Update the goal status if all milestones are completed
-        if (completedMilestones === totalMilestones) {
-        goal.status = 'Completed';
+        // Update progress and status atomically
+        const progressUpdate = await Goal.updateOne(
+            { "_id": goalId },
+            {
+                "$set": {
+                    "progress": progress,
+                    "status": completedMilestones === totalMilestones ? 'Completed' : goal.status
+                }
+            }
+        );
+
+        if (progressUpdate.matchedCount === 0) {
+            console.error("Failed to update goal progress");
+            // Optionally, add recovery logic here
         }
 
-        await goal.save();
-        res.status(200).json(milestone);
+        const updatedGoal = await Goal.findById(goalId);
+        const updatedMilestone = updatedGoal.milestones.id(milestoneId);
+        res.status(200).json(updatedMilestone);
     } catch (error) {
+        console.error("Error completing milestone:", error);
         res.status(400).json({ message: error.message });
     }
 };
+
+
 
 /**
  * Updates a specific milestone within a goal.
@@ -243,20 +265,28 @@ export const completeMilestone = async (req, res) => {
  */
 export const updateMilestone = async (req, res) => {
     const { goalId, milestoneId } = req.params;
-    const { title, description, deadline, completed } = req.body;
+    const { title, description, deadline } = req.body;
 
     try {
-        const goal = await Goal.findById(goalId);
-        const milestone = goal.milestones.id(milestoneId);
+        const updateFields = {};
+        if (title !== undefined) updateFields["milestones.$.title"] = title;
+        if (description !== undefined) updateFields["milestones.$.description"] = description;
+        if (deadline !== undefined) updateFields["milestones.$.deadline"] = deadline;
 
-        if (title) milestone.title = title;
-        if (description) milestone.description = description;
-        if (deadline) milestone.deadline = deadline;
-        if (completed !== undefined) milestone.completed = completed;
+        const updateResult = await Goal.updateOne(
+            { "_id": goalId, "milestones._id": milestoneId },
+            { "$set": updateFields }
+        );
 
-        await goal.save();
-        res.status(200).json(milestone);
+        if (updateResult.nModified === 0) {
+            return res.status(404).json({ message: "Milestone not found or no update needed" });
+        }
+
+        const updatedGoal = await Goal.findById(goalId);
+        const updatedMilestone = updatedGoal.milestones.id(milestoneId);
+        res.status(200).json(updatedMilestone);
     } catch (error) {
+        console.error("Error updating milestone:", error);
         res.status(400).json({ message: error.message });
     }
 };
@@ -270,12 +300,18 @@ export const updateMilestone = async (req, res) => {
 export const deleteMilestone = async (req, res) => {
     const { goalId, milestoneId } = req.params;
     try {
-        const goal = await Goal.findById(goalId);
-        goal.milestones.id(milestoneId).remove();
-        await goal.save();
-        res.status(204).send();  // No content to return
+        // Use $pull to directly remove the subdocument by its _id
+        const result = await Goal.findByIdAndUpdate(goalId, {
+            $pull: { milestones: { _id: milestoneId } }
+        }, { new: true });
+
+        if (!result) {
+            return res.status(404).json({ message: "Goal not found or Milestone not found" });
+        }
+
+        res.status(204).send();
     } catch (error) {
+        console.error("Error deleting milestone:", error);
         res.status(400).json({ message: error.message });
     }
 };
-

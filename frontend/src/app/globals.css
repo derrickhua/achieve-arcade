@@ -74,44 +74,69 @@
       @apply bg-background text-foreground;
     }
   }
-
-  html,body {
-    width: 100%;
-    height: 100%;
+  @font-face {
+      font-family: 'Stardom';
+      src: url('/Stardom-Regular.otf') format('otf');
+      font-weight: normal;
+      font-style: normal;
   }
-
-@font-face {
-    font-family: 'Stardom';
-    src: url('/Stardom-Regular.otf') format('otf');
+  
+  @font-face {
+    font-family: 'Tanker';
+    src: url('/Tanker-Regular.otf') format('otf');
     font-weight: normal;
     font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Garamond';
+    src: url('/E.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+  }
+  
+  @font-face {
+    font-family: 'Work';
+    src: url('/W.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+  
+  }
+  
+  @font-face {
+    font-family: 'Open';
+    src: url('/O.ttf') format('ttf');
+    font-weight: normal;
+    font-style: normal;
+  
+  }
+
+html,body {
+  width: 100%;
+  height: 100%;
 }
 
-@font-face {
-  font-family: 'Tanker';
-  src: url('/Tanker-Regular.otf') format('otf');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'EB Garamond';
-  src: url('/EBGaramond-VariableFont_wght.ttf') format('ttf');
-  font-weight: normal;
-  font-style: normal;
-}
 
 .stardom {
   font-family:'Stardom';
 }
 
 .tanker {
-  font-family: 'Tanker';
+  font-family: 'Tanker' !important;
 }
 
 .garamond {
-  font-family: 'EB Garamond'
+  font-family: 'Garamond';
 }
+
+.worksans {
+  font-family: 'Work' !important; 
+}
+
+.open {
+  font-family: 'Open' !important;
+}
+
 
 .habits-container {
   display: flex;
@@ -142,3 +167,67 @@
 
 /* .goals-container {
 } */
+
+.milestone-circle {
+  position: absolute; /* Allows precise placement along the bar */
+  transform: translateX(-50%); /* Centers the circle at the calculated point */
+}
+
+.onhover:hover {
+  color: #008000;
+}
+
+.icon {
+  position: absolute;
+  left: 50%;
+  bottom: 2px; /* Distance above the circle */
+  transform: translate(-50%, -100%); /* Center the icon horizontally and lift it up entirely above the circle */
+  display: flex; /* Helps keep the SVG icon centered if it has any inherent alignment issues */
+  align-items: center;
+  justify-content: center;
+}
+
+.goal-card {
+  position: relative;
+  width: 100%;
+  border-radius: 15px;
+  min-height: 193.33px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  background-color: white;
+  padding: 1.5rem;
+  transition: max-height 0.3s ease;
+}
+
+.goal-card.collapsed {
+  max-height: 252px;
+}
+
+.goal-card.expanded {
+  max-height: none; /* Remove max-height restriction when expanded */
+  overflow: auto; /* Allow scrolling if content overflows */
+}
+
+.goals-container {
+  overflow-y: auto; /* Ensure overflow is handled properly */
+  max-height: 80vh;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 900px) {
+  .goals-container {
+    grid-template-columns: 1fr; /* Change to a single column layout */
+    max-height: none;
+  }
+
+  .goal-card.expanded {
+    max-height: none; /* Ensure max-height is removed for smaller screens */
+    overflow: auto; /* Allow scrolling if content overflows */
+  }
+  .goal-card.collapsed {
+    max-height: 252px; /* Maintain collapsed height on smaller screens */
+  }
+}

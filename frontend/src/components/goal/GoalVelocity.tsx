@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/tooltip";  
 
 const CircularProgress: React.FC<{ percentage: number }> = ({ percentage }) => {
-    const radius = 40; // Doubled from 20 to 40
+    const radius = 30; 
     const circumference = 2 * Math.PI * radius;
     const strokePct = ((100 - percentage) * circumference) / 100;
     return (
@@ -18,15 +18,15 @@ const CircularProgress: React.FC<{ percentage: number }> = ({ percentage }) => {
                 cx="50"  
                 cy="50"  
                 r={radius}
-                strokeWidth="10"  
+                strokeWidth="5"  
             />
             <circle
                 fill="transparent"
-                stroke="green"
+                stroke="#008000"
                 cx="50"  
                 cy="50" 
                 r={radius}
-                strokeWidth="10"  
+                strokeWidth="5"  
                 strokeDasharray={circumference}
                 strokeDashoffset={strokePct}
                 strokeLinecap="round"
@@ -46,20 +46,23 @@ const CircularProgress: React.FC<{ percentage: number }> = ({ percentage }) => {
     );
 };
 
+interface GoalVelocityProps {
+    percentage: number;
+}
 
-const GoalVelocity = ( percentage:any ) => {
+const GoalVelocity: React.FC<GoalVelocityProps> = ({ percentage }) => {
     return (
         <TooltipProvider>
-            <div className="habit-performance flex flex-col items-center justify-center">
+            <div className=" flex flex-col items-center justify-center">
                 <CircularProgress percentage={percentage} />
                 <Tooltip>
                     <TooltipTrigger>
-                        <p className="text-[17px] mb-2 cursor-pointer">
-                            deadline adherence 🛈
+                        <p className="mb-2 cursor-pointer">
+                            goal velocity 🛈
                         </p>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>Percentage of milestones met by their deadlines, indicating timeliness of task completion.</p>
+                        <p className='text-[15px]'>This metric shows the speed at which goals are being achieved. A higher percentage indicates faster goal completion.</p>
                     </TooltipContent>
                 </Tooltip>
             </div>

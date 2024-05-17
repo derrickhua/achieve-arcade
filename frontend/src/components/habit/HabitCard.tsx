@@ -60,19 +60,18 @@ const HabitCard: React.FC<{ habit: Habit, deleteHabit: (id: string) => void }> =
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const formattedDate = today.toISOString();
-  console.log(habit)
   // Find today's occurrence or use a fallback
   const todaysOccurrence = habit.occurrences.find(occ => new Date(occ.date).toDateString() === today.toDateString()) || {
     date: formattedDate,
     completions: 0
   };
   return (
-    <div className={`habit-card shadow-lg relative ${collapsed ? 'collapsed' : ''}`}>
-        <button className="absolute right-10 top-2 text-gray-500" onClick={toggleCollapse}>
+    <div className={`habit-card shadow-lg border relative ${collapsed ? 'collapsed' : ''}`}>
+        {/* <button className="absolute right-10 top-2 text-gray-500" onClick={toggleCollapse}>
             {
               collapsed ? <Plus /> : <Minus />
             }
-          </button>
+        </button> */}
         <Dialog>
           <DialogTrigger asChild>
             <button className="absolute right-2 top-2 text-red-500">
@@ -96,7 +95,7 @@ const HabitCard: React.FC<{ habit: Habit, deleteHabit: (id: string) => void }> =
         </DialogContent>
       </Dialog>
       <div className="habit-name col-span-12 md:col-span-3 flex flex-col justify-center text-[30px]">
-        <div className="stardom my-2">
+        <div className=" my-2">
             <p className="my-2 stardom">{habit.name}</p>
             <hr />
             <p className="text-[18px] mt-2 garamond">streak: {habit.streak}🔥</p>

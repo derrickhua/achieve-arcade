@@ -26,7 +26,7 @@
     "clsx": "^2.1.0",
     "d3": "^7.9.0",
     "date-fns": "^3.6.0",
-    "framer-motion": "^11.0.28",
+    "framer-motion": "^11.1.7",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.367.0",
     "next": "^14.2.1",

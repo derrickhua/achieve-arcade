@@ -20,31 +20,72 @@ const MilestoneSchema = new Schema({
   },
   completed: { type: Boolean, default: false },
   completionDate: Date,
+  velocity: { type: Number, default: null },  // Store calculated velocity directly
 });
 
 MilestoneSchema.index({ deadline: 1 });  // Index on deadline field
 MilestoneSchema.index({ completed: 1 }); // Index on completed field
 
-/**
- * Post-save middleware to automatically update the progress on the parent Goal when a Milestone is saved.
- */
-MilestoneSchema.post('save', async function () {
-  const goal = await Goal.findById(this.parent()._id);
-  const completedMilestones = goal.milestones.filter(m => m.completed);
-  const progress = (completedMilestones.length / goal.milestones.length) * 100;
-  goal.progress = progress;
-  await goal.save();
+async function calculateAndUpdateGoalMetrics(goalId, milestoneId) {
+  const goal = await Goal.findById(goalId, 'milestones createdAt updatedAt').exec();
+  if (!goal || goal.milestones.length === 0) return;
+
+  const milestone = goal.milestones.id(milestoneId);
+  if (!milestone || !milestone.completed || !milestone.completionDate) return;
+
+  // Calculate velocity for the updated milestone
+  const milestoneStart = new Date(goal.createdAt).getTime();
+  const deadlineTime = new Date(milestone.deadline).getTime();
+  const completionTime = new Date(milestone.completionDate).getTime();
+  const plannedDuration = deadlineTime - milestoneStart;
+  const actualDuration = completionTime - milestoneStart;
+  milestone.velocity = plannedDuration > 0 ? (actualDuration / plannedDuration) * 100 : 0;
+
+  // Update only the changed milestone in the database
+  await Goal.updateOne(
+      { "_id": goalId, "milestones._id": milestoneId },
+      { "$set": { "milestones.$.velocity": milestone.velocity } }
+  );
+
+  // Optionally recalculate progress and deadline adherence if needed
+  if (milestone.completed) {
+      let adherentMilestones = 0;
+      let totalVelocity = 0;
+      let completedMilestonesCount = 0;
+
+      goal.milestones.forEach(m => {
+          if (m.completed) {
+              completedMilestonesCount++;
+              if (m.completionDate && new Date(m.completionDate) <= new Date(m.deadline)) {
+                  adherentMilestones++;
+              }
+              totalVelocity += m.velocity || 0;
+          }
+      });
+
+      const progress = (completedMilestonesCount / goal.milestones.length) * 100;
+      const deadlineAdherence = completedMilestonesCount > 0 ? (adherentMilestones / completedMilestonesCount) * 100 : 0;
+      const milestoneVelocity = completedMilestonesCount > 0 ? totalVelocity / completedMilestonesCount : 0;
+
+      await Goal.updateOne(
+          { "_id": goalId },
+          { "$set": { "progress": progress, "deadlineAdherence": deadlineAdherence, "milestoneVelocity": milestoneVelocity } }
+      );
+  }
+}
+
+// Middleware to update metrics when a milestone is saved
+MilestoneSchema.post('save', async function (doc, next) {
+  if (this.isModified('completed')) {
+    await calculateAndUpdateGoalMetrics(this.parent()._id);
+  }
+  next();
 });
 
-/**
- * Post-remove middleware to adjust the progress on the parent Goal when a Milestone is removed.
- */
-MilestoneSchema.post('remove', async function () {
-  const goal = await Goal.findById(this.parent()._id);
-  const completedMilestones = goal.milestones.filter(m => m.completed);
-  const progress = (completedMilestones.length / goal.milestones.length) * 100;
-  goal.progress = progress;
-  await goal.save();
+// Middleware to update metrics when a milestone is removed
+MilestoneSchema.post('remove', async function (doc, next) {
+  await calculateAndUpdateGoalMetrics(this.parent()._id);
+  next();
 });
 
 /**
@@ -68,12 +109,9 @@ const GoalSchema = new Schema({
     ref: 'User',
     required: true
   },
-  title: {
-    type: String,
-    required: true
-  },
+  title: String,
   description: String,
-  reason: String, // User's motivation for setting the goal
+  reason: String,
   deadline: Date,
   status: {
     type: String,
@@ -98,15 +136,17 @@ const GoalSchema = new Schema({
     "Family & Relationships", "Recreation & Leisure", "Spirituality"],
     default: ''
   },
-  history: [HistorySchema],
-  createdAt: {
-    type: Date,
-    default: Date.now
+  deadlineAdherence: {
+    type: Number,
+    default: 0  // Percentage of milestones completed on or before their deadline
   },
-  updatedAt: {
-    type: Date,
-    default: Date.now
-  }
+  milestoneVelocity: {
+    type: Number,
+    default: 0  // Average velocity of completing milestones relative to their deadlines
+  },
+  history: [HistorySchema],
+  createdAt: Date,
+  updatedAt: Date
 }, { timestamps: true });
 
 /**
@@ -121,6 +161,7 @@ GoalSchema.pre('save', function (next) {
   }
   next();
 });
+
 
 GoalSchema.methods.generateMilestones = async function() {
   if (this.title && this.description && this.deadline) {

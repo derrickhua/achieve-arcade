@@ -17,9 +17,10 @@ import {
 } from "@/components/ui/dialog";
 
 // Utility Functions
-import { getAllGoals } from '@/lib/goals';
+import { getAllGoals, deleteGoal } from '@/lib/goals';
 import { AddGoalForm } from '@/components/goal/AddGoalForm';
 import GoalCard from '@/components/goal/GoalCard';
+import { sampleGoal } from '@/components/goal/GoalSampleData';
 interface AddGoalFormProps {
   fetchGoals: () => Promise<void>;
 }
@@ -47,7 +48,7 @@ export default function GoalDashboard() {
     setIsLoading(true);
     try {
       // Replace `getGoals` with your API call to fetch goals
-      const response = await getAllGoals();
+      const response:any = await getAllGoals();
       console.log(response)
       setGoals(response);
       setIsLoading(false);
@@ -57,10 +58,14 @@ export default function GoalDashboard() {
     }
   };
 
+  const handleUpdateGoal = (updatedGoal: Partial<Goal> & { _id: string }) => {
+    setGoals(goals.map(goal => (goal._id === updatedGoal._id ? { ...goal, ...updatedGoal } : goal)));
+};
+
   const handleDeleteGoal = async (goalId: string) => {
     try {
       // Replace `deleteGoal` with your API call to delete a goal
-      // await deleteGoal(goalId);
+      await deleteGoal(goalId);
       setGoals(goals.filter(goal => goal._id !== goalId));
     } catch (error) {
       setError('Failed to delete the goal.');
@@ -88,7 +93,14 @@ export default function GoalDashboard() {
       <div className="grid grid-cols-2 gap-4 justify-items-center goals-container">
         {goals.length > 0 ? (
           goals.map((goal, index) => (
-              <GoalCard key={index} goal={goal} />
+              <GoalCard key={index} goal={goal} onDelete={handleDeleteGoal} onUpdate={handleUpdateGoal}/>
+          ))
+        ) : 
+          <p className="col-span-2 text-center">No goals added yet. Start by adding a new goal!</p> 
+        }
+        {goals.length > 0 ? (
+          goals.map((goal, index) => (
+              <GoalCard key={index} goal={goal} onDelete={handleDeleteGoal} onUpdate={handleUpdateGoal}/>
           ))
         ) : 
           <p className="col-span-2 text-center">No goals added yet. Start by adding a new goal!</p> 

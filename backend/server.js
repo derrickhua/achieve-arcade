@@ -16,7 +16,7 @@ const app = express();
 // Enable CORS
 app.use(cors({
   origin: 'http://localhost:3000', // Allow only your frontend to access the backend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Specify which methods are allowed
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Specify which methods are allowed
   credentials: true // Allow cookies to be sent across domains (if using sessions or cookies)
 }));
 

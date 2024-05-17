@@ -26,7 +26,6 @@ const HabitIncrement: React.FC<HabitIncrementProps> = ({ initialCount, habitId }
       await updateHabitCompletion(habitId, newCount, formattedDate);
     }
   };
-  console.log(formattedDate)
   return (
     <div className="habit-increment-area flex flex-col items-center justify-center space-y-2">
       <p className="text-[16px] garamond flex text-center "># of times done today</p>

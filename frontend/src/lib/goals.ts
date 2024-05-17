@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
-interface Milestone {
-    _id?: string;
+export interface Milestone {
+    _id: string;
     title: string;
     description: string;
     deadline: Date;
@@ -10,8 +10,8 @@ interface Milestone {
     completionDate?: Date;
   }
   
-  interface Goal {
-    _id?: string;
+export interface Goal {
+    _id: string;
     user?: string;
     title: string;
     description: string;
@@ -26,7 +26,7 @@ interface Milestone {
     updatedAt?: Date;
   }
   
-  interface GoalUpdateData {
+export interface GoalUpdateData {
     title?: string;
     description?: string;
     reason?: string;
@@ -36,7 +36,7 @@ interface Milestone {
     status?: 'Not Started' | 'In Progress' | 'Completed';
   }
   
-  interface MilestoneUpdateData {
+export interface MilestoneUpdateData {
     title?: string;
     description?: string;
     deadline?: Date;
@@ -119,8 +119,15 @@ export const updateMilestone = async (goalId: string, milestoneId: string, updat
 
 // API method to delete a specific milestone from a goal
 export const deleteMilestone = async (goalId: string, milestoneId: string): Promise<void> => {
-  return api.delete(`/${goalId}/milestones/${milestoneId}`).then(response => response.data);
+  try {
+    const response = await api.delete(`/${goalId}/milestones/${milestoneId}`);
+    return response.data;
+  } catch (error) {
+    console.error("API error:", error.response ? error.response.data : 'Unknown error');
+    throw error; // Rethrow to handle it in the component
+  }
 };
+
 
 // API method to mark a specific milestone as completed
 export const completeMilestone = async (goalId: string, milestoneId: string): Promise<Milestone> => {
