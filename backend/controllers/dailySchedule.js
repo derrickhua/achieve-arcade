@@ -1,4 +1,7 @@
-import { DailySchedule, UserPreferences } from "../models/dailySchedule.js";
+import { DailySchedule } from "../models/dailySchedule.js";
+import { startOfWeek, endOfWeek } from 'date-fns';
+import mongoose from 'mongoose'
+
 /**
  * Retrieves the daily schedule for the user for the current date.
  * If no schedule exists for the current date, a new one is created.
@@ -171,8 +174,13 @@ export const getWeeklyMetrics = async (req, res, next) => {
     startOfWeek.setHours(0, 0, 0, 0);
 
     try {
-        // Fetch user preferences
-        const preferences = await UserPreferences.findOne({ userId: req.user._id });
+        // Fetch user preferences from the User model
+        const user = await User.findById(req.user._id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const preferences = user.preferences;
         if (!preferences) {
             return res.status(404).json({ message: 'User preferences not found' });
         }
@@ -233,3 +241,39 @@ export const getWeeklyMetrics = async (req, res, next) => {
     }
 };
 
+/**
+ * Retrieves the total hours spent in each category for a specific week.
+ * @param {Request} req - The request object, including the user ID and a date within the week.
+ * @param {Response} res - The response object used to return the total hours by category.
+ */
+export const getWeeklyHoursByCategory = async (req, res, next) => {
+    const userId = req.user._id;
+    const date = req.query.date;
+
+    // Calculate start and end dates of the week for the given date
+    const startDate = startOfWeek(new Date(date));
+    const endDate = endOfWeek(new Date(date));
+
+    try {
+        const result = await DailySchedule.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(userId), date: { $gte: startDate, $lte: endDate } } },
+            { $unwind: '$timeBlocks' },
+            { $group: { _id: '$timeBlocks.category', totalDuration: { $sum: '$timeBlocks.timerDuration' } } }
+        ]);
+
+        const categoryHours = {
+            work: 0,
+            leisure: 0,
+            family_friends: 0,
+            atelic: 0,
+        };
+
+        for (const item of result) {
+            categoryHours[item._id] = item.totalDuration / 3600; // Convert seconds to hours
+        }
+
+        res.json(categoryHours);
+    } catch (error) {
+        next(error); // Pass any server-side errors to the error handling middleware
+    }
+};

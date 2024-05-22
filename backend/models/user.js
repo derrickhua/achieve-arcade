@@ -22,8 +22,14 @@ const UserSchema = new Schema({
   timezone: {  // New field for storing the user's timezone
     type: String,
     required: true
+  },
+  preferences: {
+    workHoursPerWeek: { type: Number, required: true }, // in hours
+    leisureHoursPerWeek: { type: Number, required: true }, // in hours
+    familyFriendsHoursPerWeek: { type: Number, required: true }, // in hours
+    atelicHoursPerWeek: { type: Number, required: true } // in hours
   }
-}, { timestamps: true }); 
+}, { timestamps: true });
 
 const User = mongoose.model('User', UserSchema);
 

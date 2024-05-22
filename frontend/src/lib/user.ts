@@ -1,4 +1,27 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
+
+// Create an axios instance configured for your API base URL
+const api = axios.create({
+  baseURL: 'http://localhost:8000/api/users',
+  headers: {
+    'Content-Type': 'application/json',
+  }
+});
+
+// Interceptor to add the JWT token from NextAuth.js session
+api.interceptors.request.use(async (config) => {
+    const session:any = await getSession();
+    if (session?.accessToken) {
+        config.headers.authorization = `Bearer ${session.accessToken}`;
+    } else {
+        console.log("No access token found in session.");
+    }
+
+    return config;
+}, error => {
+    return Promise.reject(error);
+});
 
 /**
  * Attempts to refresh the access token using a refresh token that is passed as an argument.
@@ -38,3 +61,20 @@ export async function refreshAccessToken(refreshToken) {
         };
     }
 }
+
+/**
+ * Retrieves the user profile based on the user's ID stored in the request.
+ * Throws an error if there is a problem fetching the user from the database.
+ *
+ * @returns {Promise<Object>} The user's profile data.
+ * @throws {Error} If there is an issue with the API request.
+ */
+export async function getUserProfile() {
+    try {
+      const response = await api.get('/profile');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw new Error('Failed to fetch user profile');
+    }
+  };

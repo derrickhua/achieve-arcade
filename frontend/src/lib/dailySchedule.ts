@@ -4,8 +4,6 @@ import { getSession } from 'next-auth/react';
 export interface Task {
   _id: string;
   name: string;
-  estimatedDuration: number; // in minutes
-  actualDuration?: number; // in minutes
   completed: boolean;
 }
 
@@ -100,3 +98,10 @@ export const stopTimer = async (blockId: string): Promise<DailySchedule> => {
 export const getWeeklyMetrics = async (): Promise<any> => {
   return api.get('/weekly-metrics').then(response => response.data);
 };
+
+// Retrieve the weekly hours spent in each category for the user
+export const getWeeklyHours = async (date: string): Promise<any> => {
+  return api.get(`/weekly-hours?date=${date}`).then(response => response.data);
+};
+
+

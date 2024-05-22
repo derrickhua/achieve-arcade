@@ -22,6 +22,7 @@ const authHandler = NextAuth({
                 });
                 
                 const user = response.data;
+                console.log(user)
                 if (response.status === 200 && user.accessToken) {
                     return {
                         ...user,
@@ -89,7 +90,7 @@ const authHandler = NextAuth({
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
         token.accessTokenExpires = user.accessTokenExpires; // Assuming you send this from your backend
-      }
+    }
       console.log(token.accessTokenExpires, Date.now());
       // Refresh token if it has expired
       if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {

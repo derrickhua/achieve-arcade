@@ -143,7 +143,7 @@ export const login = async (req, res, next) => {
 };
 
 /**
- * Retrieves the user profile based on the user's ID stored in the request.
+ * Retrieves the user's preferences based on the user's ID stored in the request.
  * Throws an error if there is a problem fetching the user from the database.
  *
  * @param {Request} req - The request object containing the user's authentication information.
@@ -152,13 +152,13 @@ export const login = async (req, res, next) => {
  */
 export const getUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('preferences');
         if (!user) {
             const error = new Error('User not found');
             error.status = 404;
             throw error;
         }
-        res.json(user);
+        res.json(user.preferences);
     } catch (error) {
         next(error);
     }

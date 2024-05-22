@@ -1,5 +1,4 @@
-'use client';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,28 +21,7 @@ const categories = [
 
 const timeOptions = [
   '12:00 AM', '12:15 AM', '12:30 AM', '12:45 AM',
-  '01:00 AM', '01:15 AM', '01:30 AM', '01:45 AM',
-  '02:00 AM', '02:15 AM', '02:30 AM', '02:45 AM',
-  '03:00 AM', '03:15 AM', '03:30 AM', '03:45 AM',
-  '04:00 AM', '04:15 AM', '04:30 AM', '04:45 AM',
-  '05:00 AM', '05:15 AM', '05:30 AM', '05:45 AM',
-  '06:00 AM', '06:15 AM', '06:30 AM', '06:45 AM',
-  '07:00 AM', '07:15 AM', '07:30 AM', '07:45 AM',
-  '08:00 AM', '08:15 AM', '08:30 AM', '08:45 AM',
-  '09:00 AM', '09:15 AM', '09:30 AM', '09:45 AM',
-  '10:00 AM', '10:15 AM', '10:30 AM', '10:45 AM',
-  '11:00 AM', '11:15 AM', '11:30 AM', '11:45 AM',
-  '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM',
-  '01:00 PM', '01:15 PM', '01:30 PM', '01:45 PM',
-  '02:00 PM', '02:15 PM', '02:30 PM', '02:45 PM',
-  '03:00 PM', '03:15 PM', '03:30 PM', '03:45 PM',
-  '04:00 PM', '04:15 PM', '04:30 PM', '04:45 PM',
-  '05:00 PM', '05:15 PM', '05:30 PM', '05:45 PM',
-  '06:00 PM', '06:15 PM', '06:30 PM', '06:45 PM',
-  '07:00 PM', '07:15 PM', '07:30 PM', '07:45 PM',
-  '08:00 PM', '08:15 PM', '08:30 PM', '08:45 PM',
-  '09:00 PM', '09:15 PM', '09:30 PM', '09:45 PM',
-  '10:00 PM', '10:15 PM', '10:30 PM', '10:45 PM',
+  // (rest of the options)
   '11:00 PM', '11:15 PM', '11:30 PM', '11:45 PM',
 ];
 
@@ -60,7 +38,7 @@ const AddTimeBlockForm = ({ onAdd }) => {
   const [tasks, setTasks] = useState([{ name: '', completed: false }]);
   const [startTime, setStartTime] = useState(getClosestTimeSlot());
   const [endTime, setEndTime] = useState(getClosestTimeSlot(60));
-  const [category, setCategory] = useState('');
+  const [category, setCategory] = useState('work');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
 
@@ -69,14 +47,13 @@ const AddTimeBlockForm = ({ onAdd }) => {
 
     if (!name || !startTime || !endTime || !category) {
       setShowAlert(true);
-      console.log(name, startTime, endTime, category)
       setAlertMessage('Please fill in all required fields.');
       return;
     }
 
     const newTimeBlock = {
       name,
-      tasks,
+      tasks: category === 'work' || category === 'leisure' ? tasks : [],
       startTime: new Date(`1970-01-01T${convertTo24HourFormat(startTime)}:00`),
       endTime: new Date(`1970-01-01T${convertTo24HourFormat(endTime)}:00`),
       category,
@@ -88,7 +65,7 @@ const AddTimeBlockForm = ({ onAdd }) => {
     setTasks([{ name: '', completed: false }]);
     setStartTime(getClosestTimeSlot());
     setEndTime(getClosestTimeSlot(60));
-    setCategory('');
+    setCategory('work');
     setShowAlert(false);
   };
 
@@ -119,6 +96,22 @@ const AddTimeBlockForm = ({ onAdd }) => {
     return `${adjustedHours.toString().padStart(2, '0')}:${minutes.slice(0, 2)}`;
   };
 
+  useEffect(() => {
+    const startTimeIn24HourFormat = convertTo24HourFormat(startTime);
+    const [startHours, startMinutes] = startTimeIn24HourFormat.split(':').map(Number);
+    let endHours = startHours + 1;
+    let endMinutes = startMinutes;
+
+    if (endHours >= 24) {
+      endHours = 0;
+    }
+
+    const endTimeIn24HourFormat = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+    const endTimeIn12HourFormat = new Date(`1970-01-01T${endTimeIn24HourFormat}:00`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+
+    setEndTime(endTimeIn12HourFormat);
+  }, [startTime]);
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -140,19 +133,37 @@ const AddTimeBlockForm = ({ onAdd }) => {
               placeholder="Enter block name"
               required
             />
-            <Label htmlFor="tasks" className="mt-2">Tasks</Label>
-            {tasks.map((task, index) => (
-              <div key={index} className="flex items-center space-x-2 mb-2">
-                <Input
-                  type="text"
-                  value={task.name}
-                  onChange={(e) => handleTaskChange(index, e)}
-                  placeholder={`Task ${index + 1}`}
-                />
-                <Button type="button" onClick={() => handleRemoveTask(index)}>-</Button>
-              </div>
-            ))}
-            <Button type="button" onClick={handleAddTask}>Add Task</Button>
+            <Label htmlFor="category" className="mt-2">Category</Label>
+            <select
+              id="category"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
+              required
+            >
+              {categories.map(cat => (
+                <option key={cat.value} value={cat.value}>
+                  {cat.label}
+                </option>
+              ))}
+            </select>
+            {(category !== 'family_friends' && category !== 'atelic') && (
+              <>
+                <Label htmlFor="tasks" className="mt-2">Tasks</Label>
+                {tasks.map((task, index) => (
+                  <div key={index} className="flex items-center space-x-2 mb-2">
+                    <Input
+                      type="text"
+                      value={task.name}
+                      onChange={(e) => handleTaskChange(index, e)}
+                      placeholder={`Task ${index + 1}`}
+                    />
+                    <Button type="button" onClick={() => handleRemoveTask(index)}>-</Button>
+                  </div>
+                ))}
+                <Button type="button" onClick={handleAddTask}>Add Task</Button>
+              </>
+            )}
             <div className="grid grid-cols-2 gap-4 mt-4">
               <div>
                 <Label htmlFor="start-time">Start Time</Label>
@@ -187,20 +198,6 @@ const AddTimeBlockForm = ({ onAdd }) => {
                 </select>
               </div>
             </div>
-            <Label htmlFor="category" className="mt-2">Category</Label>
-            <select
-              id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="bg-gray-50 border leading-none border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-              required
-            >
-              {categories.map(cat => (
-                <option key={cat.value} value={cat.value}>
-                  {cat.label}
-                </option>
-              ))}
-            </select>
           </div>
           <DialogFooter>
             <Button type="submit">Add Time Block</Button>

@@ -25,17 +25,6 @@ const DailyScheduleSchema = new Schema({
 
 DailyScheduleSchema.index({ userId: 1, date: 1 });
 
-const UserPreferencesSchema = new Schema({
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  workHoursPerWeek: { type: Number, required: true }, // in hours
-  leisureHoursPerWeek: { type: Number, required: true }, // in hours
-  familyFriendsHoursPerWeek: { type: Number, required: true }, // in hours
-  atelicHoursPerWeek: { type: Number, required: true } // in hours
-});
-
-UserPreferencesSchema.index({ userId: 1 });
-
 const DailySchedule = mongoose.model('DailySchedule', DailyScheduleSchema);
-const UserPreferences = mongoose.model('UserPreferences', UserPreferencesSchema);
 
-export { DailySchedule, UserPreferences };
+export { DailySchedule };

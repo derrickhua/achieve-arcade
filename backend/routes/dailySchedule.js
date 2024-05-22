@@ -6,10 +6,11 @@ import {
     deleteTimeBlock,
     startTimer,
     stopTimer,
-    getWeeklyMetrics
+    getWeeklyMetrics,
+    getWeeklyHoursByCategory
 } from '../controllers/dailySchedule.js';
 import authenticate from '../middleware/authenticate.js';
-
+import mongoose from 'mongoose'
 const router = express.Router();
 
 // Applying authentication middleware to all daily schedule routes
@@ -35,5 +36,8 @@ router.post('/time-block/:blockId/stop-timer', stopTimer);
 
 // GET weekly metrics for the user
 router.get('/weekly-metrics', getWeeklyMetrics);
+
+// GET weekly hours by category
+router.get('/weekly-hours', getWeeklyHoursByCategory);
 
 export default router;
