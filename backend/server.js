@@ -9,6 +9,8 @@ import { defineAndScheduleJobs } from './agendaJobs.js';
 import userRoutes from './routes/user.js';
 import habitRoutes from './routes/habit.js';
 import goalRoutes from './routes/goal.js';
+import dailyScheduleRoutes from './routes/dailySchedule.js';
+
 dotenv.config();
 
 const app = express();
@@ -47,7 +49,7 @@ app.use(cookieParser());
 app.use('/api/users', userRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
-
+app.use('/api/daily-schedule', dailyScheduleRoutes);
 // Error handler
 app.use((err, req, res, next) => {
   const errorDetails = {

@@ -73,7 +73,7 @@ export default function GoalDashboard() {
   };
 
   return (
-    <div className="p-4 h-full">
+    <div className="h-full">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Your Goals</h1>
         <Dialog>
@@ -91,13 +91,6 @@ export default function GoalDashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 justify-items-center goals-container">
-        {goals.length > 0 ? (
-          goals.map((goal, index) => (
-              <GoalCard key={index} goal={goal} onDelete={handleDeleteGoal} onUpdate={handleUpdateGoal}/>
-          ))
-        ) : 
-          <p className="col-span-2 text-center">No goals added yet. Start by adding a new goal!</p> 
-        }
         {goals.length > 0 ? (
           goals.map((goal, index) => (
               <GoalCard key={index} goal={goal} onDelete={handleDeleteGoal} onUpdate={handleUpdateGoal}/>

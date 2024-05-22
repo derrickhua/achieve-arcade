@@ -76,7 +76,7 @@ export default function HabitDashboard() {
   };
   
   return (
-    <div className="p-4 h-full">
+    <div className="h-full">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Your Habits</h1>
         <Dialog>

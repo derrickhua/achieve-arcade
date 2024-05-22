@@ -201,7 +201,10 @@ html,body {
 }
 
 .goal-card.collapsed {
-  max-height: 252px;
+  max-height: 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .goal-card.expanded {
@@ -215,6 +218,7 @@ html,body {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1rem;
+  grid-auto-rows: auto;
 }
 
 @media (max-width: 900px) {
@@ -229,5 +233,11 @@ html,body {
   }
   .goal-card.collapsed {
     max-height: 252px; /* Maintain collapsed height on smaller screens */
+  }
+}
+
+@media (max-width: 1200px) {
+  .hidden-on-goal {
+    display: none;
   }
 }

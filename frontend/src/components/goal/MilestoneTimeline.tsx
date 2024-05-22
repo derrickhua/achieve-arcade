@@ -104,7 +104,7 @@ const MilestoneTimeline: React.FC<MilestoneTimelineProps>  = ({ milestones, expa
     
 
     return (
-        <div className={`relative flex flex-col items-center ${expanded ? 'h-auto py-4' : 'h-[50px]'} transition-height duration-300 ease-in-out`}>
+        <div className={`relative flex flex-col  items-center ${expanded ? 'h-auto py-4' : 'h-[50px]'} transition-height duration-300 ease-in-out`}>
 
             {expanded && (
                 <div className="w-full flex flex-col items-center mb-4">
@@ -202,7 +202,7 @@ const MilestoneTimeline: React.FC<MilestoneTimelineProps>  = ({ milestones, expa
 
 
             {!expanded ? 
-                <ChevronDown onClick={()=> setExpanded(true)} size={35} className='mt-2 mb-2 cursor-pointer hover:bg-gray-200'/>
+                <ChevronDown onClick={()=> setExpanded(true)} size={35} className='mt-[8px] cursor-pointer hover:bg-gray-200'/>
             :
                 <ChevronUp onClick={()=> setExpanded(false)} size={35} className='mt-2 mb-[-15px] cursor-pointer hover:bg-gray-200'/>
             }

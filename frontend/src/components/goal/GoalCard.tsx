@@ -160,12 +160,12 @@ export default function GoalCard({ goal, onDelete, onUpdate }: GoalCardProps) {
             }
             {
                 hasMilestones &&
-                <div className="lower-div relative mt-6">
+                <div className="lower-div relative">
                     <MilestoneTimeline milestones={milestones} expanded={expanded} setExpanded={setExpanded}  goalId={goal._id}/>
                 </div>
             }
             {!hasMilestones &&
-                <div className="h-[252px] flex items-center justify-center text-[30px] garamond">
+                <div className="flex items-center justify-center text-[30px] garamond">
                     <Loader />
                 </div>
             }
