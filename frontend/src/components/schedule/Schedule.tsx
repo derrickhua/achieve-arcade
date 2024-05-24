@@ -95,7 +95,6 @@ export default function DailySchedule() {
         const date = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
         const data = await getWeeklyHours(date);
         setWeeklyHours(data);
-        console.log('Weekly hours by category:', data);  // Log data after it's fetched
       } catch (error) {
         console.error('Error fetching weekly hours by category:', error);
       }
@@ -109,7 +108,6 @@ export default function DailySchedule() {
       try {
         const data = await getUserProfile();
         setUserData(data);
-        console.log(data);  // Log data after it's fetched
       } catch (error) {
         console.error('Error fetching user profile:', error);
       }
@@ -192,7 +190,7 @@ export default function DailySchedule() {
           {schedule.timeBlocks.map((block, index) => (
             <div
               key={block._id}
-              className="absolute text-white rounded-lg shadow-md p-2"
+              className="absolute rounded-lg shadow-md"
               style={{
                 top: `${getBlockPosition(new Date(block.startTime))}%`,
                 height: `${getBlockHeight(new Date(block.startTime), new Date(block.endTime))}%`,

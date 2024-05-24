@@ -21,26 +21,67 @@ const categories = [
 
 const timeOptions = [
   '12:00 AM', '12:15 AM', '12:30 AM', '12:45 AM',
-  // (rest of the options)
+  '1:00 AM', '1:15 AM', '1:30 AM', '1:45 AM',
+  '2:00 AM', '2:15 AM', '2:30 AM', '2:45 AM',
+  '3:00 AM', '3:15 AM', '3:30 AM', '3:45 AM',
+  '4:00 AM', '4:15 AM', '4:30 AM', '4:45 AM',
+  '5:00 AM', '5:15 AM', '5:30 AM', '5:45 AM',
+  '6:00 AM', '6:15 AM', '6:30 AM', '6:45 AM',
+  '7:00 AM', '7:15 AM', '7:30 AM', '7:45 AM',
+  '8:00 AM', '8:15 AM', '8:30 AM', '8:45 AM',
+  '9:00 AM', '9:15 AM', '9:30 AM', '9:45 AM',
+  '10:00 AM', '10:15 AM', '10:30 AM', '10:45 AM',
+  '11:00 AM', '11:15 AM', '11:30 AM', '11:45 AM',
+  '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM',
+  '1:00 PM', '1:15 PM', '1:30 PM', '1:45 PM',
+  '2:00 PM', '2:15 PM', '2:30 PM', '2:45 PM',
+  '3:00 PM', '3:15 PM', '3:30 PM', '3:45 PM',
+  '4:00 PM', '4:15 PM', '4:30 PM', '4:45 PM',
+  '5:00 PM', '5:15 PM', '5:30 PM', '5:45 PM',
+  '6:00 PM', '6:15 PM', '6:30 PM', '6:45 PM',
+  '7:00 PM', '7:15 PM', '7:30 PM', '7:45 PM',
+  '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM',
+  '9:00 PM', '9:15 PM', '9:30 PM', '9:45 PM',
+  '10:00 PM', '10:15 PM', '10:30 PM', '10:45 PM',
   '11:00 PM', '11:15 PM', '11:30 PM', '11:45 PM',
 ];
 
-const getClosestTimeSlot = (offset = 0) => {
+const getClosestTimeSlot = () => {
   const now = new Date();
   const minutes = now.getMinutes();
   const closestMinutes = Math.round(minutes / 15) * 15;
-  now.setMinutes(closestMinutes + offset);
-  return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  now.setMinutes(closestMinutes, 0, 0);
+  let hours = now.getHours();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  const formattedTime = `${hours}:${now.getMinutes().toString().padStart(2, '0')} ${ampm}`;
+
+  return timeOptions.find(time => time === formattedTime) || timeOptions[0];
 };
 
 const AddTimeBlockForm = ({ onAdd }) => {
   const [name, setName] = useState('');
   const [tasks, setTasks] = useState([{ name: '', completed: false }]);
-  const [startTime, setStartTime] = useState(getClosestTimeSlot());
-  const [endTime, setEndTime] = useState(getClosestTimeSlot(60));
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
   const [category, setCategory] = useState('work');
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+
+  useEffect(() => {
+    const initialStartTime = getClosestTimeSlot();
+    setStartTime(initialStartTime);
+    const startIndex = timeOptions.indexOf(initialStartTime);
+    const endIndex = (startIndex + 4) % timeOptions.length;
+    setEndTime(timeOptions[endIndex]);
+  }, []);
+
+  useEffect(() => {
+    const startIndex = timeOptions.indexOf(startTime);
+    const endIndex = (startIndex + 4) % timeOptions.length;
+    setEndTime(timeOptions[endIndex]);
+  }, [startTime]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -63,8 +104,11 @@ const AddTimeBlockForm = ({ onAdd }) => {
     onAdd(newTimeBlock);
     setName('');
     setTasks([{ name: '', completed: false }]);
-    setStartTime(getClosestTimeSlot());
-    setEndTime(getClosestTimeSlot(60));
+    const initialStartTime = getClosestTimeSlot();
+    setStartTime(initialStartTime);
+    const startIndex = timeOptions.indexOf(initialStartTime);
+    const endIndex = (startIndex + 4) % timeOptions.length;
+    setEndTime(timeOptions[endIndex]);
     setCategory('work');
     setShowAlert(false);
   };
@@ -85,32 +129,16 @@ const AddTimeBlockForm = ({ onAdd }) => {
   };
 
   const convertTo24HourFormat = (time) => {
-    const [hours, minutes] = time.split(':');
-    let period = time.slice(-2);
+    const [hours, minutes] = time.slice(0, -2).split(':');
+    const period = time.slice(-2);
     let adjustedHours = parseInt(hours, 10);
     if (period === 'PM' && adjustedHours !== 12) {
       adjustedHours += 12;
     } else if (period === 'AM' && adjustedHours === 12) {
       adjustedHours = 0;
     }
-    return `${adjustedHours.toString().padStart(2, '0')}:${minutes.slice(0, 2)}`;
+    return `${adjustedHours.toString().padStart(2, '0')}:${minutes}`;
   };
-
-  useEffect(() => {
-    const startTimeIn24HourFormat = convertTo24HourFormat(startTime);
-    const [startHours, startMinutes] = startTimeIn24HourFormat.split(':').map(Number);
-    let endHours = startHours + 1;
-    let endMinutes = startMinutes;
-
-    if (endHours >= 24) {
-      endHours = 0;
-    }
-
-    const endTimeIn24HourFormat = `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
-    const endTimeIn12HourFormat = new Date(`1970-01-01T${endTimeIn24HourFormat}:00`).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
-
-    setEndTime(endTimeIn12HourFormat);
-  }, [startTime]);
 
   return (
     <Dialog>
