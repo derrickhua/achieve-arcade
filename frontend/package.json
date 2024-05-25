@@ -28,6 +28,7 @@
     "date-fns": "^3.6.0",
     "framer-motion": "^11.1.7",
     "jsonwebtoken": "^9.0.2",
+    "lodash.debounce": "^4.0.8",
     "lucide-react": "^0.367.0",
     "next": "^14.2.1",
     "next-auth": "^4.24.7",
@@ -39,7 +40,8 @@
     "recharts": "^2.12.5",
     "styled-components": "^6.1.8",
     "tailwind-merge": "^2.2.2",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -48,6 +50,7 @@
     "@types/react": "^18",
     "@types/react-beautiful-dnd": "^13.1.8",
     "@types/react-dom": "^18",
+    "@types/uuid": "^9.0.8",
     "eslint": "^8",
     "eslint-config-next": "14.2.0",
     "postcss": "^8",

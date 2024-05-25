@@ -82,7 +82,7 @@ export const updateTimeBlock = async (blockId: string, updateData: TimeBlockUpda
 // Delete a specific time block from the daily schedule
 export const deleteTimeBlock = async (blockId: string): Promise<void> => {
   return api.delete(`/time-block/${blockId}`).then(response => response.data);
-};
+}; 
 
 // Start the timer for a specific time block
 export const startTimer = async (blockId: string): Promise<DailySchedule> => {

@@ -53,34 +53,50 @@ export const addTimeBlock = async (req, res, next) => {
 /**
  * Updates a specific time block within the daily schedule for the current date.
  * @param {Request} req - The request object, including time block ID and update details.
- * @param {Response} res - The response object used to return the updated schedule.
+ * @param {Response} res - The response object used to return the updated time block.
  */
 export const updateTimeBlock = async (req, res, next) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const { blockId } = req.params;
     const { name, startTime, endTime, tasks, category, completed } = req.body;
-
+  
     try {
-        const schedule = await DailySchedule.findOne({ userId: req.user._id, date: today });
-        const block = schedule.timeBlocks.id(blockId);
-        if (block) {
-            block.name = name || block.name;
-            block.startTime = startTime || block.startTime;
-            block.endTime = endTime || block.endTime;
-            block.tasks = tasks || block.tasks;
-            block.category = category || block.category;
-            block.completed = completed !== undefined ? completed : block.completed;
-            await schedule.save();
-            res.json(schedule);
-        } else {
-            res.status(404).json({ message: 'Time block not found' });
-        }
+      // Ensure each task has a valid _id
+      const updatedTasks = tasks.map(task => ({
+        _id: mongoose.Types.ObjectId.isValid(task._id) ? task._id : new mongoose.Types.ObjectId(),
+        name: task.name,
+        completed: task.completed,
+      }));
+  
+      // Prepare the $set object for updating fields
+      const updateFields = {
+        'timeBlocks.$.name': name,
+        'timeBlocks.$.startTime': startTime,
+        'timeBlocks.$.endTime': endTime,
+        'timeBlocks.$.tasks': updatedTasks,
+        'timeBlocks.$.category': category,
+        'timeBlocks.$.completed': completed,
+      };
+  
+      const schedule = await DailySchedule.findOneAndUpdate(
+        { userId: req.user._id, date: today, 'timeBlocks._id': blockId },
+        { $set: updateFields },
+        { new: true }
+      );
+  
+      if (schedule) {
+        // Find the updated time block in the schedule
+        const updatedBlock = schedule.timeBlocks.find(block => block._id.toString() === blockId);
+        res.json(updatedBlock);
+      } else {
+        res.status(404).json({ message: 'Time block not found' });
+      }
     } catch (error) {
-        next(error); // Pass any server-side errors to the error handling middleware
+      next(error); // Pass any server-side errors to the error handling middleware
     }
-};
-
+  };
+  
 /**
  * Deletes a specific time block from the daily schedule for the current date.
  * @param {Request} req - The request object, including time block ID.
@@ -93,13 +109,17 @@ export const deleteTimeBlock = async (req, res, next) => {
 
     try {
         const schedule = await DailySchedule.findOne({ userId: req.user._id, date: today });
-        const block = schedule.timeBlocks.id(blockId);
-        if (block) {
-            block.remove();
-            await schedule.save();
-            res.status(204).send(); // No content to send back
+        if (schedule) {
+            const block = schedule.timeBlocks.id(blockId);
+            if (block) {
+                schedule.timeBlocks.pull(blockId);
+                await schedule.save();
+                res.status(204).send(); // No content to send back
+            } else {
+                res.status(404).json({ message: 'Time block not found' });
+            }
         } else {
-            res.status(404).json({ message: 'Time block not found' });
+            res.status(404).json({ message: 'Schedule not found' });
         }
     } catch (error) {
         next(error); // Pass any server-side errors to the error handling middleware

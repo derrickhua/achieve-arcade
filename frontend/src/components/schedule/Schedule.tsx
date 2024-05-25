@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getDailySchedule, addTimeBlock, updateTimeBlock, getWeeklyHours } from '@/lib/dailySchedule';
+import { getDailySchedule, getWeeklyHours } from '@/lib/dailySchedule';
 import TimeBlock from './TimeBlock';
 import AddTimeBlockForm from './AddTimeBlockForm';
 import { format, setHours, setMinutes } from 'date-fns';
@@ -76,7 +76,8 @@ export default function DailySchedule() {
   const timeSlots = generateTimeSlots();
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const [userData, setUserData] = useState(null);
-  const [weeklyHours, setWeeklyHours] = useState(null)
+  const [weeklyHours, setWeeklyHours] = useState(null);
+
   useEffect(() => {
     fetchSchedule();
     const interval = setInterval(() => {
@@ -87,8 +88,10 @@ export default function DailySchedule() {
     }, 60000); // update every minute
 
     return () => clearInterval(interval);
+
+    console.log(schedule)
   }, []);
-  
+
   useEffect(() => {
     const fetchWeeklyHours = async () => {
       try {
@@ -119,8 +122,14 @@ export default function DailySchedule() {
   const fetchSchedule = async () => {
     setIsLoading(true);
     try {
-      const response:DailySchedule = await getDailySchedule();
-      setSchedule(response || { timeBlocks: [] });
+      const response: DailySchedule = await getDailySchedule();
+      // Convert the startTime and endTime to the user's local timezone
+      const convertedTimeBlocks = response.timeBlocks.map(block => ({
+        ...block,
+        startTime: new Date(block.startTime).toLocaleString(),
+        endTime: new Date(block.endTime).toLocaleString(),
+      }));
+      setSchedule({ ...response, timeBlocks: convertedTimeBlocks });
       setIsLoading(false);
     } catch (error) {
       setError('Failed to fetch daily schedule.');
@@ -128,34 +137,26 @@ export default function DailySchedule() {
     }
   };
 
-  const handleTaskComplete = async (blockId: string, taskId: string) => {
-    try {
-      const updatedBlock = schedule.timeBlocks.find((block) => block._id === blockId);
-      if (updatedBlock) {
-        updatedBlock.tasks = updatedBlock.tasks.map((task) =>
-          task._id === taskId ? { ...task, completed: !task.completed } : task
-        );
-        await updateTimeBlock(blockId, { tasks: updatedBlock.tasks });
-        setSchedule({
-          ...schedule,
-          timeBlocks: schedule.timeBlocks.map((block) =>
-            block._id === blockId ? updatedBlock : block
-          ),
-        });
-      }
-    } catch (error) {
-      setError('Failed to update task.');
-    }
+  const handleUpdate = (updatedBlock) => {
+    setSchedule(prevSchedule => ({
+      ...prevSchedule,
+      timeBlocks: prevSchedule.timeBlocks.map(block =>
+        block._id === updatedBlock._id ? updatedBlock : block
+      )
+    }));
   };
+  
 
-  const handleAddTimeBlock = async (newTimeBlock: TimeBlock) => {
-    try {
-      const updatedSchedule = await addTimeBlock(newTimeBlock);
-      setSchedule(updatedSchedule);
-    } catch (error) {
-      setError('Failed to add time block.');
-    }
+  const updateSchedule = (updatedSchedule) => {
+    // Convert the startTime and endTime to the user's local timezone
+    const convertedTimeBlocks = updatedSchedule.timeBlocks.map(block => ({
+      ...block,
+      startTime: new Date(block.startTime).toLocaleString(),
+      endTime: new Date(block.endTime).toLocaleString(),
+    }));
+    setSchedule({ ...updatedSchedule, timeBlocks: convertedTimeBlocks });
   };
+  
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -164,7 +165,7 @@ export default function DailySchedule() {
     <div className="h-full relative">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Today's Schedule</h1>
-        <AddTimeBlockForm onAdd={handleAddTimeBlock} />
+        <AddTimeBlockForm onAdd={updateSchedule} />
       </div>
 
       <div className="grid grid-cols-12 gap-0 w-full" style={{ height: 'calc(100vh - 10rem)', position: 'relative' }}>
@@ -198,12 +199,12 @@ export default function DailySchedule() {
                 backgroundColor: getColorByCategory(block.category), // Set background color based on category
               }}
             >
-              <TimeBlock block={block} />
+                <TimeBlock block={block} onUpdate={() => handleUpdate(block._id)} setSchedule={setSchedule} /> {/* Pass handleUpdate as a prop */}
             </div>
           ))}
         </div>
         <div className="col-span-5 relative task-grid items-center flex justify-center items-center">
-            <WeeklyHoursSummary weeklyHours={weeklyHours} userData={userData} />
+          <WeeklyHoursSummary weeklyHours={weeklyHours} userData={userData} />
         </div>
       </div>
     </div>

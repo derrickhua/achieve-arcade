@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { addTimeBlock } from '@/lib/dailySchedule';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,6 +12,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { timeOptions, getClosestTimeSlot, convertTo24HourFormat, toUTCString } from '@/lib/dateTimeUtil';
+
+interface Task {
+  name: string;
+  completed: boolean;
+}
+
+interface AddTimeBlockFormProps {
+  onAdd: (updatedSchedule: any) => void;
+}
 
 const categories = [
   { value: 'work', label: 'Work' },
@@ -19,55 +30,14 @@ const categories = [
   { value: 'atelic', label: 'Atelic' }
 ];
 
-const timeOptions = [
-  '12:00 AM', '12:15 AM', '12:30 AM', '12:45 AM',
-  '1:00 AM', '1:15 AM', '1:30 AM', '1:45 AM',
-  '2:00 AM', '2:15 AM', '2:30 AM', '2:45 AM',
-  '3:00 AM', '3:15 AM', '3:30 AM', '3:45 AM',
-  '4:00 AM', '4:15 AM', '4:30 AM', '4:45 AM',
-  '5:00 AM', '5:15 AM', '5:30 AM', '5:45 AM',
-  '6:00 AM', '6:15 AM', '6:30 AM', '6:45 AM',
-  '7:00 AM', '7:15 AM', '7:30 AM', '7:45 AM',
-  '8:00 AM', '8:15 AM', '8:30 AM', '8:45 AM',
-  '9:00 AM', '9:15 AM', '9:30 AM', '9:45 AM',
-  '10:00 AM', '10:15 AM', '10:30 AM', '10:45 AM',
-  '11:00 AM', '11:15 AM', '11:30 AM', '11:45 AM',
-  '12:00 PM', '12:15 PM', '12:30 PM', '12:45 PM',
-  '1:00 PM', '1:15 PM', '1:30 PM', '1:45 PM',
-  '2:00 PM', '2:15 PM', '2:30 PM', '2:45 PM',
-  '3:00 PM', '3:15 PM', '3:30 PM', '3:45 PM',
-  '4:00 PM', '4:15 PM', '4:30 PM', '4:45 PM',
-  '5:00 PM', '5:15 PM', '5:30 PM', '5:45 PM',
-  '6:00 PM', '6:15 PM', '6:30 PM', '6:45 PM',
-  '7:00 PM', '7:15 PM', '7:30 PM', '7:45 PM',
-  '8:00 PM', '8:15 PM', '8:30 PM', '8:45 PM',
-  '9:00 PM', '9:15 PM', '9:30 PM', '9:45 PM',
-  '10:00 PM', '10:15 PM', '10:30 PM', '10:45 PM',
-  '11:00 PM', '11:15 PM', '11:30 PM', '11:45 PM',
-];
-
-const getClosestTimeSlot = () => {
-  const now = new Date();
-  const minutes = now.getMinutes();
-  const closestMinutes = Math.round(minutes / 15) * 15;
-  now.setMinutes(closestMinutes, 0, 0);
-  let hours = now.getHours();
-  const ampm = hours >= 12 ? 'PM' : 'AM';
-  hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
-  const formattedTime = `${hours}:${now.getMinutes().toString().padStart(2, '0')} ${ampm}`;
-
-  return timeOptions.find(time => time === formattedTime) || timeOptions[0];
-};
-
-const AddTimeBlockForm = ({ onAdd }) => {
-  const [name, setName] = useState('');
-  const [tasks, setTasks] = useState([{ name: '', completed: false }]);
-  const [startTime, setStartTime] = useState('');
-  const [endTime, setEndTime] = useState('');
-  const [category, setCategory] = useState('work');
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertMessage, setAlertMessage] = useState('');
+const AddTimeBlockForm: React.FC<AddTimeBlockFormProps> = ({ onAdd }) => {
+  const [name, setName] = useState<string>('');
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [startTime, setStartTime] = useState<string>('');
+  const [endTime, setEndTime] = useState<string>('');
+  const [category, setCategory] = useState<string>('work');
+  const [showAlert, setShowAlert] = useState<boolean>(false);
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   useEffect(() => {
     const initialStartTime = getClosestTimeSlot();
@@ -83,37 +53,47 @@ const AddTimeBlockForm = ({ onAdd }) => {
     setEndTime(timeOptions[endIndex]);
   }, [startTime]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
+  
     if (!name || !startTime || !endTime || !category) {
       setShowAlert(true);
       setAlertMessage('Please fill in all required fields.');
       return;
     }
-
+  
+    const currentDate = new Date().toISOString().split('T')[0];
+  
     const newTimeBlock = {
       name,
       tasks: category === 'work' || category === 'leisure' ? tasks : [],
-      startTime: new Date(`1970-01-01T${convertTo24HourFormat(startTime)}:00`),
-      endTime: new Date(`1970-01-01T${convertTo24HourFormat(endTime)}:00`),
+      startTime: new Date(toUTCString(currentDate, convertTo24HourFormat(startTime.trim()))),
+      endTime: new Date(toUTCString(currentDate, convertTo24HourFormat(endTime.trim()))),
       category,
       completed: false
     };
-
-    onAdd(newTimeBlock);
-    setName('');
-    setTasks([{ name: '', completed: false }]);
-    const initialStartTime = getClosestTimeSlot();
-    setStartTime(initialStartTime);
-    const startIndex = timeOptions.indexOf(initialStartTime);
-    const endIndex = (startIndex + 4) % timeOptions.length;
-    setEndTime(timeOptions[endIndex]);
-    setCategory('work');
-    setShowAlert(false);
+  
+    try {
+      console.log(newTimeBlock);
+      const updatedSchedule = await addTimeBlock(newTimeBlock);
+      onAdd(updatedSchedule);
+      setName('');
+      setTasks([]);
+      const initialStartTime = getClosestTimeSlot();
+      setStartTime(initialStartTime);
+      const startIndex = timeOptions.indexOf(initialStartTime);
+      const endIndex = (startIndex + 4) % timeOptions.length;
+      setEndTime(timeOptions[endIndex]);
+      setCategory('work');
+      setShowAlert(false);
+    } catch (error) {
+      setShowAlert(true);
+      setAlertMessage('Failed to add time block.');
+    }
   };
+  
 
-  const handleTaskChange = (index, event) => {
+  const handleTaskChange = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
     const newTasks = [...tasks];
     newTasks[index].name = event.target.value;
     setTasks(newTasks);
@@ -123,21 +103,9 @@ const AddTimeBlockForm = ({ onAdd }) => {
     setTasks([...tasks, { name: '', completed: false }]);
   };
 
-  const handleRemoveTask = (index) => {
-    const newTasks = tasks.filter((task, i) => i !== index);
+  const handleRemoveTask = (index: number) => {
+    const newTasks = tasks.filter((_, i) => i !== index);
     setTasks(newTasks);
-  };
-
-  const convertTo24HourFormat = (time) => {
-    const [hours, minutes] = time.slice(0, -2).split(':');
-    const period = time.slice(-2);
-    let adjustedHours = parseInt(hours, 10);
-    if (period === 'PM' && adjustedHours !== 12) {
-      adjustedHours += 12;
-    } else if (period === 'AM' && adjustedHours === 12) {
-      adjustedHours = 0;
-    }
-    return `${adjustedHours.toString().padStart(2, '0')}:${minutes}`;
   };
 
   return (
