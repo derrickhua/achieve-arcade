@@ -15,17 +15,38 @@
 
 /* habits.css */
 .habit-card {
+  background-color: white;
+  border-radius: 15px;
+  padding: 16px;
+  height: 10vw;
+  width: 10vw;
+  max-width: 600px;
+  max-height: 600px;
+  min-width: 200px;
+  min-height: 200px;
+}
+
+.habit-data {
     background-color: white;
     border-radius: 15px;
     padding: 16px;
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 16px;
+    display: flex;
+    justify-content: space-around;
+    gap: 20px;
 
     max-width: 1170px;
   }
-  
-.habit-card.collapsed {
+
+.habit-card-container {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  max-height: 70vh;
+  height: fit-content;
+  overflow-y: auto;
+}
+
+.habit-data.collapsed {
     padding: 8px;
     grid-template-columns: 1fr; /* Simplify the grid to a single column */
     min-height: 180px; 
@@ -35,8 +56,8 @@
 
   /* Media Query to adjust layout for screens smaller than 1100px */
   @media (max-width: 1500px) {
-    .habit-card {
-      grid-template-columns: 1fr; 
+    .habit-data {
+      flex-direction: column;
       max-height: none;
       max-width: 320px !important;
     }
@@ -48,6 +69,16 @@
     }
     .habit-progress-circle, .habit-increment-area {
         grid-column: span 6;
+    }
+    .habit-dashboard {
+      display: flex;
+
+      gap: 20px;
+    }
+    .habit-card-container {
+      max-height: 80vh;
+      height: fit-content;
+      overflow-y: auto;
     }
   }
 

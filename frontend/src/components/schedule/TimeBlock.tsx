@@ -8,6 +8,7 @@ import { Button } from '../ui/button';
 import { timeOptions, formatTimeForSelect, convertTo24HourFormat, toUTCString } from '@/lib/dateTimeUtil'; // Import utilities
 import { Task, TimeBlock as TimeBlockType, DailySchedule } from '@/lib/dailySchedule';
 import { debounce } from 'lodash';
+import ExpandTimeBlock from './ExpandTimeBlock';
 
 interface TimeBlockProps {
   block: TimeBlockType;
@@ -15,7 +16,7 @@ interface TimeBlockProps {
   setSchedule: React.Dispatch<React.SetStateAction<DailySchedule>>;
 }
 
-const categoryColors = {
+const categoryColors: { [key: string]: string } = {
   work: 'bg-[#3B82F6]',
   leisure: 'bg-[#EF4444]',
   family_friends: 'bg-[#98E4A5]',
@@ -27,20 +28,18 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
   const [isExpandOpen, setIsExpandOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [timer, setTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
   
   const [name, setName] = useState<string>(block.name);
-  console.log('Initial Name:', block.name);
   const [startTime, setStartTime] = useState<string>(formatTimeForSelect(new Date(block.startTime)));
-  console.log('Initial StartTime:', formatTimeForSelect(new Date(block.startTime)));
   const [endTime, setEndTime] = useState<string>(formatTimeForSelect(new Date(block.endTime)));
-  console.log('Initial EndTime:', formatTimeForSelect(new Date(block.endTime)));
   const [tasks, setTasks] = useState<Task[]>(block.tasks || []);
-  console.log('Initial Tasks:', block.tasks || []);
   
   const [isTimeBlockCompleted, setIsTimeBlockCompleted] = useState(block.completed);
   const allTasksComplete = (tasks && tasks.every(task => task.completed)) || (tasks && tasks.length === 0);
 
-  const debouncedUpdate = debounce(async (block, updatedTasks, setSchedule) => {
+  const debouncedUpdate = debounce(async (block: TimeBlockType, updatedTasks: Task[], setSchedule: React.Dispatch<React.SetStateAction<DailySchedule>>) => {
     console.log('Debounced Update - Block:', block);
     console.log('Debounced Update - Updated Tasks:', updatedTasks);
     const updateData = {
@@ -50,7 +49,6 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
     try {
       const updatedBlock = await updateTimeBlock(block._id, updateData);
   
-      // Ensure the updated block data is as expected
       if (!updatedBlock._id || !updatedBlock.name || !updatedBlock.startTime || !updatedBlock.endTime) {
         console.error('Updated block is missing critical fields:', updatedBlock);
       }
@@ -66,8 +64,18 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
       console.error('Failed to update task:', error);
     }
   }, 300);
-  
 
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        setTimer(prevTimer => prevTimer + 1);
+      }, 1000);
+    } else if (!isTimerRunning && timer !== 0) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, timer]);
 
   const handleExpandClick = () => {
     setIsExpandOpen(true);
@@ -90,11 +98,15 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
   const handleDeleteConfirm = async () => {
     try {
       await deleteTimeBlock(block._id);
-      onUpdate(); // Call the update function passed as a prop to refresh the schedule
+      setSchedule(prevSchedule => ({
+        ...prevSchedule,
+        timeBlocks: prevSchedule.timeBlocks.filter(b => b._id !== block._id),
+      }));
+      handleCloseModal();
+      onUpdate();
     } catch (error) {
       console.error('Failed to delete time block:', error);
     }
-    handleCloseModal();
   };
 
   const handleSave = async (event: React.FormEvent) => {
@@ -156,16 +168,13 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
   };
 
   const handleTaskToggle = (taskIndex: number) => {
-    if (!tasks) return; // Early return if tasks is undefined
+    if (!tasks) return;
   
     const updatedTasks = tasks.map((task, index) =>
       index === taskIndex ? { ...task, completed: !task.completed } : task
     );
   
-    // Optimistically update the state
     setTasks(updatedTasks);
-  
-    // Call the debounced function with the updated tasks
     debouncedUpdate(block, updatedTasks, setSchedule);
   };
   
@@ -184,7 +193,6 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
       console.error('Failed to update time block:', error);
     }
   };
-  
 
   const timeDifference = getTimeDifference(startTime, endTime);
   const isSmall = timeDifference === 4;
@@ -195,9 +203,13 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
         className={`time-block flex h-full flex-col justify-between p-2 rounded-lg relative ${colorClass} text-white ${isSmall ? 'small-timeblock' : ''}`}
       >
         <div className="flex space-x-1 absolute top-3 right-2">
-          <button onClick={handleExpandClick} className="text-white">
-            <Expand size={18} />
-          </button>
+          {
+            block.tasks.length > 0 && (
+            <button onClick={handleExpandClick} className="text-white">
+              <Expand size={18} />
+            </button>
+            )
+          }
           <button onClick={handleSettingsClick} className="text-white">
             <Settings size={18} />
           </button>
@@ -234,36 +246,16 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
       </div>
 
       {/* Expand Dialog */}
-      <Dialog open={isExpandOpen} onOpenChange={setIsExpandOpen}>
-        <DialogContent className={`dialog-content ${colorClass}`}>
-          <DialogTitle className="dialog-title">
-            <div className="flex justify-center items-center">
-              <p className="font-bold mr-2">{block.name}</p>
-              {block.completed ? <Lock size={18} /> : <Unlock size={18} />}
-            </div>
-          </DialogTitle>
-          <div className="flex justify-between mb-4 text-[15px]">
-            <span>start: {startTime}</span>
-            <span>end: {endTime}</span>
-          </div>
-          <div className="dialog-tasks">
-            {block.tasks && block.tasks.map((task, index) => (
-              <div
-                key={index}
-                className="dialog-task flex items-center justify-between p-2 rounded border border-white"
-                onClick={() => handleTaskToggle(index)}
-              >
-                <span>{task.name}</span>
-                <input
-                  type="checkbox"
-                  checked={task.completed}
-                  onChange={() => handleTaskToggle(index)}
-                />
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
+      {
+        block.tasks.length > 0 && (
+          <ExpandTimeBlock
+            block={block}
+            isOpen={isExpandOpen}
+            onClose={() => setIsExpandOpen(false)}
+            setSchedule={setSchedule}
+          />
+        )
+      }
 
       {/* Settings Dialog */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>

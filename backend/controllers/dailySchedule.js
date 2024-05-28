@@ -59,7 +59,7 @@ export const updateTimeBlock = async (req, res, next) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const { blockId } = req.params;
-    const { name, startTime, endTime, tasks, category, completed } = req.body;
+    const { name, startTime, endTime, tasks, category, completed, timerDuration } = req.body; // Include timerDuration
   
     try {
       // Ensure each task has a valid _id
@@ -77,6 +77,7 @@ export const updateTimeBlock = async (req, res, next) => {
         'timeBlocks.$.tasks': updatedTasks,
         'timeBlocks.$.category': category,
         'timeBlocks.$.completed': completed,
+        'timeBlocks.$.timerDuration': timerDuration, // Add this line to update timerDuration
       };
   
       const schedule = await DailySchedule.findOneAndUpdate(

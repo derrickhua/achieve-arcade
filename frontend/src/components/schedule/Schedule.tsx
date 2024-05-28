@@ -6,7 +6,8 @@ import { format, setHours, setMinutes } from 'date-fns';
 import './schedule.css';
 import { getUserProfile } from '@/lib/user';
 import WeeklyHoursSummary from './WeeklyHoursSummary';
-
+import StartTimerDialog from './StartTimerDialog';
+import ExpandTimeBlock from './ExpandTimeBlock';
 export interface Task {
   name: string;
   completed: boolean;
@@ -77,20 +78,26 @@ export default function DailySchedule() {
   const currentTimeRef = useRef<HTMLDivElement>(null);
   const [userData, setUserData] = useState(null);
   const [weeklyHours, setWeeklyHours] = useState(null);
+  const [activeTimeBlock, setActiveTimeBlock] = useState<TimeBlock | null>(null);
+  const [isStartTimerDialogOpen, setIsStartTimerDialogOpen] = useState(false);
+  const [isExpandTimeBlockOpen, setIsExpandTimeBlockOpen] = useState(false);
+  const [startTimer, setStartTimer] = useState(false);
 
   useEffect(() => {
     fetchSchedule();
+  }, []);
+  
+  useEffect(() => {
     const interval = setInterval(() => {
       if (currentTimeRef.current) {
         const position = getCurrentTimePosition();
         currentTimeRef.current.style.top = `${position}%`;
       }
+      checkForStartTime();
     }, 60000); // update every minute
-
+  
     return () => clearInterval(interval);
-
-    console.log(schedule)
-  }, []);
+  }, [schedule]); // Add schedule as a dependency
 
   useEffect(() => {
     const fetchWeeklyHours = async () => {
@@ -123,13 +130,7 @@ export default function DailySchedule() {
     setIsLoading(true);
     try {
       const response: DailySchedule = await getDailySchedule();
-      // Convert the startTime and endTime to the user's local timezone
-      const convertedTimeBlocks = response.timeBlocks.map(block => ({
-        ...block,
-        startTime: new Date(block.startTime).toLocaleString(),
-        endTime: new Date(block.endTime).toLocaleString(),
-      }));
-      setSchedule({ ...response, timeBlocks: convertedTimeBlocks });
+      setSchedule(response);
       setIsLoading(false);
     } catch (error) {
       setError('Failed to fetch daily schedule.');
@@ -137,7 +138,20 @@ export default function DailySchedule() {
     }
   };
 
-  const handleUpdate = (updatedBlock) => {
+  const checkForStartTime = () => {
+    if (isExpandTimeBlockOpen) return; // Prevent dialog if ExpandTimeBlock is open
+    const now = new Date();
+    schedule.timeBlocks.forEach(block => {
+      const start = new Date(block.startTime);
+      const end = new Date(block.endTime);
+      if (now >= start && now <= new Date(start.getTime() + 10 * 60000) && now <= end && (!activeTimeBlock || activeTimeBlock._id !== block._id)) {
+        setActiveTimeBlock(block);
+        setIsStartTimerDialogOpen(true);
+      }
+    });
+  };
+
+  const handleUpdate = (updatedBlock: TimeBlock) => {
     setSchedule(prevSchedule => ({
       ...prevSchedule,
       timeBlocks: prevSchedule.timeBlocks.map(block =>
@@ -145,18 +159,6 @@ export default function DailySchedule() {
       )
     }));
   };
-  
-
-  const updateSchedule = (updatedSchedule) => {
-    // Convert the startTime and endTime to the user's local timezone
-    const convertedTimeBlocks = updatedSchedule.timeBlocks.map(block => ({
-      ...block,
-      startTime: new Date(block.startTime).toLocaleString(),
-      endTime: new Date(block.endTime).toLocaleString(),
-    }));
-    setSchedule({ ...updatedSchedule, timeBlocks: convertedTimeBlocks });
-  };
-  
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -165,7 +167,7 @@ export default function DailySchedule() {
     <div className="h-full relative">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Today's Schedule</h1>
-        <AddTimeBlockForm onAdd={updateSchedule} />
+        <AddTimeBlockForm onAdd={fetchSchedule} />
       </div>
 
       <div className="grid grid-cols-12 gap-0 w-full" style={{ height: 'calc(100vh - 10rem)', position: 'relative' }}>
@@ -185,10 +187,9 @@ export default function DailySchedule() {
             </div>
           ))}
 
-          {/* Red line indicating current time */}
           <div ref={currentTimeRef} className="absolute w-full border-t-2 border-red-500" style={{ top: `${getCurrentTimePosition()}%` }}></div>
 
-          {schedule.timeBlocks.map((block, index) => (
+          {schedule.timeBlocks.map(block => (
             <div
               key={block._id}
               className="absolute rounded-lg shadow-md"
@@ -196,10 +197,10 @@ export default function DailySchedule() {
                 top: `${getBlockPosition(new Date(block.startTime))}%`,
                 height: `${getBlockHeight(new Date(block.startTime), new Date(block.endTime))}%`,
                 width: '100%',
-                backgroundColor: getColorByCategory(block.category), // Set background color based on category
+                backgroundColor: getColorByCategory(block.category),
               }}
             >
-                <TimeBlock block={block} onUpdate={() => handleUpdate(block._id)} setSchedule={setSchedule} /> {/* Pass handleUpdate as a prop */}
+              <TimeBlock block={block} onUpdate={() => handleUpdate(block)} setSchedule={setSchedule} />
             </div>
           ))}
         </div>
@@ -207,6 +208,29 @@ export default function DailySchedule() {
           <WeeklyHoursSummary weeklyHours={weeklyHours} userData={userData} />
         </div>
       </div>
+
+      {activeTimeBlock && (
+        <StartTimerDialog
+        block={activeTimeBlock}
+        isOpen={isStartTimerDialogOpen}
+        onClose={() => setIsStartTimerDialogOpen(false)}
+        onStart={() => {
+          setIsStartTimerDialogOpen(false);
+          setIsExpandTimeBlockOpen(true);
+          setStartTimer(true);
+          handleUpdate({ ...activeTimeBlock, startTimer: true });
+        }}
+      />
+      )}
+      {activeTimeBlock && (
+        <ExpandTimeBlock
+          block={activeTimeBlock}
+          isOpen={isExpandTimeBlockOpen}
+          onClose={() => setIsExpandTimeBlockOpen(false)}
+          setSchedule={setSchedule}
+          startTimer={startTimer}
+        />
+      )}
     </div>
   );
 }

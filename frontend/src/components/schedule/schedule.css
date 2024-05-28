@@ -86,3 +86,9 @@
   height: 1rem;
 }
 
+.summary-box {
+  width: 15vw;
+  height: 15vw;
+  max-height: 180px;
+  max-width: 180px;
+}

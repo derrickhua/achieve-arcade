@@ -28,10 +28,11 @@ export interface DailySchedule {
 
 export interface TimeBlockUpdateData {
   name?: string;
-  startTime?: Date;
-  endTime?: Date;
+  startTime?: Date | string;
+  endTime?: Date | string;
   tasks?: Task[];
-  category?: 'work' | 'leisure' | 'family_friends' | 'atelic'; // Category field
+  timerDuration?: number;
+  category?: 'work' | 'leisure' | 'family_friends' | 'atelic';
   completed?: boolean;
 }
 

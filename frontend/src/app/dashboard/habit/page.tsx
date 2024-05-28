@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label" 
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogClose,
@@ -23,6 +23,7 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { getHabits, addHabit, deleteHabit } from '@/lib/habit';
 import HabitCard from '@/components/habit/HabitCard';
+import HabitDataVisualizer from '@/components/habit/HabitDataVisualizer';
 
 interface Habit {
   _id: string;
@@ -46,7 +47,8 @@ interface AddHabitFormProps {
 }
 
 export default function HabitDashboard() {
-  const [habits, setHabits] = useState([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
+  const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -59,6 +61,10 @@ export default function HabitDashboard() {
     try {
       const response = await getHabits();
       setHabits(response.data);
+      console.log(response.data)
+      if (response.data.length > 0) {
+        setSelectedHabit(response.data[0]);
+      }
       setIsLoading(false);
     } catch (error) {
       setError('Failed to fetch habits.');
@@ -66,7 +72,8 @@ export default function HabitDashboard() {
     }
   };
 
-  const handleDeleteHabit = async (habitId:string) => {
+
+  const handleDeleteHabit = async (habitId: string) => {
     try {
       await deleteHabit(habitId);
       setHabits(habits.filter(habit => habit._id !== habitId));
@@ -74,9 +81,13 @@ export default function HabitDashboard() {
       setError('Failed to delete the habit.');
     }
   };
-  
+
+  const handleMaximizeHabit = (habit: Habit) => {
+    setSelectedHabit(habit);
+  };
+
   return (
-    <div className="h-full">
+    <div className="h-full flex flex-col">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Your Habits</h1>
         <Dialog>
@@ -88,19 +99,27 @@ export default function HabitDashboard() {
               <DialogTitle>Add New Habit</DialogTitle>
               <DialogDescription>Enter details about your new habit.</DialogDescription>
             </DialogHeader>
-            <AddHabitForm fetchHabits={fetchHabits}/>
+            <AddHabitForm fetchHabits={fetchHabits} />
           </DialogContent>
         </Dialog>
       </div>
-
-      <div className="flex  habits-container flex-col">
-        {habits.length > 0 ? (
-          habits.map((habit, index) => (
-            <HabitCard key={index} habit={habit} deleteHabit={handleDeleteHabit}/>
-          ))
-        ) : (
-          <p>No habits added yet. Start by adding a new habit!</p>
+      <div className='habit-dashboard max-h-[1000px]'>
+        {selectedHabit && (
+          <div className="mb-4 flex justify-center">
+            <HabitDataVisualizer habit={selectedHabit} />
+          </div>
         )}
+          <div className="flex flex-wrap gap-4 justify-center habit-card-container">
+            {habits.length > 0 ? (
+              habits.map((habit) => (
+                <HabitCard key={habit._id} habit={habit} deleteHabit={handleDeleteHabit} maximizeHabit={handleMaximizeHabit} />
+              ))
+            ) : (
+              <p className="w-full text-center">No habits added yet. Start by adding a new habit!</p>
+            )}
+
+            
+          </div>
       </div>
     </div>
   );
@@ -121,11 +140,11 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ fetchHabits }) => {
       goal: consistencyGoal,
       effectiveDate: new Date().toISOString() // setting the effective date to today
     };
-  
+
     try {
       const response = await addHabit(habitData);
       if (response.status === 201) {
-        await fetchHabits();  
+        await fetchHabits();
         setName('');
         setHabitPeriod('Daily');
         setConsistencyGoal(1);

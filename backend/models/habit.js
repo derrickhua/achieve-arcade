@@ -11,6 +11,10 @@ const HabitSchema = new Schema({
     type: String,
     required: true
   },
+  habitTotal: {
+    type: Number,
+    default: 0
+  },
   habitPeriod: {
     type: String,
     enum: ['Daily', 'Weekly', 'Monthly'],

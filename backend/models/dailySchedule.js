@@ -12,7 +12,6 @@ const TimeBlockSchema = new Schema({
   startTime: { type: Date, required: true },
   endTime: { type: Date, required: true },
   tasks: [TaskSchema],
-  timerStartedAt: { type: Date },
   timerDuration: { type: Number, default: 0 }, // in seconds
   category: { type: String, enum: ['work', 'leisure', 'family_friends', 'atelic'], required: true },
   completed: { type: Boolean, default: false } // For time blocks without tasks

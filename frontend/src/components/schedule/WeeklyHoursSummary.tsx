@@ -1,4 +1,10 @@
 import React from 'react';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface WeeklyHoursProps {
   weeklyHours: {
@@ -27,7 +33,7 @@ const WeeklyHoursSummary: React.FC<WeeklyHoursProps> = ({ weeklyHours, userData 
 
   return (
     <div className="weekly-hours-summary grid grid-cols-2 gap-4">
-      <div className="summary-box w-[180px] h-[180px] flex flex-col justify-between items-center bg-[#3B82F6] rounded-xl">
+      <div className="summary-box  flex flex-col justify-between items-center bg-[#3B82F6] rounded-xl">
         <div className="box-content flex-grow flex items-center justify-center">
           <span className="text-[48px] text-white">{work}</span>
           <span className="text-[48px] text-white">/</span>
@@ -35,7 +41,7 @@ const WeeklyHoursSummary: React.FC<WeeklyHoursProps> = ({ weeklyHours, userData 
         </div>
         <div className="box-header mb-2 text-white text-[32px]">WORK</div>
       </div>
-      <div className="summary-box w-[180px] h-[180px] flex flex-col justify-between items-center bg-[#EF4444] rounded-xl">
+      <div className="summary-box flex flex-col justify-between items-center bg-[#EF4444] rounded-xl">
         <div className="box-content flex-grow flex items-center justify-center">
           <span className="text-[48px] text-white">{leisure}</span>
           <span className="text-[48px] text-white">/</span>
@@ -43,7 +49,7 @@ const WeeklyHoursSummary: React.FC<WeeklyHoursProps> = ({ weeklyHours, userData 
         </div>
         <div className="box-header mb-2 text-white text-[32px]">LEISURE</div>
       </div>
-      <div className="summary-box w-[180px] h-[180px] flex flex-col justify-between items-center bg-[#22C55E] rounded-xl">
+      <div className="summary-box  flex flex-col justify-between items-center bg-[#22C55E] rounded-xl">
         <div className="box-content flex-grow flex items-center justify-center">
           <span className="text-[48px] text-white">{family_friends}</span>
           <span className="text-[48px] text-white">/</span>
@@ -51,13 +57,22 @@ const WeeklyHoursSummary: React.FC<WeeklyHoursProps> = ({ weeklyHours, userData 
         </div>
         <div className="box-header mb-2 text-white text-[19px] text-center">FAMILY & <br /> FRIENDS</div>
       </div>
-      <div className="summary-box w-[180px] h-[180px] flex flex-col justify-between items-center bg-[#F59E0B] rounded-xl">
+      <div className="summary-box flex flex-col justify-between items-center bg-[#F59E0B] rounded-xl">
         <div className="box-content flex-grow flex items-center justify-center">
           <span className="text-[48px] text-white">{atelic}</span>
           <span className="text-[48px] text-white">/</span>
           <span className="text-[48px] text-white">{atelicHoursPerWeek}</span>
         </div>
-        <div className="box-header mb-2 text-white text-[32px]">ATELIC</div>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <div className="box-header mb-2 text-white text-[32px] cursor-pointer">ATELIC</div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className='text-[15px]'>Atelic activities are done for their own sake, without a specific goal or purpose.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
     </div>
   );

@@ -79,35 +79,71 @@ export const getHabits = async (req, res, next) => {
 };
 
 /**
- * Updates a specific habit based on provided parameters such as new goal or habit name.
+ * Updates a specific habit based on provided parameters such as new goal, habit name, or completion count.
  * Handles updates selectively and ensures consistency in the database.
  * @param {Request} req - The request object, including habit ID and update details.
  * @param {Response} res - The response object used to return the updated habit.
  */
 export const updateHabit = async (req, res, next) => {
     const { habitId } = req.params;
-    const { name, habitPeriod, newGoal, effectiveDate } = req.body;
+    const { name, habitPeriod, newGoal, effectiveDate, completionChange, date } = req.body;
 
     try {
-        const habit = await Habit.findById(habitId);
-        if (!habit) {
-            const error = new Error('Habit not found');
-            error.status = 404;
-            throw error;  // Throw the error to be caught by the catch block below
-        }
+        const updateFields = {};
 
         // Update basic fields if provided
-        if (name) habit.name = name;
-        if (habitPeriod) habit.habitPeriod = habitPeriod;
+        if (name) updateFields.name = name;
+        if (habitPeriod) updateFields.habitPeriod = habitPeriod;
 
         // Handle goal updates with validation and error handling
         if (newGoal && effectiveDate) {
-            await habit.updateGoal(newGoal, new Date(effectiveDate));
+            const goalEntry = { goal: newGoal, effectiveDate: new Date(effectiveDate) };
+            updateFields.latestGoal = goalEntry;
+            updateFields.$push = { consistencyGoals: goalEntry };
         }
 
-        await habit.save();
-        console.log('Habit updated:', habit);
-        res.json(habit);
+        // Update completions for a specific date if provided
+        if (typeof completionChange === 'number' && date) {
+            const targetDate = new Date(date);
+            targetDate.setHours(0, 0, 0, 0);
+
+            const habit = await Habit.findById(habitId, { occurrences: 1, habitTotal: 1 });
+            if (!habit) {
+                const error = new Error('Habit not found');
+                error.status = 404;
+                throw error;
+            }
+
+            let occurrenceUpdated = false;
+            habit.occurrences = habit.occurrences.map(occurrence => {
+                if (new Date(occurrence.date).toDateString() === targetDate.toDateString()) {
+                    occurrence.completions += completionChange;
+                    occurrence.completions = Math.max(0, occurrence.completions);
+                    occurrenceUpdated = true;
+                }
+                return occurrence;
+            });
+
+            if (!occurrenceUpdated) {
+                habit.occurrences.push({ date: targetDate, completions: Math.max(0, completionChange) });
+            }
+
+            habit.habitTotal += completionChange;
+            habit.habitTotal = Math.max(0, habit.habitTotal);
+
+            await habit.save();
+            res.json(habit);
+            return;
+        }
+
+        const updatedHabit = await Habit.findByIdAndUpdate(habitId, updateFields, { new: true });
+        if (!updatedHabit) {
+            const error = new Error('Habit not found');
+            error.status = 404;
+            throw error;
+        }
+
+        res.json(updatedHabit);
     } catch (error) {
         // Customize error handling for specific error types
         if (error instanceof mongoose.Error.ValidationError) {
