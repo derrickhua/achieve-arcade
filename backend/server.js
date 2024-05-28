@@ -10,6 +10,7 @@ import userRoutes from './routes/user.js';
 import habitRoutes from './routes/habit.js';
 import goalRoutes from './routes/goal.js';
 import dailyScheduleRoutes from './routes/dailySchedule.js';
+import dashboardRoutes from './routes/dashboard.js';
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/daily-schedule', dailyScheduleRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 // Error handler
 app.use((err, req, res, next) => {
   const errorDetails = {
