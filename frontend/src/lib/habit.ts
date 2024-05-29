@@ -11,16 +11,16 @@ const api = axios.create({
 
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
-    const session = await getSession();
-    if (session?.accessToken) {
-        config.headers.authorization = `Bearer ${session.accessToken}`;
-    } else {
-        console.log("No access token found in session.");
-    }
+  const session = await getSession();
+  if (session?.accessToken) {
+    config.headers.authorization = `Bearer ${session.accessToken}`;
+  } else {
+    console.log("No access token found in session.");
+  }
 
-    return config;
+  return config;
 }, error => {
-    return Promise.reject(error);
+  return Promise.reject(error);
 });
 
 export const getHabits = async () => {
@@ -28,25 +28,20 @@ export const getHabits = async () => {
 };
 
 export const addHabit = async (habitData) => {
-    console.log('Sending habitData:', habitData);
-    try {
-        const response = await api.post('/', habitData);  
-        return response;
-    } catch (error) {
-        console.error('Error adding habit:', error.response ? error.response.data : error.message);
-        throw error;
-    }
+  console.log('Sending habitData:', habitData);
+  try {
+    const response = await api.post('/', habitData);  
+    return response;
+  } catch (error) {
+    console.error('Error adding habit:', error.response ? error.response.data : error.message);
+    throw error;
+  }
 };
 
-// API method to update habit completions for today
+// Simplified API method to update habit completions for today
 export const updateHabitCompletion = async (habitId, completionChange, date) => {
   try {
-    const habit = await api.get(`/${habitId}`);
-    const currentTotal = habit.data.habitTotal || 0;
-    const newTotal = currentTotal + completionChange;
-
-    const response = await api.put(`/${habitId}`, {
-      habitTotal: newTotal,
+    const response = await api.post(`/${habitId}/update`, {
       completionChange,
       date
     });

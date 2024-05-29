@@ -1,17 +1,9 @@
-'use client'
-import React from "react";
+'use client';
+import React, { useState } from 'react';
 import { X, Minus, Plus, Maximize2 } from 'lucide-react';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { updateHabitCompletion } from '@/lib/habit';
 import './habits.css';
+
 interface Habit {
   _id: string;
   name: string;
@@ -23,13 +15,32 @@ interface Habit {
   };
 }
 
-const HabitCard: React.FC<{ habit: Habit, deleteHabit: (id: string) => void, maximizeHabit: (habit: Habit) => void }> = ({ habit, deleteHabit, maximizeHabit }) => {
-  const handleIncrease = () => {
-    // Logic to increase the habit total
+const HabitCard: React.FC<{ habit: Habit; deleteHabit: (id: string) => void; maximizeHabit: (habit: Habit) => void; }> = ({ habit, deleteHabit, maximizeHabit }) => {
+  const [count, setCount] = useState(habit.habitTotal);
+  const formattedDate = new Date().toISOString();
+
+  const incrementCount = async () => {
+    try {
+      const completionChange = 1;
+      const newCount = count + completionChange;
+      setCount(newCount);
+      await updateHabitCompletion(habit._id, completionChange, formattedDate);
+    } catch (error) {
+      console.error('Error incrementing habit:', error);
+    }
   };
 
-  const handleDecrease = () => {
-    // Logic to decrease the habit total
+  const decrementCount = async () => {
+    if (count > 0) {
+      try {
+        const completionChange = -1;
+        const newCount = count + completionChange;
+        setCount(newCount);
+        await updateHabitCompletion(habit._id, completionChange, formattedDate);
+      } catch (error) {
+        console.error('Error decrementing habit:', error);
+      }
+    }
   };
 
   return (
@@ -41,13 +52,13 @@ const HabitCard: React.FC<{ habit: Habit, deleteHabit: (id: string) => void, max
         <Maximize2 />
       </button>
       <div className="flex flex-col items-center justify-center h-full">
-        <div className="text-[60px] text-center flex-1 flex items-center mt-5">{habit.habitTotal}</div>
+        <div className="text-[60px] text-center flex-1 flex items-center mt-5">{count}</div>
         <div className="flex items-center mt-4">
-          <button className="text-green-500 mr-2" onClick={handleDecrease}>
+          <button className="text-green-500 mr-2" onClick={decrementCount} disabled={count === 0}>
             <Minus />
           </button>
           <div className="text-lg text-center">{habit.name}</div>
-          <button className="text-green-500 ml-2" onClick={handleIncrease}>
+          <button className="text-green-500 ml-2" onClick={incrementCount}>
             <Plus />
           </button>
         </div>

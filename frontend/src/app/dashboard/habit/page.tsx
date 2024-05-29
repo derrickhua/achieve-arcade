@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,8 +19,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+} from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getHabits, addHabit, deleteHabit } from '@/lib/habit';
 import HabitCard from '@/components/habit/HabitCard';
 import HabitDataVisualizer from '@/components/habit/HabitDataVisualizer';
@@ -61,7 +61,7 @@ export default function HabitDashboard() {
     try {
       const response = await getHabits();
       setHabits(response.data);
-      console.log(response.data)
+      console.log(response.data);
       if (response.data.length > 0) {
         setSelectedHabit(response.data[0]);
       }
@@ -71,7 +71,6 @@ export default function HabitDashboard() {
       setIsLoading(false);
     }
   };
-
 
   const handleDeleteHabit = async (habitId: string) => {
     try {
@@ -103,23 +102,31 @@ export default function HabitDashboard() {
           </DialogContent>
         </Dialog>
       </div>
-      <div className='habit-dashboard max-h-[1000px]'>
+      <div className="habit-dashboard max-h-[1000px]">
         {selectedHabit && (
-          <div className="mb-4 flex justify-center">
-            <HabitDataVisualizer habit={selectedHabit} />
+          <div className="mb-4 flex justify-center relative rounded">
+            <div className="animated-border h-[100%]">
+              <HabitDataVisualizer habit={selectedHabit} />
+            </div>
           </div>
         )}
-          <div className="flex flex-wrap gap-4 justify-center habit-card-container">
-            {habits.length > 0 ? (
-              habits.map((habit) => (
-                <HabitCard key={habit._id} habit={habit} deleteHabit={handleDeleteHabit} maximizeHabit={handleMaximizeHabit} />
-              ))
-            ) : (
-              <p className="w-full text-center">No habits added yet. Start by adding a new habit!</p>
-            )}
-
-            
-          </div>
+        <div className="flex flex-wrap gap-4 justify-center habit-card-container">
+          {habits.length > 0 ? (
+            habits.map((habit) => (
+              <div key={habit._id} className="relative">
+                {selectedHabit?._id === habit._id ? (
+                  <div className="animated-border">
+                    <HabitCard habit={habit} deleteHabit={handleDeleteHabit} maximizeHabit={handleMaximizeHabit} />
+                  </div>
+                ) : (
+                  <HabitCard habit={habit} deleteHabit={handleDeleteHabit} maximizeHabit={handleMaximizeHabit} />
+                )}
+              </div>
+            ))
+          ) : (
+            <p className="w-full text-center">No habits added yet. Start by adding a new habit!</p>
+          )}
+        </div>
       </div>
     </div>
   );

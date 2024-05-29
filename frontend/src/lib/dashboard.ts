@@ -27,7 +27,6 @@ api.interceptors.request.use(async (config) => {
 export const getDashboardMetrics = async (): Promise<any> => {
   try {
     const response = await api.get('/metrics');
-    console.log(response)
     return response.data;
   } catch (error: any) {
     console.error('Error fetching dashboard metrics:', error.response ? error.response.data : error.message);

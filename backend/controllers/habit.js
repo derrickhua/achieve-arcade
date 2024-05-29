@@ -188,7 +188,7 @@ export const deleteHabit = async (req, res, next) => {
  * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
  * @param {Response} res - The response object used to return the updated habit.
  */
-export const updateHabitCompletion = async (req, res, next) => {
+export const updateHabitCompletion = async (req, res) => {
     const { habitId } = req.params;
     const { completionChange, date } = req.body; // Include date in the request body
 
@@ -202,20 +202,27 @@ export const updateHabitCompletion = async (req, res, next) => {
         const targetDate = new Date(date);
         targetDate.setHours(0, 0, 0, 0);  // Normalize the date
 
-        const updateResult = await habit.changeCompletion(targetDate, completionChange);
-
-        if (!updateResult.success) {
-            throw new Error(updateResult.message);
+        // Find or create the occurrence for the target date
+        let occurrence = habit.occurrences.find(o => o.date.getTime() === targetDate.getTime());
+        if (!occurrence) {
+            occurrence = { date: targetDate, completions: 0 };
+            habit.occurrences.push(occurrence);
         }
 
-        console.log('Habit completion updated:', habit.occurrences);
+        // Update the completions count
+        occurrence.completions = Math.max(0, occurrence.completions + completionChange);
+
+        // Update the total completions for the habit
+        habit.habitTotal = habit.occurrences.reduce((total, occ) => total + occ.completions, 0);
+
+        await habit.save();
+
         res.json(habit);
     } catch (error) {
         console.error('Error updating habit completion:', error);
         res.status(400).json({ message: error.message });
     }
 };
-
 
 /**
  * Calculates and retrieves the current streak for a specified habit.

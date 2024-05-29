@@ -241,3 +241,55 @@ html,body {
     display: none;
   }
 }
+
+/* styles.css */
+
+@property --angle {
+  syntax: '<angle>';
+  initial-value: 90deg;
+  inherits: true;
+}
+
+@keyframes borderRotate {
+  0% {
+    --angle: 0deg;
+  }
+  100% {
+    --angle: 360deg;
+  }
+}
+
+.animated-border {
+  border: 0.35rem solid;
+  border-image: conic-gradient(
+    from var(--angle),
+    rgba(152, 228, 165, 0.1),
+    #98E4A5 0.1turn,
+    #98E4A5 0.15turn,
+    rgba(152, 228, 165, 0.1) 0.25turn
+  ) 30;
+  animation: borderRotate 2s linear infinite forwards;
+  overflow: hidden; /* Ensure child elements don't overflow the border radius */
+  position: relative; /* Ensure the gradient border respects the border radius */
+}
+
+.animated-border::before {
+  content: '';
+  position: absolute;
+  top: -0.35rem;
+  right: -0.35rem;
+  bottom: -0.35rem;
+  left: -0.35rem;
+  border-radius: inherit;
+  padding: 1rem;
+  border: 0.35rem solid transparent;
+  border-image: conic-gradient(
+    from var(--angle),
+    rgba(152, 228, 165, 0.1),
+    #98E4A5 0.1turn,
+    #98E4A5 0.15turn,
+    rgba(152, 228, 165, 0.1) 0.25turn
+  ) 30;
+  animation: borderRotate 2s linear infinite forwards;
+  z-index: -1;
+}
