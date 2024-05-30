@@ -12,6 +12,5 @@ export default function GoalDashboard() {
 
   return (
         <DailySchedule />
-
   );
 }

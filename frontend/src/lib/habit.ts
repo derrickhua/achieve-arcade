@@ -28,7 +28,6 @@ export const getHabits = async () => {
 };
 
 export const addHabit = async (habitData) => {
-  console.log('Sending habitData:', habitData);
   try {
     const response = await api.post('/', habitData);  
     return response;
@@ -45,7 +44,6 @@ export const updateHabitCompletion = async (habitId, completionChange, date) => 
       completionChange,
       date
     });
-    console.log('Response from updateHabitCompletion:', response.data);
     return response;
   } catch (error) {
     console.error('Error updating habit completion:', error.response ? error.response.data : error.message);

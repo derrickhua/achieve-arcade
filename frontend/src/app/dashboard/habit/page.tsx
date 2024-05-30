@@ -61,7 +61,6 @@ export default function HabitDashboard() {
     try {
       const response = await getHabits();
       setHabits(response.data);
-      console.log(response.data);
       if (response.data.length > 0) {
         setSelectedHabit(response.data[0]);
       }

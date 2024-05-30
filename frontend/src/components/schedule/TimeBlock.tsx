@@ -40,8 +40,6 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
   const allTasksComplete = (tasks && tasks.every(task => task.completed)) || (tasks && tasks.length === 0);
 
   const debouncedUpdate = debounce(async (block: TimeBlockType, updatedTasks: Task[], setSchedule: React.Dispatch<React.SetStateAction<DailySchedule>>) => {
-    console.log('Debounced Update - Block:', block);
-    console.log('Debounced Update - Updated Tasks:', updatedTasks);
     const updateData = {
       ...block,
       tasks: updatedTasks,
@@ -54,7 +52,6 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onUpdate, setSchedule }) =
       }
   
       setSchedule(prevSchedule => {
-        console.log('Previous Schedule:', prevSchedule);
         const updatedTimeBlocks = prevSchedule.timeBlocks.map(b =>
           b._id === block._id ? updatedBlock : b
         );

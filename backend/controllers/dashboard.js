@@ -80,7 +80,9 @@ export const calculateMetrics = async (req, res, next) => {
             { $unwind: '$timeBlocks' },
             {
                 $project: {
-                    date: '$date',
+                    date: {
+                        $dateToString: { format: "%Y-%m-%d", date: "$date" }
+                    },
                     efficiency: {
                         $cond: [
                             { $eq: [{ $size: '$timeBlocks.tasks' }, 0] },
@@ -118,35 +120,67 @@ export const calculateMetrics = async (req, res, next) => {
         ]);
         console.timeEnd('Time Block Efficiency');
         console.log('Time Block Efficiency Data:', timeBlockEfficiencyData);
+        
         const averageTimeBlockEfficiency = timeBlockEfficiencyData.length
             ? timeBlockEfficiencyData
             : [];
+        
         console.log('Average Time Block Efficiency:', averageTimeBlockEfficiency);
+
         // Aggregate Goal Progress
         console.time('Goal Progress');
         const goalProgressData = await Goal.aggregate([
+            {
+                $group: {
+                    _id: null,
+                    totalGoals: { $sum: 1 },
+                    completedGoals: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ['$status', 'Completed'] },
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
+        ]);
+        console.timeEnd('Goal Progress');
+        const goalProgress = goalProgressData.length
+            ? (goalProgressData[0].completedGoals / goalProgressData[0].totalGoals) * 100
+            : 0;
+        console.log('Goal Progress:', goalProgress);
+
+        // Aggregate Milestone Completion Rate
+        console.time('Milestone Completion Rate');
+        const milestoneCompletionData = await Goal.aggregate([
             { $unwind: '$milestones' },
             {
                 $group: {
                     _id: null,
                     totalMilestones: { $sum: 1 },
-                    completedMilestones: { $sum: { $cond: ['$milestones.completed', 1, 0] } },
-                },
-            },
+                    completedMilestones: {
+                        $sum: {
+                            $cond: [
+                                { $and: [
+                                    { $eq: ['$milestones.completed', true] },
+                                    { $lte: ['$milestones.completionDate', '$milestones.deadline'] }
+                                ]},
+                                1,
+                                0
+                            ]
+                        }
+                    }
+                }
+            }
         ]);
-        console.timeEnd('Goal Progress');
-        console.log('Goal Progress Data:', goalProgressData);
-        const goalProgress = goalProgressData.length
-            ? (goalProgressData[0].completedMilestones / goalProgressData[0].totalMilestones) * 100
-            : 0;
-        console.log('Goal Progress:', goalProgress);
-      
-        // Aggregate Milestone Completion Rate
-        console.time('Milestone Completion Rate');
-        const milestoneCompletionRate = goalProgress; // Same as goal progress
         console.timeEnd('Milestone Completion Rate');
+        const milestoneCompletionRate = milestoneCompletionData.length
+            ? (milestoneCompletionData[0].completedMilestones / milestoneCompletionData[0].totalMilestones) * 100
+            : 0;
         console.log('Milestone Completion Rate:', milestoneCompletionRate);
-      
+
         // Aggregate Number of Habits with Active Streaks
         console.time('Active Streaks');
         const activeStreaks = await Habit.countDocuments({ streak: { $gt: 0 } });
@@ -178,12 +212,8 @@ export const calculateMetrics = async (req, res, next) => {
       
         // Aggregate Weekly Hours by Category
         console.time('Weekly Hours by Category');
-        const date = new Date();
-        const startDate = startOfWeek(date);
-        const endDate = endOfWeek(date);
-
         const result = await DailySchedule.aggregate([
-            { $match: { userId: new mongoose.Types.ObjectId(userId), date: { $gte: startDate, $lte: endDate } } },
+            { $match: { userId: new mongoose.Types.ObjectId(userId), date: { $gte: startOfWeek(new Date()), $lte: endOfWeek(new Date()) } } },
             { $unwind: '$timeBlocks' },
             { $group: { _id: '$timeBlocks.category', totalDuration: { $sum: '$timeBlocks.timerDuration' } } }
         ]);
@@ -202,7 +232,6 @@ export const calculateMetrics = async (req, res, next) => {
         console.log('Category Hours:', categoryHours);
       
         console.log('Metrics calculation completed.');
-        
 
         // Return calculated metrics
         res.json({
@@ -218,6 +247,6 @@ export const calculateMetrics = async (req, res, next) => {
         });
 
     } catch (error) {
-        next(error)
+        next(error);
     }
 };

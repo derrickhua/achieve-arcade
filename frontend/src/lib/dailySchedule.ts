@@ -67,7 +67,6 @@ export const getDailySchedule = async (): Promise<DailySchedule> => {
 export const addTimeBlock = async (timeBlockData: Omit<TimeBlock, '_id'>): Promise<DailySchedule> => {
   try {
     const response = await api.post('/time-block', timeBlockData);
-    console.log('Time block added successfully:', response.data);
     return response.data;  // Return only the response data containing the updated schedule
   } catch (error: any) {
     console.error('Error adding time block:', error.response ? error.response.data : error.message);
