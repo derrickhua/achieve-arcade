@@ -1,53 +1,56 @@
-'use client';
-import { useEffect } from 'react';
-import { useSession, SessionProvider } from 'next-auth/react';
-import { useRouter } from 'next/navigation'; // Corrected from 'next/navigation'
-import Head from 'next/head';
-import { Inter } from 'next/font/google';
-import './globals.css';
+'use client'
+import { useEffect, useState } from "react";
+import { useSession, SessionProvider } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Head from "next/head";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] });
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  const router = useRouter();
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
-      <ComponentWithSession router={router} >
-        {children}
-      </ComponentWithSession>
-    </SessionProvider>
+    <html lang="en">
+      <Head>
+        <title>Tempus</title>
+      </Head>
+      <body>
+        <SessionProvider>
+          <ComponentWithSession>
+            {children}
+          </ComponentWithSession>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }
 
-function ComponentWithSession({ router, children }) {
+function ComponentWithSession({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
+  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    if (status === 'loading') {
-      return; // Loading state, do nothing
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) {
+      return; // Skip router logic if component is not mounted
     }
-    if (status === 'unauthenticated') {
-      // If there's no session, redirect to the sign in page
-      router.push('/auth/signin');
-    } else if (status === 'authenticated') {
+    if (status === "unauthenticated") {
+      // If there's no session, redirect to the sign-in page
+      router.replace("/auth/signin");
+    } else if (status === "authenticated") {
       // If there's a session, redirect to the dashboard
-      router.push('/dashboard');
+      router.replace("/dashboard");
     }
-  }, [status, router]);
+  }, [status, router, mounted]);
+
+  if (status === "loading") {
+    return <p>Loading...</p>; // Display a loading state
+  }
 
   return (
-    <html lang='en'>
-        <Head>
-          <title>Tempus</title>
-        </Head>
-        <body className={`${inter.className}`}>
-          {children}
-        </body>
-    </html>
+    <>
+      {children}
+    </>
   );
 }

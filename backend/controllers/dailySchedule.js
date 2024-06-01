@@ -1,7 +1,7 @@
-import { DailySchedule } from "../models/dailySchedule.js";
 import { startOfWeek, endOfWeek } from 'date-fns';
 import mongoose from 'mongoose'
-
+import { DailySchedule, TimeBlock } from '../models/dailySchedule.js';
+import User from '../models/user.js';
 /**
  * Retrieves the daily schedule for the user for the current date.
  * If no schedule exists for the current date, a new one is created.
@@ -59,7 +59,7 @@ export const updateTimeBlock = async (req, res, next) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const { blockId } = req.params;
-    const { name, startTime, endTime, tasks, category, completed, timerDuration } = req.body; // Include timerDuration
+    const { name, startTime, endTime, tasks, category, completed, timerDuration } = req.body;
   
     try {
       // Ensure each task has a valid _id
@@ -89,6 +89,26 @@ export const updateTimeBlock = async (req, res, next) => {
       if (schedule) {
         // Find the updated time block in the schedule
         const updatedBlock = schedule.timeBlocks.find(block => block._id.toString() === blockId);
+  
+        // If the time block is marked as completed, calculate and add coins
+        if (completed) {
+          let coins = 0;
+          if (category === 'work' || category === 'leisure') {
+            const durationInHours = timerDuration / 3600; // Convert seconds to hours
+  
+            if (durationInHours <= 1) {
+              coins = 2;
+            } else if (durationInHours <= 3) {
+              coins = 4;
+            } else {
+              coins = 6;
+            }
+          }
+  
+          // Efficiently increment the user's coin balance
+          await User.findByIdAndUpdate(req.user._id, { $inc: { coins } });
+        }
+  
         res.json(updatedBlock);
       } else {
         res.status(404).json({ message: 'Time block not found' });
@@ -97,7 +117,7 @@ export const updateTimeBlock = async (req, res, next) => {
       next(error); // Pass any server-side errors to the error handling middleware
     }
   };
-  
+
 /**
  * Deletes a specific time block from the daily schedule for the current date.
  * @param {Request} req - The request object, including time block ID.

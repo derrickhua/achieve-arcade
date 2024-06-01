@@ -11,7 +11,8 @@ import habitRoutes from './routes/habit.js';
 import goalRoutes from './routes/goal.js';
 import dailyScheduleRoutes from './routes/dailySchedule.js';
 import dashboardRoutes from './routes/dashboard.js';
-
+import taskRoutes from './routes/task.js';
+import rewardRoutes from './routes/reward.js';
 dotenv.config();
 
 const app = express();
@@ -50,8 +51,11 @@ app.use(cookieParser());
 app.use('/api/users', userRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/api/tasks', taskRoutes);
 app.use('/api/daily-schedule', dailyScheduleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/rewards', rewardRoutes);
+
 // Error handler
 app.use((err, req, res, next) => {
   const errorDetails = {

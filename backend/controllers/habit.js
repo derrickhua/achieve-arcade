@@ -25,11 +25,7 @@ export const addHabit = async (req, res, next) => {
             consistencyGoals: [{
                 goal: goal,
                 effectiveDate: new Date(effectiveDate) // Ensure the date is properly formatted
-            }],
-            latestGoal: {
-                goal: goal,
-                effectiveDate: new Date(effectiveDate)
-            }
+            }]
         });
         await newHabit.save();
         console.log('New habit added:', newHabit)
@@ -41,7 +37,7 @@ export const addHabit = async (req, res, next) => {
 };
 
 /**
- * Retrieves all habits for the user, enriching them with heatmap data, performance rates, and weekly occurrences.
+ * Retrieves all habits for the user, enriching them with heatmap data and weekly occurrences.
  * Each habit's data is enhanced with visual and performance insights.
  * @param {Request} req - The request object, containing user authentication data.
  * @param {Response} res - The response object used to return the list of habits.
@@ -49,32 +45,18 @@ export const addHabit = async (req, res, next) => {
 export const getHabits = async (req, res, next) => {
     try {
         const habits = await Habit.find({ user: req.user._id });
-        // Fetch heatmap data, all-time performance rates, and weekly occurrences for each habit
         const habitsWithData = await Promise.all(habits.map(async (habit) => {
-            try {
-                const heatmapData = await habit.getHeatmapData();
-                const performanceRate = await habit.calculatePerformanceRate('all-time');  // Fetching all-time performance rate
-                const occurrences = habit.getWeeklyOccurrences();  // Fetch weekly occurrences for the habit
-                return {
-                    ...habit.toObject(),  // Convert Mongoose document to plain object
-                    heatmapData,
-                    performanceRate,
-                    occurrences  // Add weekly occurrences data to the enriched habit object
-                };
-            } catch (innerError) {
-                // Log and encapsulate each error related to individual habit data fetching
-                console.error(`Error fetching additional data for habit ${habit._id}:`, innerError);
-                // Construct an informative error object and throw it to be caught by the outer catch
-                const error = new Error(`Data enrichment failed for habit ${habit._id}`);
-                error.status = 500; // Internal Server Error
-                error.innerError = innerError; // Preserve original error details (optionally)
-                throw error;
-            }
+            const heatmapData = await habit.getHeatmapData();
+            const occurrences = habit.getWeeklyOccurrences();
+            return {
+                ...habit.toObject(),
+                heatmapData,
+                occurrences
+            };
         }));
         res.json(habitsWithData);
     } catch (error) {
-        // Delegate any errors caught during processing to the error handling middleware
-        next(error); 
+        next(error);
     }
 };
 
@@ -98,40 +80,19 @@ export const updateHabit = async (req, res, next) => {
         // Handle goal updates with validation and error handling
         if (newGoal && effectiveDate) {
             const goalEntry = { goal: newGoal, effectiveDate: new Date(effectiveDate) };
-            updateFields.latestGoal = goalEntry;
             updateFields.$push = { consistencyGoals: goalEntry };
         }
 
         // Update completions for a specific date if provided
         if (typeof completionChange === 'number' && date) {
-            const targetDate = new Date(date);
-            targetDate.setHours(0, 0, 0, 0);
-
-            const habit = await Habit.findById(habitId, { occurrences: 1, habitTotal: 1 });
+            const habit = await Habit.findById(habitId);
             if (!habit) {
                 const error = new Error('Habit not found');
                 error.status = 404;
                 throw error;
             }
 
-            let occurrenceUpdated = false;
-            habit.occurrences = habit.occurrences.map(occurrence => {
-                if (new Date(occurrence.date).toDateString() === targetDate.toDateString()) {
-                    occurrence.completions += completionChange;
-                    occurrence.completions = Math.max(0, occurrence.completions);
-                    occurrenceUpdated = true;
-                }
-                return occurrence;
-            });
-
-            if (!occurrenceUpdated) {
-                habit.occurrences.push({ date: targetDate, completions: Math.max(0, completionChange) });
-            }
-
-            habit.habitTotal += completionChange;
-            habit.habitTotal = Math.max(0, habit.habitTotal);
-
-            await habit.save();
+            await habit.changeCompletion(date, completionChange);
             res.json(habit);
             return;
         }
@@ -145,14 +106,7 @@ export const updateHabit = async (req, res, next) => {
 
         res.json(updatedHabit);
     } catch (error) {
-        // Customize error handling for specific error types
-        if (error instanceof mongoose.Error.ValidationError) {
-            error.status = 400;  // Bad Request for validation errors
-        } else if (error instanceof mongoose.Error.CastError) {
-            error.status = 400;  // Bad Request for casting errors, typically invalid format
-            error.message = 'Invalid ID format.';
-        }
-        next(error);  // Pass the error to the error handling middleware
+        next(error);
     }
 };
 
@@ -169,16 +123,11 @@ export const deleteHabit = async (req, res, next) => {
         if (!deletedHabit) {
             const error = new Error('Habit not found');
             error.status = 404;
-            throw error; // Throw the error to be caught by the catch block
+            throw error;
         }
-        console.log('Habit deleted:', deletedHabit);
-        res.status(204).send(); // No content to send back
+        res.status(204).send();
     } catch (error) {
-        if (error instanceof mongoose.Error.CastError) {
-            error.status = 400; // Bad Request
-            error.message = 'Invalid ID format.';
-        }
-        next(error); // Pass any caught error to the error handling middleware
+        next(error);
     }
 };
 
@@ -188,39 +137,22 @@ export const deleteHabit = async (req, res, next) => {
  * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
  * @param {Response} res - The response object used to return the updated habit.
  */
-export const updateHabitCompletion = async (req, res) => {
+export const updateHabitCompletion = async (req, res, next) => {
     const { habitId } = req.params;
-    const { completionChange, date } = req.body; // Include date in the request body
+    const { completionChange, date } = req.body;
 
     try {
         const habit = await Habit.findById(habitId);
         if (!habit) {
-            return res.status(404).json({ message: 'Habit not found' });
+            const error = new Error('Habit not found');
+            error.status = 404;
+            throw error;
         }
 
-        // Parse the date string to a Date object
-        const targetDate = new Date(date);
-        targetDate.setHours(0, 0, 0, 0);  // Normalize the date
-
-        // Find or create the occurrence for the target date
-        let occurrence = habit.occurrences.find(o => o.date.getTime() === targetDate.getTime());
-        if (!occurrence) {
-            occurrence = { date: targetDate, completions: 0 };
-            habit.occurrences.push(occurrence);
-        }
-
-        // Update the completions count
-        occurrence.completions = Math.max(0, occurrence.completions + completionChange);
-
-        // Update the total completions for the habit
-        habit.habitTotal = habit.occurrences.reduce((total, occ) => total + occ.completions, 0);
-
-        await habit.save();
-
+        await habit.changeCompletion(date, completionChange);
         res.json(habit);
     } catch (error) {
-        console.error('Error updating habit completion:', error);
-        res.status(400).json({ message: error.message });
+        next(error);
     }
 };
 
@@ -231,24 +163,20 @@ export const updateHabitCompletion = async (req, res) => {
  * @param {Response} res - The response object used to return the streak data.
  */
 export const calculateStreak = async (req, res, next) => {
-    const { habitId } = req.params;  // Assume habitId is passed as a URL parameter
+    const { habitId } = req.params;
 
     try {
         const habit = await Habit.findById(habitId);
         if (!habit) {
             const error = new Error('Habit not found');
             error.status = 404;
-            throw error; // Throw the error to be caught by the catch block
+            throw error;
         }
 
-        const streak = await habit.calculateStreak();  // Calculate the current streak
-        res.json({ streak: streak });  // Respond with the streak value
+        const streak = await habit.calculateStreak();
+        res.json({ streak });
     } catch (error) {
-        if (error instanceof mongoose.Error.CastError) {
-            error.status = 400;
-            error.message = 'Invalid ID format.';
-        }
-        next(error);  // Pass any caught error to the error handling middleware
+        next(error);
     }
 };
 

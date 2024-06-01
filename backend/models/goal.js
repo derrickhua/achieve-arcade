@@ -2,9 +2,7 @@ import mongoose from 'mongoose';
 import { getMilestones } from '../openai.js';
 const Schema = mongoose.Schema;
 
-/**
- * Schema definition for Milestones, parts of a larger Goal.
- */
+// Milestone Schema
 const MilestoneSchema = new Schema({
   title: String,
   description: String,
@@ -12,7 +10,6 @@ const MilestoneSchema = new Schema({
     type: Date,
     validate: {
       validator: function(v) {
-        // Ensure milestone deadline does not exceed the goal's deadline
         return v <= this.parent().deadline;
       },
       message: props => `Milestone deadline (${props.value}) must be before the goal's deadline.`
@@ -20,77 +17,40 @@ const MilestoneSchema = new Schema({
   },
   completed: { type: Boolean, default: false },
   completionDate: Date,
-  velocity: { type: Number, default: null },  // Store calculated velocity directly
+  velocity: { type: Number, default: null }
 });
 
-MilestoneSchema.index({ deadline: 1 });  // Index on deadline field
-MilestoneSchema.index({ completed: 1 }); // Index on completed field
+MilestoneSchema.index({ deadline: 1 });
+MilestoneSchema.index({ completed: 1 });
 
-async function calculateAndUpdateGoalMetrics(goalId, milestoneId) {
-  const goal = await Goal.findById(goalId, 'milestones createdAt updatedAt').exec();
-  if (!goal || goal.milestones.length === 0) return;
-
-  const milestone = goal.milestones.id(milestoneId);
-  if (!milestone || !milestone.completed || !milestone.completionDate) return;
-
-  // Calculate velocity for the updated milestone
-  const milestoneStart = new Date(goal.createdAt).getTime();
-  const deadlineTime = new Date(milestone.deadline).getTime();
-  const completionTime = new Date(milestone.completionDate).getTime();
-  const plannedDuration = deadlineTime - milestoneStart;
-  const actualDuration = completionTime - milestoneStart;
-  milestone.velocity = plannedDuration > 0 ? (actualDuration / plannedDuration) * 100 : 0;
-
-  // Update only the changed milestone in the database
-  await Goal.updateOne(
-      { "_id": goalId, "milestones._id": milestoneId },
-      { "$set": { "milestones.$.velocity": milestone.velocity } }
-  );
-
-  // Optionally recalculate progress and deadline adherence if needed
-  if (milestone.completed) {
-      let adherentMilestones = 0;
-      let totalVelocity = 0;
-      let completedMilestonesCount = 0;
-
-      goal.milestones.forEach(m => {
-          if (m.completed) {
-              completedMilestonesCount++;
-              if (m.completionDate && new Date(m.completionDate) <= new Date(m.deadline)) {
-                  adherentMilestones++;
-              }
-              totalVelocity += m.velocity || 0;
-          }
-      });
-
-      const progress = (completedMilestonesCount / goal.milestones.length) * 100;
-      const deadlineAdherence = completedMilestonesCount > 0 ? (adherentMilestones / completedMilestonesCount) * 100 : 0;
-      const milestoneVelocity = completedMilestonesCount > 0 ? totalVelocity / completedMilestonesCount : 0;
-
-      await Goal.updateOne(
-          { "_id": goalId },
-          { "$set": { "progress": progress, "deadlineAdherence": deadlineAdherence, "milestoneVelocity": milestoneVelocity } }
-      );
+// Method to handle milestone completion and award coins
+MilestoneSchema.methods.completeMilestone = async function() {
+  if (this.completed) {
+    throw new Error('Milestone already completed');
   }
-}
 
-// Middleware to update metrics when a milestone is saved
-MilestoneSchema.post('save', async function (doc, next) {
-  if (this.isModified('completed')) {
-    await calculateAndUpdateGoalMetrics(this.parent()._id);
+  this.completed = true;
+  this.completionDate = new Date();
+
+  const goal = await mongoose.model('Goal').findById(this.parent()._id);
+  const user = await mongoose.model('User').findById(goal.user);
+
+  let coins = 5; // Default for easy milestones
+  if (goal.difficulty === 'Medium') {
+    coins = 10;
+  } else if (goal.difficulty === 'Hard') {
+    coins = 15;
+  } else if (goal.difficulty === 'Life-Changing') {
+    coins = 25;
   }
-  next();
-});
 
-// Middleware to update metrics when a milestone is removed
-MilestoneSchema.post('remove', async function (doc, next) {
-  await calculateAndUpdateGoalMetrics(this.parent()._id);
-  next();
-});
+  await mongoose.model('User').findByIdAndUpdate(user._id, { $inc: { coins } });
+  await this.save();
+};
 
-/**
- * Schema definition for tracking historical changes to Goals.
- */
+const Milestone = mongoose.model('Milestone', MilestoneSchema);
+
+// History Schema
 const HistorySchema = new Schema({
   date: {
     type: Date,
@@ -100,9 +60,7 @@ const HistorySchema = new Schema({
   description: String
 });
 
-/**
- * Main schema definition for Goals, containing various attributes and nested Milestones.
- */
+// Goal Schema
 const GoalSchema = new Schema({
   user: {
     type: Schema.Types.ObjectId,
@@ -110,48 +68,28 @@ const GoalSchema = new Schema({
     required: true
   },
   title: String,
+  completed: {
+    type: Boolean,
+    default: false
+  },
   description: String,
-  reason: String,
   deadline: Date,
-  status: {
-    type: String,
-    enum: ['Not Started', 'In Progress', 'Completed'],
-    default: 'Not Started'
-  },
   milestones: [MilestoneSchema],
-  progress: {
-    type: Number,
-    default: 0,
-    min: 0,
-    max: 100
-  },
-  priority: {
+  difficulty: {
     type: String,
-    enum: ['High', 'Medium', 'Low'],
-    default: 'Medium'
+    enum: ['Easy', 'Medium', 'Hard', 'Life-Changing'],
   },
   category: {
     type: String,
-    enum: ["Health & Wellness", "Career & Education", "Finance", "Personal Development",
-    "Family & Relationships", "Recreation & Leisure", "Spirituality"],
+    enum: ["Wellness", "Career", "Finance", "Leisure"],
     default: ''
-  },
-  deadlineAdherence: {
-    type: Number,
-    default: 0  // Percentage of milestones completed on or before their deadline
-  },
-  milestoneVelocity: {
-    type: Number,
-    default: 0  // Average velocity of completing milestones relative to their deadlines
   },
   history: [HistorySchema],
   createdAt: Date,
   updatedAt: Date
 }, { timestamps: true });
 
-/**
- * Pre-save middleware to log updates to Goal history if any modifications are detected.
- */
+// Pre-save middleware to log updates to Goal history
 GoalSchema.pre('save', function (next) {
   if (this.isModified()) {
     this.history.push({
@@ -162,6 +100,29 @@ GoalSchema.pre('save', function (next) {
   next();
 });
 
+// Method to handle goal completion and award coins
+GoalSchema.methods.completeGoal = async function() {
+  if (this.completed) {
+    throw new Error('Goal already completed');
+  }
+
+  this.completed = true;
+  this.completionDate = new Date();
+
+  const user = await mongoose.model('User').findById(this.user);
+
+  let coins = 10; // Default for easy goals
+  if (this.difficulty === 'Medium') {
+    coins = 20;
+  } else if (this.difficulty === 'Hard') {
+    coins = 30;
+  } else if (this.difficulty === 'Life-Changing') {
+    coins = 50;
+  }
+
+  await mongoose.model('User').findByIdAndUpdate(user._id, { $inc: { coins } });
+  await this.save();
+};
 
 GoalSchema.methods.generateMilestones = async function() {
   if (this.title && this.description && this.deadline) {
@@ -188,7 +149,6 @@ GoalSchema.methods.generateMilestones = async function() {
         };
       });
 
-      // Update the document using findByIdAndUpdate
       await Goal.findByIdAndUpdate(this._id, {
         $push: { milestones: { $each: milestones } }
       }, { new: true });
@@ -199,7 +159,6 @@ GoalSchema.methods.generateMilestones = async function() {
     }
   }
 };
-
 
 const Goal = mongoose.model('Goal', GoalSchema);
 

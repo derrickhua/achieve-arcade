@@ -165,27 +165,44 @@ export const getUser = async (req, res, next) => {
 };
 
 /**
- * Updates the user profile with new data provided in the request body.
- * If there's an error during the update, it throws an error to be handled by the middleware.
- *
- * @param {Request} req - The request object containing the user's data to update.
- * @param {Response} res - The response object used to send back the updated user's data.
- * @param {Function} next - The next middleware function in the stack for error handling.
+ * Update user's details including password, username, email, and preferences.
+ * @param {Object} req - The request object containing user ID and new details.
+ * @param {Object} res - The response object used to send back the status and updated user.
  */
-export const updateUser = async (req, res, next) => {
-    const { username, email } = req.body;
+export const updateUser = async (req, res) => {
+    const { userId } = req.params;
+    const { newPassword, newUsername, newEmail, preferences } = req.body;
+
     try {
-        const updatedUser = await User.findByIdAndUpdate(req.user._id, { username, email }, { new: true });
-        if (!updatedUser) {
-            const error = new Error('User not found');
-            error.status = 404;
-            throw error;
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
-        res.json(updatedUser);
+
+        if (newPassword) {
+            const salt = await bcrypt.genSalt(10);
+            user.password = await bcrypt.hash(newPassword, salt);
+        }
+
+        if (newUsername) {
+            user.username = newUsername;
+        }
+
+        if (newEmail) {
+            user.email = newEmail;
+        }
+
+        if (preferences) {
+            user.preferences = preferences;
+        }
+
+        await user.save();
+        res.status(200).json({ message: 'User updated successfully', user });
     } catch (error) {
-        next(error);
+        res.status(400).json({ message: error.message });
     }
 };
+
 
 /**
  * Deletes the user based on the user's ID from the authentication information.

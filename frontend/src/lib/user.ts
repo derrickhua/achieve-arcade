@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
-// Create an axios instance configured for your API base URL
 const api = axios.create({
   baseURL: 'http://localhost:8000/api/users',
   headers: {
@@ -11,16 +10,16 @@ const api = axios.create({
 
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
-    const session:any = await getSession();
-    if (session?.accessToken) {
-        config.headers.authorization = `Bearer ${session.accessToken}`;
-    } else {
-        console.log("No access token found in session.");
-    }
+  const session = await getSession();
+  if (session?.accessToken) {
+    config.headers.authorization = `Bearer ${session.accessToken}`;
+  } else {
+    console.log("No access token found in session.");
+  }
 
-    return config;
+  return config;
 }, error => {
-    return Promise.reject(error);
+  return Promise.reject(error);
 });
 
 /**
