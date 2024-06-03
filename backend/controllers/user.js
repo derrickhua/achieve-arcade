@@ -143,6 +143,26 @@ export const login = async (req, res, next) => {
 };
 
 /**
+ * Retrieves the user's information based on the user's ID stored in the request.
+ * Throws an error if there is a problem fetching the user from the database.
+ *
+ * @param {Request} req - The request object containing the user's authentication information.
+ * @param {Response} res - The response object used to send back the user's information.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const getUser = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id).select('username email preferences');
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Retrieves the user's preferences based on the user's ID stored in the request.
  * Throws an error if there is a problem fetching the user from the database.
  *
@@ -150,7 +170,7 @@ export const login = async (req, res, next) => {
  * @param {Response} res - The response object used to send back the user's data.
  * @param {Function} next - The next middleware function in the stack for error handling.
  */
-export const getUser = async (req, res, next) => {
+export const getUserPreferences = async (req, res, next) => {
     try {
         const user = await User.findById(req.user._id).select('preferences');
         if (!user) {
@@ -165,31 +185,50 @@ export const getUser = async (req, res, next) => {
 };
 
 /**
+ * Retrieves the number of coins for a specific user based on their ID.
+ *
+ * @param {Request} req - The request object containing the user's ID in the params.
+ * @param {Response} res - The response object used to send back the number of coins.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+export const getUserCoins = async (req, res, next) => {
+    try {
+        const user = await User.findById(req.user._id).select('coins'); // Use req.user._id
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ coins: user.coins });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+/**
  * Update user's details including password, username, email, and preferences.
- * @param {Object} req - The request object containing user ID and new details.
+ * @param {Object} req - The request object containing new details.
  * @param {Object} res - The response object used to send back the status and updated user.
  */
 export const updateUser = async (req, res) => {
-    const { userId } = req.params;
-    const { newPassword, newUsername, newEmail, preferences } = req.body;
+    const { password, username, email, preferences } = req.body;
 
     try {
-        const user = await User.findById(userId);
+        const user = await User.findById(req.user._id);  // Use req.user._id to find the user
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        if (newPassword) {
+        if (password) {
             const salt = await bcrypt.genSalt(10);
-            user.password = await bcrypt.hash(newPassword, salt);
+            user.password = await bcrypt.hash(password, salt);
         }
 
-        if (newUsername) {
-            user.username = newUsername;
+        if (username) {
+            user.username = username;
         }
 
-        if (newEmail) {
-            user.email = newEmail;
+        if (email) {
+            user.email = email;
         }
 
         if (preferences) {
@@ -225,3 +264,4 @@ export const deleteUser = async (req, res, next) => {
         next(error);
     }
 };
+

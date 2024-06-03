@@ -4,7 +4,7 @@ import TimeBlock from './TimeBlock';
 import AddTimeBlockForm from './AddTimeBlockForm';
 import { format, setHours, setMinutes } from 'date-fns';
 import './schedule.css';
-import { getUserProfile } from '@/lib/user';
+import { getUserPreferences } from '@/lib/user';
 import WeeklyHoursSummary from './WeeklyHoursSummary';
 import StartTimerDialog from './StartTimerDialog';
 import ExpandTimeBlock from './ExpandTimeBlock';
@@ -116,7 +116,7 @@ export default function DailySchedule() {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const data = await getUserProfile();
+        const data = await getUserPreferences();
         setUserData(data);
       } catch (error) {
         console.error('Error fetching user profile:', error);

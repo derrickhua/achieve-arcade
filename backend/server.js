@@ -13,6 +13,7 @@ import dailyScheduleRoutes from './routes/dailySchedule.js';
 import dashboardRoutes from './routes/dashboard.js';
 import taskRoutes from './routes/task.js';
 import rewardRoutes from './routes/reward.js';
+import suggestionRoutes from './routes/suggestion.js';
 dotenv.config();
 
 const app = express();
@@ -55,6 +56,7 @@ app.use('/api/tasks', taskRoutes);
 app.use('/api/daily-schedule', dailyScheduleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/rewards', rewardRoutes);
+app.use('/api/suggestions', suggestionRoutes);
 
 // Error handler
 app.use((err, req, res, next) => {
