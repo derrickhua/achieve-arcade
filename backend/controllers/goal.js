@@ -1,6 +1,7 @@
 import Goal from '../models/goal.js';
 import User from '../models/user.js';
 import mongoose from 'mongoose';
+
 /**
  * Create a new goal with initial properties and automatically generated milestones.
  * @param {Object} req - The request object containing the user's goal details.
@@ -9,7 +10,7 @@ import mongoose from 'mongoose';
 export const createGoal = async (req, res) => {
     try {
         console.log("User ID from req.user:", req.user?._id); // Ensure this is not undefined
-        const { title, description, reason, deadline, priority, category } = req.body;
+        const { title, description, deadline, category, difficulty } = req.body;
 
         if (!req.user?._id) {
             return res.status(400).json({ message: "User ID is required" });
@@ -19,12 +20,11 @@ export const createGoal = async (req, res) => {
             user: req.user._id,
             title,
             description,
-            reason,
             deadline,
-            priority,
-            category
+            category,
+            difficulty
         });
-        
+
         await newGoal.save();
         res.status(201).json(newGoal);
         newGoal.generateMilestones(); // Automatically generate milestones for the new goal
@@ -33,6 +33,7 @@ export const createGoal = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 /**
  * Retrieves all goals for a specific user.
@@ -49,6 +50,25 @@ export const getAllGoals = async (req, res, next) => {
         res.status(200).json(goals);
     } catch (error) {
         next(error);  // Pass any errors to the centralized error handler
+    }
+};
+
+/**
+ * Retrieves all milestones for a specific goal.
+ * @param {Object} req - The request object containing the goal ID in the URL.
+ * @param {Object} res - The response object to send back the list of milestones.
+ */
+export const getMilestones = async (req, res) => {
+    const { goalId } = req.params;
+    try {
+        const goal = await Goal.findById(goalId).select('milestones');
+        if (!goal) {
+            return res.status(404).json({ message: 'Goal not found' });
+        }
+        res.status(200).json(goal.milestones);
+    } catch (error) {
+        console.error('Error in getMilestones:', error);
+        res.status(500).json({ message: error.message });
     }
 };
 

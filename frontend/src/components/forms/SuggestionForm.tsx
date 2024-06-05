@@ -47,7 +47,7 @@ const SuggestionForm: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ is
           <div className="mb-4">
             <label className="block text-black text-[25px] mb-2" htmlFor="subject">Subject</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="text"
               id="subject"
               value={subject}
@@ -58,7 +58,7 @@ const SuggestionForm: React.FC<{ isOpen: boolean, onClose: () => void }> = ({ is
           <div className="mb-4">
             <label className="block text-black text-[25px] mb-2" htmlFor="description">Description</label>
             <textarea
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}

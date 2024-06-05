@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import Navbar from './Navbar';
 import Topbar from './Topbar';
 import { getUserCoins } from '@/lib/user';
+import PlayerData from '../pages/PlayerData';
+import GoalKnight from '../pages/GoalKnight';
 
 export const DashboardLayout: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState('PlayerData');
@@ -25,9 +27,9 @@ export const DashboardLayout: React.FC = () => {
   const renderComponent = () => {
     switch (activeComponent) {
       case 'PlayerData':
-        return <p>PlayerData</p>;
+        return <PlayerData />;
       case 'GoalKnight':
-        return <p>GoalKnight</p>;
+        return <GoalKnight />;
       case 'HabitFarm':
         return <p>HabitFarm</p>;
       case 'TaskSlayer':
@@ -46,7 +48,7 @@ export const DashboardLayout: React.FC = () => {
       <Topbar coins={coins} />
       <div className="flex flex-1 overflow-hidden">
         <Navbar setActiveComponent={setActiveComponent} />
-        <main className="flex-1 p-4 bg-gray-100" style={{ borderTopLeftRadius: '3rem' }}>
+        <main className="flex-1 p-4 bg-[#FEFDF2]" style={{ borderTopLeftRadius: '3rem' }}>
           {renderComponent()}
         </main>
       </div>

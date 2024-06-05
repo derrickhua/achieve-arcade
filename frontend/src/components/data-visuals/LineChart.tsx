@@ -10,34 +10,34 @@ const LineChart = ({ timeData }) => {
     return <div>No data available</div>;
   }
 
-  // Ensure each item in timeData has the required properties
-  const validatedTimeData = timeData.filter(item => item && item._id && item.planned != null && item.actual != null);
+  const validatedTimeData = timeData.filter(item => item && item.date && item.planned != null && item.realized != null);
 
   if (validatedTimeData.length === 0) {
     return <div>No valid data available</div>;
   }
 
-
   const lineChartData = [
     {
       name: 'Planned Time',
-      data: validatedTimeData.map(item => parseFloat((item.planned / 3600).toFixed(2))) // Convert from seconds to hours and format to 2 decimal places
+      data: validatedTimeData.map(item => item.planned),
+      color: '#2D9CDB' // Arcade Blue
     },
     {
-      name: 'Actual Time',
-      data: validatedTimeData.map(item => parseFloat((item.actual / 3600).toFixed(2))) // Convert from seconds to hours and format to 2 decimal places
+      name: 'Realized Time',
+      data: validatedTimeData.map(item => item.realized),
+      color: '#F2C94C' // Achievement Gold
     }
   ];
 
-  const startDate = new Date(validatedTimeData[0]._id);
-  const endDate = new Date(validatedTimeData[validatedTimeData.length - 1]._id);
+  const startDate = new Date(validatedTimeData[0].date);
+  const endDate = new Date(validatedTimeData[validatedTimeData.length - 1].date);
 
   const formatXAxisLabels = (startDate, endDate) => {
     const diffInDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
     if (diffInDays > 30) {
-      return 'MMM yyyy'; // For data spanning more than a month, use "month year"
+      return 'MMM yyyy';
     }
-    return 'dd MMM yyyy'; // For data spanning less than a month, use "day month year"
+    return 'dd MMM yyyy';
   };
 
   const xAxisLabelFormat = formatXAxisLabels(startDate, endDate);
@@ -46,13 +46,14 @@ const LineChart = ({ timeData }) => {
     chart: {
       type: 'line',
       height: 270,
-      width: '100%', // Set width to 100% to take full width of the container
+      width: '100%',
       toolbar: {
-        show: false // Disable the toolbar
-      }
+        show: false
+      },
+      background: '#FEFDF2' // Set background color
     },
     xaxis: {
-      categories: validatedTimeData.map(item => new Date(item._id).getTime()), // Use timestamps directly
+      categories: validatedTimeData.map(item => new Date(item.date).getTime()),
       labels: {
         formatter: (val) => {
           const date = new Date(val);
@@ -80,32 +81,33 @@ const LineChart = ({ timeData }) => {
       },
       labels: {
         formatter: function (value) {
-          return value.toFixed(2); // Format the Y-axis labels to two decimal places
+          return value.toFixed(2);
         }
       }
     }
   };
 
-  const totalPlannedTime = validatedTimeData.reduce((total, item) => total + (item.planned || 0), 0) / 3600;
-  const totalActualTime = validatedTimeData.reduce((total, item) => total + (item.actual || 0), 0) / 3600;
+  const totalPlannedTime = validatedTimeData.reduce((total, item) => total + (item.planned || 0), 0);
+  const totalActualTime = validatedTimeData.reduce((total, item) => total + (item.realized || 0), 0);
 
   return (
-    <div className="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6 h-full">
+    <div className="w-full bg-[#FEFDF2] rounded-lg p-4 md:p-6 h-full">
       <div className="flex justify-between mb-5">
-        <div className="grid gap-4 grid-cols-2">
+        <h3 className="text-xl  mb-2">Planned Time vs Realized Time</h3>
+        <div className="grid gap-4 grid-cols-2 text-right">
           <div>
-            <h5 className="inline-flex items-center text-gray-500 dark:text-gray-400 leading-none font-normal mb-2">
+            <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">
               Planned Time
             </h5>
-            <p className="text-gray-900 dark:text-white text-2xl leading-none font-bold">
+            <p className="text-gray-900 text-2xl leading-none">
               {totalPlannedTime.toFixed(0)} hours
             </p>
           </div>
           <div>
-            <h5 className="inline-flex items-center text-gray-500 dark:text-gray-400 leading-none font-normal mb-2">
+            <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">
               Actual Time
             </h5>
-            <p className="text-gray-900 dark:text-white text-2xl leading-none font-bold">
+            <p className="text-gray-900 text-2xl leading-none">
               {totalActualTime.toFixed(0)} hours
             </p>
           </div>

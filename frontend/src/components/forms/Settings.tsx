@@ -87,7 +87,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
           <div className="mb-4">
             <label className="block text-black text-[25px] mb-2" htmlFor="username">Username</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="text"
               id="username"
               name="username"
@@ -99,7 +99,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
           <div className="mb-4">
             <label className="block text-black text-[25px] mb-2" htmlFor="email">Email</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="email"
               id="email"
               name="email"
@@ -111,7 +111,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
           <div className="mb-4">
             <label className="block text-black text-[25px] mb-2" htmlFor="password">Password</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="password"
               id="password"
               name="password"
@@ -123,7 +123,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
           <div className="mb-4">
             <label className="block text-black text-[25px] mb-2" htmlFor="confirmPassword">Confirm Password</label>
             <input
-              className="w-full px-3 py-2 border rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="password"
               id="confirmPassword"
               name="confirmPassword"
@@ -137,7 +137,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
             <div>
               <label className="block text-black text-[20px] mb-2" htmlFor="workHoursPerWeek">Work</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
                 type="number"
                 id="workHoursPerWeek"
                 name="workHoursPerWeek"
@@ -149,7 +149,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
             <div>
               <label className="block text-black text-[20px] mb-2" htmlFor="leisureHoursPerWeek">Leisure</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
                 type="number"
                 id="leisureHoursPerWeek"
                 name="leisureHoursPerWeek"
@@ -161,7 +161,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
             <div>
               <label className="block text-black text-[20px] mb-2" htmlFor="familyFriendsHoursPerWeek">Family & Friends</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
                 type="number"
                 id="familyFriendsHoursPerWeek"
                 name="familyFriendsHoursPerWeek"
@@ -173,7 +173,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
             <div>
               <label className="block text-black text-[20px] mb-2" htmlFor="atelicHoursPerWeek">Atelic</label>
               <input
-                className="w-full px-3 py-2 border rounded-lg"
+                className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
                 type="number"
                 id="atelicHoursPerWeek"
                 name="atelicHoursPerWeek"

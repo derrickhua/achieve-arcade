@@ -10,8 +10,7 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     return <div>No data available</div>;
   }
 
-  // Ensure each item in averageTimeBlockEfficiency has the required properties
-  const validatedEfficiencyData = averageTimeBlockEfficiency.filter(item => item && item._id && item.averageEfficiency != null);
+  const validatedEfficiencyData = averageTimeBlockEfficiency.filter(item => item && item.date && item.efficiency != null);
 
   if (validatedEfficiencyData.length === 0) {
     return <div>No valid data available</div>;
@@ -20,19 +19,20 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
   const lineChartData = [
     {
       name: 'Average Efficiency',
-      data: validatedEfficiencyData.map(item => parseFloat(item.averageEfficiency.toFixed(2))) // Format to 2 decimal places
+      data: validatedEfficiencyData.map(item => item.efficiency),
+      color: '#27AE60' // Energetic Green
     }
   ];
 
-  const startDate = new Date(validatedEfficiencyData[0]._id);
-  const endDate = new Date(validatedEfficiencyData[validatedEfficiencyData.length - 1]._id);
+  const startDate = new Date(validatedEfficiencyData[0].date);
+  const endDate = new Date(validatedEfficiencyData[validatedEfficiencyData.length - 1].date);
 
   const formatXAxisLabels = (startDate, endDate) => {
     const diffInDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
     if (diffInDays > 30) {
-      return 'MMM yyyy'; // For data spanning more than a month, use "month year"
+      return 'MMM yyyy';
     }
-    return 'dd MMM yyyy'; // For data spanning less than a month, use "day month year"
+    return 'dd MMM yyyy';
   };
 
   const xAxisLabelFormat = formatXAxisLabels(startDate, endDate);
@@ -41,13 +41,14 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     chart: {
       type: 'line',
       height: 270,
-      width: '100%', // Set width to 100% to take full width of the container
+      width: '100%',
       toolbar: {
-        show: false // Disable the toolbar
-      }
+        show: false
+      },
+      background: '#FEFDF2' // Set background color
     },
     xaxis: {
-      categories: validatedEfficiencyData.map(item => new Date(item._id).getTime()), // Use timestamps directly
+      categories: validatedEfficiencyData.map(item => new Date(item.date).getTime()),
       labels: {
         formatter: (val) => {
           const date = new Date(val);
@@ -78,23 +79,24 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
       },
       labels: {
         formatter: function (value) {
-          return `${value.toFixed(2)}%`; // Format the Y-axis labels to two decimal places
+          return `${value.toFixed(2)}%`;
         }
       }
     }
   };
 
-  const averageEfficiency = validatedEfficiencyData.reduce((total, item) => total + item.averageEfficiency, 0) / validatedEfficiencyData.length;
+  const averageEfficiency = validatedEfficiencyData.reduce((total, item) => total + item.efficiency, 0) / validatedEfficiencyData.length;
 
   return (
-    <div className="w-full bg-white rounded-lg shadow dark:bg-gray-800 p-4 md:p-6">
+    <div className="w-full bg-[#FEFDF2] rounded-lg p-4 md:p-6">
       <div className="flex justify-between mb-5">
-        <div className="grid gap-4 grid-cols-1">
+        <h3 className="text-xl mb-2">Average Time Block Efficiency</h3>
+        <div className="grid gap-4 grid-cols-1 text-right">
           <div>
-            <h5 className="inline-flex items-center text-gray-500 dark:text-gray-400 leading-none font-normal mb-2">
+            <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">
               Average Efficiency
             </h5>
-            <p className="text-gray-900 dark:text-white text-2xl leading-none font-bold">
+            <p className="text-gray-900 text-2xl leading-none">
               {averageEfficiency.toFixed(2)}%
             </p>
           </div>

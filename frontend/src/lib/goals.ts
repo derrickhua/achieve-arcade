@@ -15,13 +15,10 @@ export interface Goal {
     user?: string;
     title: string;
     description: string;
-    reason: string;
-    deadline: Date;
-    priority: 'High' | 'Medium' | 'Low';
+    deadline: Date | string;
     category: string;
-    status?: 'Not Started' | 'In Progress' | 'Completed';
+    difficulty: string;
     milestones: Milestone[];
-    progress: number;
     createdAt?: Date;
     updatedAt?: Date;
   }
@@ -29,9 +26,8 @@ export interface Goal {
 export interface GoalUpdateData {
     title?: string;
     description?: string;
-    reason?: string;
+    difficulty? : string;
     deadline?: Date;
-    priority?: 'High' | 'Medium' | 'Low';
     category?: string;
     status?: 'Not Started' | 'In Progress' | 'Completed';
   }
@@ -128,8 +124,12 @@ export const deleteMilestone = async (goalId: string, milestoneId: string): Prom
   }
 };
 
-
 // API method to mark a specific milestone as completed
-export const completeMilestone = async (goalId: string, milestoneId: string): Promise<Milestone> => {
-  return api.patch(`/${goalId}/milestones/${milestoneId}/complete`).then(response => response.data);
+export const completeMilestone = async (goalId: string, milestoneId: string, isLastMilestone: boolean): Promise<Milestone> => {
+  return api.patch(`/${goalId}/milestones/${milestoneId}/complete`, { isLastMilestone }).then(response => response.data);
+};
+
+// Fetch all milestones for a specific goal
+export const getMilestones = async (goalId: string): Promise<Milestone[]> => {
+  return api.get(`/${goalId}/milestones`).then(response => response.data);
 };

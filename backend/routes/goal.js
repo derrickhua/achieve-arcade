@@ -9,6 +9,7 @@ import {
     updateCategory,
     getGoalHistory,
     getGoalMilestones,
+    getMilestones,  // <-- Add this line
     updateMilestone,
     deleteMilestone,
     completeMilestone
@@ -17,11 +18,12 @@ import {
 const router = express.Router();
 
 // Applying authentication middleware to all goal routes
-router.use(authenticate); 
+router.use(authenticate);
 
 // Define the routes and associate them with the controller functions
 router.post('/', createGoal); // Create a new goal
 router.get('/', getAllGoals); // Get all goals for a user
+router.get('/:goalId/milestones', getMilestones); // Get all milestones for a goal <-- Add this line
 router.put('/:id', updateGoal); // Update an existing goal
 router.delete('/:id', deleteGoal); // Delete a goal
 router.get('/filterSort', filterSortGoals); // Filter and sort goals
