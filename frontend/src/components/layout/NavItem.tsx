@@ -18,7 +18,7 @@ const NavItem: React.FC<NavItemProps> = ({ iconSrc, label, onClick, active }) =>
     >
       <div className="flex-1 flex items-center justify-center">
         <div className="relative w-[20px] h-[20px]">
-          <Image src={iconSrc} alt={`${label} icon`} layout="fill"  objectFit="contain" quality={100} />
+          <Image src={iconSrc} alt={`${label} icon`} fill objectFit="contain" quality={100} />
         </div>
       </div>
       <p className="text-center flex justify-center items-center leading-[13px] text-[15px] h-[26px]">{label}</p>

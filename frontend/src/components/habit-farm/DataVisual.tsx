@@ -9,7 +9,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { updateHabitCompletion } from '@/lib/habit';
 import { Bolt } from 'lucide-react';
 
 interface Occurrence {
@@ -35,9 +34,10 @@ interface DataVisualSectionProps {
   onOpenEditHabitForm: () => void;
   onOpenDeleteHabitForm: () => void;
   fetchHabits: () => void;
+  handleCompletionUpdate: (habit: Habit, newCount: number) => void;
 }
 
-const DataVisualSection: React.FC<DataVisualSectionProps> = ({ habit, onOpenEditHabitForm, onOpenDeleteHabitForm, fetchHabits }) => {
+const DataVisualSection: React.FC<DataVisualSectionProps> = ({ habit, onOpenEditHabitForm, onOpenDeleteHabitForm, fetchHabits, handleCompletionUpdate }) => {
   const [updatedHabit, setUpdatedHabit] = useState(habit);
 
   useEffect(() => {
@@ -56,27 +56,48 @@ const DataVisualSection: React.FC<DataVisualSectionProps> = ({ habit, onOpenEdit
     completions: 0
   };
 
-  const handleCompletionUpdate = async (newCount: number) => {
-    try {
-      await updateHabitCompletion(updatedHabit._id, newCount, formattedDate);
-      fetchHabits(); // Fetch the updated habits data
-    } catch (error) {
-      console.error('Error updating completions:', error);
-    }
+  const recalculateHeatmapData = (occurrences: Occurrence[]) => {
+    const occurrenceMap: { [key: string]: number } = {};
+    occurrences.forEach(occ => {
+      const dateKey = new Date(occ.date).toISOString().split('T')[0];
+      occurrenceMap[dateKey] = occ.completions;
+    });
+
+    const heatmapData = updatedHabit?.heatmapData.map(data => {
+      const dateKey = new Date(data.date).toISOString().split('T')[0];
+      return {
+        date: dateKey,
+        completions: occurrenceMap[dateKey] || 0
+      };
+    });
+
+    return heatmapData;
+  };
+
+  const handleLocalCompletionUpdate = (habit, newCount: number) => {
+    const updatedOccurrences = updatedHabit?.occurrences.map(occ =>
+      new Date(occ.date).toDateString() === today.toDateString() ? { ...occ, completions: newCount } : occ
+    );
+    const updatedHeatmapData = recalculateHeatmapData(updatedOccurrences || []);
+    setUpdatedHabit({
+      ...updatedHabit,
+      occurrences: updatedOccurrences,
+      heatmapData: updatedHeatmapData
+    });
   };
 
   return (
     <div className={`habit-data h-[200px] shadow-md border border-[5px] border-[#C0D470] relative bg-[#E9D0A6]`}>
       <div className="habit-name col-span-12 md:col-span-3 flex flex-col justify-center text-[30px]">
         <div className="py-4 h-full flex flex-col justify-around">
-          <p className="text-[40px]">{updatedHabit.name}</p>
-          <p className="text-[20px]">streak: {updatedHabit.streak}🔥</p>
+          <p className="text-[40px]">{updatedHabit?.name}</p>
+          <p className="text-[20px]">streak: {updatedHabit?.streak}🔥</p>
 
           <div className="text-[20px] pointer-cursor">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
-                  consistency goal 🛈: {updatedHabit.consistencyGoals.goal} / {updatedHabit.habitPeriod}
+                  consistency goal 🛈: {updatedHabit?.consistencyGoals.goal} / {updatedHabit?.habitPeriod}
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>The total number of habits that should be completed within the habit period.</p>
@@ -87,18 +108,21 @@ const DataVisualSection: React.FC<DataVisualSectionProps> = ({ habit, onOpenEdit
         </div>
       </div>
       <div className="habit-heatmap col-span-12 md:col-span-3 flex justify-center items-center">
-        <HabitHeatmap data={updatedHabit.heatmapData} />
+        <HabitHeatmap data={updatedHabit?.heatmapData} />
       </div>
 
       <div className="habit-bar-graph col-span-12 md:col-span-2 flex justify-center items-center">
-        <HabitBarGraph occurrences={updatedHabit.occurrences} consistencyGoals={[updatedHabit.consistencyGoals]} habitPeriod={updatedHabit.habitPeriod} />
+        <HabitBarGraph occurrences={updatedHabit?.occurrences} consistencyGoals={[updatedHabit?.consistencyGoals]} habitPeriod={updatedHabit?.habitPeriod} />
       </div>
       {/* New Increment Area Div */}
       <div className="habit-increment-area col-span-12 md:col-span-2 flex justify-center items-center">
         <HabitIncrement
-          habitId={updatedHabit._id}
+          habitId={updatedHabit?._id}
           initialCount={todaysOccurrence.completions}
-          onUpdateCompletion={handleCompletionUpdate}
+          onUpdateCompletion={(newCount) => {
+            handleCompletionUpdate(updatedHabit, newCount);
+            handleLocalCompletionUpdate(updatedHabit, newCount);
+          }}
         />
       </div>
       <div className="corner-borders"></div>

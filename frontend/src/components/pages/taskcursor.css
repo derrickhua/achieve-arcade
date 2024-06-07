@@ -1,0 +1,28 @@
+/* cursorStyles.css */
+
+.task-slayer-container {
+    cursor: none;
+  }
+  
+  .task-slayer-container .custom-cursor {
+    position: fixed;
+    width: 32px;
+    height: 32px;
+    background: url(/icons/sword-cursor.png) no-repeat center center;
+    background-size: contain;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-35%, 0%) rotate(-20deg); /* Adjusted for bottom right */
+    transition: transform 0.2s ease;
+  }
+  
+  .task-slayer-container .custom-cursor-click {
+    animation: swing 0.5s ease-in-out;
+  }
+  
+  @keyframes swing {
+    0% { transform: translate(-35%, 0%) rotate(-20deg); }
+    50% { transform: translate(-35%, 0%) rotate(20deg); }
+    100% { transform: translate(-35%, 0%) rotate(-20deg); }
+  }
+  

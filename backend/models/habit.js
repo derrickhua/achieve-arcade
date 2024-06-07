@@ -1,44 +1,55 @@
 import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
+const plantOptions = [
+  'aloe', 'beet', 'blueflower', 'bluestar', 'cauliflower',
+  'cucumber', 'eggplant', 'onion', 'pumpkin', 'radish',
+  'redflower', 'tomato'
+];
+
 const HabitSchema = new Schema({
   user: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
   name: {
-      type: String,
-      required: true
+    type: String,
+    required: true
   },
   difficulty: {
-      type: String,
-      enum: ['Easy', 'Medium', 'Hard']
+    type: String,
+    enum: ['Easy', 'Medium', 'Hard']
   },
   habitTotal: {
-      type: Number,
-      default: 0
+    type: Number,
+    default: 0
   },
   habitPeriod: {
-      type: String,
-      enum: ['Daily', 'Weekly'],
-      required: true
+    type: String,
+    enum: ['Daily', 'Weekly'],
+    required: true
   },
   occurrences: [{
-      date: { type: Date, required: true },
-      completions: { type: Number, default: 0 } // Tracks the number of completions per day
+    date: { type: Date, required: true },
+    completions: { type: Number, default: 0 }
   }],
   consistencyGoals: {
-      goal: { type: Number, required: true },
-      effectiveDate: { type: Date, required: true }
+    goal: { type: Number, required: true },
+    effectiveDate: { type: Date, required: true }
   },
   completionDates: [{ type: Date }],
   streak: {
-      type: Number,
-      default: 0
+    type: Number,
+    default: 0
+  },
+  plant: {
+    type: String,
+    enum: plantOptions,
+    required: true,
+    default: () => plantOptions[Math.floor(Math.random() * plantOptions.length)]
   }
 }, { timestamps: true });
-
 
 // Add indexes
 HabitSchema.index({ user: 1 });

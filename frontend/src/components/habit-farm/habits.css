@@ -94,6 +94,55 @@
   gap: 5px;
 }
 
+.habit-farm-visual .selected-habit {
+  position: relative;
+  background-color: #E9D0A6; /* Ensure the background color matches */
+}
+
+.habit-farm-visual .selected-habit::before,
+.habit-farm-visual .selected-habit::after,
+.habit-farm-visual .selected-habit .corner-borders::before,
+.habit-farm-visual .selected-habit .corner-borders::after {
+  content: '';
+  position: absolute;
+  width: 40px; /* Adjust the size as needed */
+  height: 40px; /* Adjust the size as needed */
+  border: 5px solid #C0D470;
+  background-color: transparent; /* Ensure the background is transparent */
+}
+
+.habit-farm-visual .selected-habit::before {
+  top: -5px; /* Adjust position */
+  left: -5px; /* Adjust position */
+  border-width: 10px 0 0 10px;
+}
+
+.habit-farm-visual .selected-habit::after {
+  top: -5px; /* Adjust position */
+  right: -5px; /* Adjust position */
+  border-width: 10px 10px 0 0;
+}
+
+.habit-farm-visual .selected-habit .corner-borders::before {
+  bottom: -5px; /* Adjust position */
+  left: -5px; /* Adjust position */
+  border-width: 0 0 10px 10px;
+}
+
+.habit-farm-visual .selected-habit .corner-borders::after {
+  bottom: -5px; /* Adjust position */
+  right: -5px; /* Adjust position */
+  border-width: 0 10px 10px 0;
+}
+
+.habit-farm-visual .selected-habit .corner-borders {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none; /* Ensure the corner borders don't interfere with clicks */
+}
 
   /* Media Query to adjust layout for screens smaller than 1100px */
   /* @media (max-width: 1500px) {

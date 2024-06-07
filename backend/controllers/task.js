@@ -7,7 +7,7 @@ import Task from '../models/task.js';
  * @param {Response} res - The response object used to return the status and created task.
  */
 export const addTask = async (req, res, next) => {
-    const { name, dueDate, category, notes } = req.body;
+    const { name, difficulty } = req.body;
 
     // Validate input data
     if (!name) {
@@ -20,9 +20,7 @@ export const addTask = async (req, res, next) => {
         const newTask = new Task({
             userId: req.user._id,  // Assuming user ID is available from auth middleware
             name,
-            dueDate: dueDate ? new Date(dueDate) : null,
-            category,
-            notes
+            difficulty
         });
         await newTask.save();
         res.status(201).json(newTask);
@@ -32,18 +30,26 @@ export const addTask = async (req, res, next) => {
 };
 
 /**
- * Retrieves all tasks for the user.
+ * Retrieves the number of completed tasks and all uncompleted tasks for the user.
  * @param {Request} req - The request object, containing user authentication data.
- * @param {Response} res - The response object used to return the list of tasks.
+ * @param {Response} res - The response object used to return the task data.
  */
 export const getTasks = async (req, res, next) => {
     try {
-        const tasks = await Task.find({ userId: req.user._id });
-        res.json(tasks);
+        const userId = req.user._id;
+        const completedTaskCount = await Task.countDocuments({ userId, completed: true });
+        const uncompletedTasks = await Task.find({ userId, completed: false });
+    
+        res.json({
+            completedTaskCount,
+            uncompletedTasks
+        });
     } catch (error) {
         next(error);
     }
 };
+
+
 
 /**
  * Updates a specific task based on provided parameters.
@@ -51,37 +57,43 @@ export const getTasks = async (req, res, next) => {
  * @param {Response} res - The response object used to return the updated task.
  */
 export const updateTask = async (req, res, next) => {
-    const { taskId } = req.params;
-    const { name, dueDate, category, notes, completed } = req.body;
+  const { taskId } = req.params;
+  const { name, difficulty, completed } = req.body;
 
-    try {
-        const updateFields = {};
+  try {
+    const updateFields = {};
 
-        // Update fields if provided
-        if (name) updateFields.name = name;
-        if (dueDate) updateFields.dueDate = new Date(dueDate);
-        if (category) updateFields.category = category;
-        if (notes) updateFields.notes = notes;
-        if (typeof completed === 'boolean') updateFields.completed = completed;
+    // Update fields if provided
+    if (name) updateFields.name = name;
+    if (typeof completed === 'boolean') updateFields.completed = completed;
 
-        const updatedTask = await Task.findByIdAndUpdate(taskId, updateFields, { new: true });
-        if (!updatedTask) {
-            const error = new Error('Task not found');
-            error.status = 404;
-            throw error;
-        }
-
-        res.json(updatedTask);
-    } catch (error) {
-        if (error instanceof mongoose.Error.ValidationError) {
-            error.status = 400;  // Bad Request for validation errors
-        } else if (error instanceof mongoose.Error.CastError) {
-            error.status = 400;  // Bad Request for casting errors, typically invalid format
-            error.message = 'Invalid ID format.';
-        }
-        next(error);
+    const task = await Task.findById(taskId);
+    if (!task) {
+      const error = new Error('Task not found');
+      error.status = 404;
+      throw error;
     }
+
+    Object.assign(task, updateFields);
+
+    if (completed) {
+      await task.completeTask();
+    } else {
+      await task.save();
+    }
+
+    res.json(task);
+  } catch (error) {
+    if (error instanceof mongoose.Error.ValidationError) {
+      error.status = 400;  // Bad Request for validation errors
+    } else if (error instanceof mongoose.Error.CastError) {
+      error.status = 400;  // Bad Request for casting errors, typically invalid format
+      error.message = 'Invalid ID format.';
+    }
+    next(error);
+  }
 };
+
 
 /**
  * Deletes a specific task by its ID.
