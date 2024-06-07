@@ -8,11 +8,11 @@ import Habit from '../models/habit.js';
  */
 export const addHabit = async (req, res, next) => {
     console.log("User ID from req.user:", req.user._id); // Check if user ID is available
-    const { name, habitPeriod, goal, effectiveDate } = req.body;
+    const { name, habitPeriod, goal, effectiveDate, difficulty } = req.body;
 
     // Validate input data
-    if (!name || !habitPeriod || !goal || !effectiveDate) {
-        const error = new Error('All fields (name, habitPeriod, goal, effectiveDate) must be provided');
+    if (!name || !habitPeriod || !goal || !effectiveDate || !difficulty) {
+        const error = new Error('All fields (name, habitPeriod, goal, effectiveDate, difficulty) must be provided');
         error.status = 400; // Set the HTTP status for the error
         return next(error);
     }
@@ -22,13 +22,14 @@ export const addHabit = async (req, res, next) => {
             user: req.user._id,  // Assuming user ID is available from auth middleware
             name,
             habitPeriod,
-            consistencyGoals: [{
+            consistencyGoals: {
                 goal: goal,
                 effectiveDate: new Date(effectiveDate) // Ensure the date is properly formatted
-            }]
+            },
+            difficulty
         });
         await newHabit.save();
-        console.log('New habit added:', newHabit)
+        console.log('New habit added:', newHabit);
         res.status(201).json(newHabit);
     } catch (error) {
         // Pass any server-side errors to the error handling middleware
@@ -47,6 +48,9 @@ export const getHabits = async (req, res, next) => {
         const habits = await Habit.find({ user: req.user._id });
         const habitsWithData = await Promise.all(habits.map(async (habit) => {
             const heatmapData = await habit.getHeatmapData();
+            if (habit.name === "Walking Stanley") {
+                console.log(heatmapData)
+            }
             const occurrences = habit.getWeeklyOccurrences();
             return {
                 ...habit.toObject(),
@@ -68,7 +72,7 @@ export const getHabits = async (req, res, next) => {
  */
 export const updateHabit = async (req, res, next) => {
     const { habitId } = req.params;
-    const { name, habitPeriod, newGoal, effectiveDate, completionChange, date } = req.body;
+    const { name, habitPeriod, goal, effectiveDate, difficulty, completionChange, date } = req.body;
 
     try {
         const updateFields = {};
@@ -76,11 +80,12 @@ export const updateHabit = async (req, res, next) => {
         // Update basic fields if provided
         if (name) updateFields.name = name;
         if (habitPeriod) updateFields.habitPeriod = habitPeriod;
+        if (difficulty) updateFields.difficulty = difficulty;
 
         // Handle goal updates with validation and error handling
-        if (newGoal && effectiveDate) {
-            const goalEntry = { goal: newGoal, effectiveDate: new Date(effectiveDate) };
-            updateFields.$push = { consistencyGoals: goalEntry };
+        if (goal && effectiveDate) {
+            const goalEntry = { goal, effectiveDate: new Date(effectiveDate) };
+            updateFields.consistencyGoals = goalEntry;
         }
 
         // Update completions for a specific date if provided
@@ -131,30 +136,31 @@ export const deleteHabit = async (req, res, next) => {
     }
 };
 
-/**
- * Updates the completion count for a specified date for a habit.
- * If decreasing, it ensures completions don't go below zero. Also updates the streak.
- * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
- * @param {Response} res - The response object used to return the updated habit.
- */
-export const updateHabitCompletion = async (req, res, next) => {
-    const { habitId } = req.params;
-    const { completionChange, date } = req.body;
+    /**
+     * Updates the completion count for a specified date for a habit.
+     * If decreasing, it ensures completions don't go below zero. Also updates the streak.
+     * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
+     * @param {Response} res - The response object used to return the updated habit.
+     */
+    export const updateHabitCompletion = async (req, res, next) => {
+        const { habitId } = req.params;
+        const { completionChange, date } = req.body;
 
-    try {
-        const habit = await Habit.findById(habitId);
-        if (!habit) {
-            const error = new Error('Habit not found');
-            error.status = 404;
-            throw error;
+        try {
+            const habit = await Habit.findById(habitId);
+            if (!habit) {
+                const error = new Error('Habit not found');
+                error.status = 404;
+                throw error;
+            }
+            await habit.changeCompletion(date, completionChange);
+            await habit.save(); // Ensure the habit is saved with the updated streak
+            res.json(habit);
+        } catch (error) {
+            next(error);
         }
+    };
 
-        await habit.changeCompletion(date, completionChange);
-        res.json(habit);
-    } catch (error) {
-        next(error);
-    }
-};
 
 /**
  * Calculates and retrieves the current streak for a specified habit.

@@ -2,42 +2,44 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const HabitSchema = new Schema({
-    user: {
+  user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true
-    },
-    name: {
+  },
+  name: {
       type: String,
       required: true
-    },
-    difficulty: {
+  },
+  difficulty: {
       type: String,
       enum: ['Easy', 'Medium', 'Hard']
-    },
-    habitTotal: {
+  },
+  habitTotal: {
       type: Number,
       default: 0
-    },
-    habitPeriod: {
+  },
+  habitPeriod: {
       type: String,
       enum: ['Daily', 'Weekly'],
       required: true
-    },
-    occurrences: [{
+  },
+  occurrences: [{
       date: { type: Date, required: true },
       completions: { type: Number, default: 0 } // Tracks the number of completions per day
-    }],
-    consistencyGoals: [{
+  }],
+  consistencyGoals: {
       goal: { type: Number, required: true },
       effectiveDate: { type: Date, required: true }
-    }],
-    completionDates: [{ type: Date }],
-    streak: {
+  },
+  completionDates: [{ type: Date }],
+  streak: {
       type: Number,
       default: 0
-    }
-  }, { timestamps: true });
+  }
+}, { timestamps: true });
+
+
 // Add indexes
 HabitSchema.index({ user: 1 });
 HabitSchema.index({ "occurrences.date": 1 });
@@ -79,56 +81,54 @@ HabitSchema.methods.updateGoal = async function(newGoal, effectiveDate) {
   }
 };
 
-
-
 /**
  * Calculates the current streak based on consecutive periods meeting the habit's goals.
  * Uses MongoDB aggregation to efficiently compute streak over potentially large datasets.
  * @returns {Promise<Number>} A promise that resolves with the current streak value.
  */
 HabitSchema.methods.calculateStreak = async function() {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-  
-    const lastGoal = this.consistencyGoals[this.consistencyGoals.length - 1];
-  
-    const pipeline = [
-      { $match: { _id: this._id } },
-      { $unwind: "$occurrences" },
-      { $sort: { "occurrences.date": 1 } },
-      { $addFields: {
-        period: {
-          $cond: {
-            if: { $eq: ["$habitPeriod", "Daily"] },
-            then: { $dateToString: { format: "%Y-%m-%d", date: "$occurrences.date" } },
-            else: {
-              $cond: {
-                if: { $eq: ["$habitPeriod", "Weekly"] },
-                then: { $concat: [{ $toString: { $isoWeek: "$occurrences.date" } }, "-", { $toString: { $year: "$occurrences.date" } }] },
-                else: { $dateToString: { format: "%Y-%m", date: "$occurrences.date" } } // Monthly (future-proofing)
-              }
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastGoal = this.consistencyGoals; // Access consistencyGoals directly
+
+  const pipeline = [
+    { $match: { _id: this._id } },
+    { $unwind: "$occurrences" },
+    { $sort: { "occurrences.date": 1 } },
+    { $addFields: {
+      period: {
+        $cond: {
+          if: { $eq: ["$habitPeriod", "Daily"] },
+          then: { $dateToString: { format: "%Y-%m-%d", date: "$occurrences.date" } },
+          else: {
+            $cond: {
+              if: { $eq: ["$habitPeriod", "Weekly"] },
+              then: { $concat: [{ $toString: { $isoWeek: "$occurrences.date" } }, "-", { $toString: { $year: "$occurrences.date" } }] },
+              else: { $dateToString: { format: "%Y-%m", date: "$occurrences.date" } } // Monthly (future-proofing)
             }
           }
         }
-      }},
-      { $group: {
-        _id: "$period",
-        completions: { $sum: "$occurrences.completions" }
-      }},
-      { $match: {
-        completions: { $gte: lastGoal.goal }
-      }},
-      { $sort: { "_id": 1 } },
-      { $group: {
-        _id: null,
-        streak: {
-          $sum: 1
-        }
-      }}
-    ];
-  
-    const result = await this.model('Habit').aggregate(pipeline);
-    return result.length > 0 ? result[0].streak : 0;
+      }
+    }},
+    { $group: {
+      _id: "$period",
+      completions: { $sum: "$occurrences.completions" }
+    }},
+    { $match: {
+      completions: { $gte: lastGoal.goal } // Ensure the goal is correctly accessed
+    }},
+    { $sort: { "_id": 1 } },
+    { $group: {
+      _id: null,
+      streak: {
+        $sum: 1
+      }
+    }}
+  ];
+
+  const result = await this.model('Habit').aggregate(pipeline);
+  return result.length > 0 ? result[0].streak : 0;
 };
 
 /**
@@ -139,41 +139,42 @@ HabitSchema.methods.calculateStreak = async function() {
  * @returns {Promise<Object>} A promise that resolves with the operation result.
  */
 HabitSchema.methods.changeCompletion = async function(date, change) {
-    const targetDate = new Date(date);
-    targetDate.setHours(0, 0, 0, 0); // Normalize the date for consistent comparison
-  
-    let occurrence = this.occurrences.find(o => {
-      const occurrenceDate = new Date(o.date);
-      occurrenceDate.setHours(0, 0, 0, 0);
-      return occurrenceDate.getTime() === targetDate.getTime();
-    });
-  
-    let previousCompletions = 0;
-    if (occurrence) {
-      previousCompletions = occurrence.completions;
-      occurrence.completions = Math.max(0, change);
-    } else {
-      this.occurrences.push({ date: targetDate, completions: Math.max(0, change) });
-    }
-  
-    const increment = Math.max(0, change - previousCompletions);
-  
-    if (increment > 0) {
-      let coins = 0;
-      if (this.difficulty === 'Easy') {
-        coins = 1 * increment;
-      } else if (this.difficulty === 'Medium') {
-        coins = 2 * increment;
-      } else if (this.difficulty === 'Hard') {
-        coins = 3 * increment;
-      }
-  
-      await mongoose.model('User').findByIdAndUpdate(this.user, { $inc: { coins } });
-    }
-  
-    await this.save();
-    return { success: true, message: "Completions updated successfully and coins awarded." };
-  };
+  const targetDate = new Date(date);
+  targetDate.setHours(0, 0, 0, 0); // Normalize the date for consistent comparison
+
+  let occurrence = this.occurrences.find(o => {
+    const occurrenceDate = new Date(o.date);
+    occurrenceDate.setHours(0, 0, 0, 0);
+    return occurrenceDate.getTime() === targetDate.getTime();
+  });
+
+  let previousCompletions = 0;
+  if (occurrence) {
+    previousCompletions = occurrence.completions;
+    occurrence.completions = Math.max(0, change);
+  } else {
+    this.occurrences.push({ date: targetDate, completions: Math.max(0, change) });
+  }
+
+  const increment = change - previousCompletions;
+
+  let coins = 0;
+  if (this.difficulty === 'Easy') {
+    coins = 1 * increment;
+  } else if (this.difficulty === 'Medium') {
+    coins = 2 * increment;
+  } else if (this.difficulty === 'Hard') {
+    coins = 3 * increment;
+  }
+
+  await mongoose.model('User').findByIdAndUpdate(this.user, { $inc: { coins } });
+
+  await this.save();
+  this.streak = await this.calculateStreak(); // Update streak
+  await this.save();
+  return { success: true, message: "Completions updated successfully and coins adjusted." };
+};
+
 
 /**
 * Retrieves all occurrences of this habit within the current week.

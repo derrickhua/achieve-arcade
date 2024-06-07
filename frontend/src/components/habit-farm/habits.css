@@ -18,23 +18,19 @@
   background-color: white;
   border-radius: 15px;
   padding: 16px;
-  height: 10vw;
+  height: 200px;
   width: 10vw;
-  max-width: 600px;
-  max-height: 600px;
-  min-width: 200px;
-  min-height: 200px;
+
 }
 
 .habit-data {
-    background-color: white;
+    background-color: #f3dfbe;
     border-radius: 15px;
     padding: 16px;
     display: flex;
     justify-content: space-around;
-    gap: 20px;
-    height: 100%;
-    max-width: 1170px;
+    height: 250px;
+    width: 1200px;
   }
 
 .habit-card-container {
@@ -53,9 +49,54 @@
     max-width: 320px !important;
     max-height: 180px; 
 }
+.habit-data::before,
+.habit-data::after,
+.habit-data .corner-borders::before,
+.habit-data .corner-borders::after {
+  content: '';
+  position: absolute;
+  width: 50px; /* Adjust the size as needed */
+  height: 50px; /* Adjust the size as needed */
+  border: 10px solid #C0D470;
+  background-color: transparent; /* Ensure the background is transparent */
+}
+
+.habit-data::before {
+  top: -6px;
+  left: -6px;
+  border-width: 10px 0 0 10px;
+}
+
+.habit-data::after {
+  top: -6px;
+  right: -6px;
+  border-width: 10px 10px 0 0;
+}
+
+.habit-data .corner-borders::before {
+  bottom: -6px;
+  left: -6px;
+  border-width: 0 0 10px 10px;
+}
+
+.habit-data .corner-borders::after {
+  bottom: -6px;
+  right: -6px;
+  border-width: 0 10px 10px 0;
+}
+
+.habit-data .button-container {
+  position: absolute;
+  top: 5px;
+  right: 15px;
+  z-index: 1; /* Ensure the buttons are above the borders */
+  display: flex;
+  gap: 5px;
+}
+
 
   /* Media Query to adjust layout for screens smaller than 1100px */
-  @media (max-width: 1500px) {
+  /* @media (max-width: 1500px) {
     .habit-data {
       flex-direction: column;
       max-height: none;
@@ -63,8 +104,8 @@
     }
     .habit-name, .habit-heatmap, .habit-bar-graph {
       grid-column: span 12; /* Make each section span full width */
-    }
-    .habit-bar-graph {
+    /* } */
+    /* .habit-bar-graph {
         min-height: 150px;
     }
     .habit-progress-circle, .habit-increment-area {
@@ -80,7 +121,4 @@
       height: fit-content;
       overflow-y: auto;
     }
-  }
-
-
-  
+  } */

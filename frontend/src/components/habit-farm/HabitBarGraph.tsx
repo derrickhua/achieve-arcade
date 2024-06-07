@@ -37,7 +37,7 @@ const HabitBarGraph: React.FC<HabitBarGraphProps> = ({ occurrences, habitPeriod,
 
     return (
         <TooltipProvider>
-            <div className="w-full flex flex-col items-center h-full garamond">
+            <div className="w-full flex flex-col items-center h-[80%] garamond">
                 <div className="flex items-center">
                     activity in the past week
                 </div>
@@ -48,7 +48,7 @@ const HabitBarGraph: React.FC<HabitBarGraphProps> = ({ occurrences, habitPeriod,
                                 className="flex flex-col justify-end items-center flex-grow" 
                                 style={{ height: '100%' }}
                             >
-                                <span className='text-[12px] mb-2 ' style={{ color: '#98E4A5' }}>
+                                <span className='text-[20px] mb-2 '>
                                     {daysOfWeek[index]}
                                 </span>
                                 <div
@@ -56,7 +56,7 @@ const HabitBarGraph: React.FC<HabitBarGraphProps> = ({ occurrences, habitPeriod,
                                         height: `${(occurrence.completions / maxCompletions) * 100}%`,
                                         width: '80%',
                                         borderRadius: '5px',
-                                        backgroundColor: '#98E4A5',
+                                        backgroundColor: '#C0D470',
                                         transition: 'all 0.3s ease-in-out',
                                     }}
                                     className="flex max-w-[35px] bar"

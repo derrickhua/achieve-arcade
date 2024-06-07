@@ -5,22 +5,20 @@ import Topbar from './Topbar';
 import { getUserCoins } from '@/lib/user';
 import PlayerData from '../pages/PlayerData';
 import GoalKnight from '../pages/GoalKnight';
-
+import HabitFarm from '../pages/HabitFarm';
 export const DashboardLayout: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState('PlayerData');
   const [coins, setCoins] = useState(0);
-
+  const fetchCoins = async () => {
+    try {
+      const coins = await getUserCoins();
+      setCoins(coins);
+    } catch (error) {
+      console.error('Error fetching coins:', error);
+    }
+  };
   // Fetch user coins on component mount
   useEffect(() => {
-    const fetchCoins = async () => {
-      try {
-        const coins = await getUserCoins();
-        setCoins(coins);
-      } catch (error) {
-        console.error('Error fetching coins:', error);
-      }
-    };
-
     fetchCoins();
   }, []);
 
@@ -29,9 +27,9 @@ export const DashboardLayout: React.FC = () => {
       case 'PlayerData':
         return <PlayerData />;
       case 'GoalKnight':
-        return <GoalKnight />;
+        return <GoalKnight fetchCoins={fetchCoins}/>;
       case 'HabitFarm':
-        return <p>HabitFarm</p>;
+        return <HabitFarm fetchCoins={fetchCoins}/>;
       case 'TaskSlayer':
         return <p>TaskSlayer</p>;
       case 'DailySchedule':

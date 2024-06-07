@@ -4,7 +4,7 @@ import MilestoneSection from './MilestoneSection'; // Adjust the path based on y
 import VisualKnight from './VisualKnight'; // Adjust the path based on your file structure
 import GoalSuccess from './GoalSuccess'; // Adjust the path based on your file structure
 
-const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, onOpenDeleteGoalForm: (id: string) => void }> = ({ goal, onOpenEditGoalForm, onOpenDeleteGoalForm }) => {
+const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, onOpenDeleteGoalForm: (id: string) => void, fetchCoins: () => void }> = ({ goal, onOpenEditGoalForm, onOpenDeleteGoalForm, fetchCoins }) => {
   const [completedMilestones, setCompletedMilestones] = useState(goal.milestones.filter(milestone => milestone.completed).length);
   const [goalCompleted, setGoalCompleted] = useState(goal.completed);
   const [milestoneJustCompleted, setMilestoneJustCompleted] = useState(false);
@@ -31,12 +31,12 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
 
   const handleMilestoneCompletion = () => {
     if (isAnimating) return; // Prevent double clicking
-
+    
     setMilestoneJustCompleted(true);
     setIsAnimating(true);
   };
 
-  const handleAnimationComplete = () => {
+  const handleAnimationComplete = async () => {
     setMilestoneJustCompleted(false);
     setCompletedMilestones(prev => {
       const newCount = prev + 1;
@@ -46,12 +46,14 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
       return newCount;
     });
     setIsAnimating(false);
+    await fetchCoins(); // Fetch user coins after each milestone completion
   };
 
-  const handleFinalAnimationComplete = () => {
+  const handleFinalAnimationComplete = async () => {
     setGoalCompleted(true);
     setShowKnightSlash(false);
     setIsAnimating(false);
+    await fetchCoins();
   };
 
   return (

@@ -7,7 +7,7 @@ import EditGoalForm from '../forms/EditGoal';
 import DeleteGoalForm from '../forms/DeleteGoal';
 import { Goal } from '@/lib/goals';
 
-const GoalKnight: React.FC = () => {
+const GoalKnight: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [goals, setGoals] = useState([]);
   const [filter, setFilter] = useState('All');
   const [isAddGoalFormOpen, setIsAddGoalFormOpen] = useState(false);
@@ -94,6 +94,7 @@ const GoalKnight: React.FC = () => {
               goal={goal}
               onOpenEditGoalForm={() => openEditGoalForm(goal)}
               onOpenDeleteGoalForm={() => openDeleteGoalForm(goal)}
+              fetchCoins={fetchCoins}
             />
           </div>
         ))}
