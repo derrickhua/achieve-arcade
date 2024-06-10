@@ -8,7 +8,7 @@ const TimeBlockSchema = new Schema({
   tasks: [{ type: Schema.Types.ObjectId, ref: 'Task' }], // Reference to Task model
   timerDuration: { type: Number, default: 0 }, // in seconds
   category: { type: String, enum: ['work', 'leisure', 'family_friends', 'atelic'], required: true },
-  completed: { type: Boolean, default: false }, // For time blocks without tasks
+  completed: { type: Boolean, default: false },
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true } // Add userId to link to the user
 });
 

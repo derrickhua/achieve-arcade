@@ -35,21 +35,19 @@ export const addTask = async (req, res, next) => {
  * @param {Response} res - The response object used to return the task data.
  */
 export const getTasks = async (req, res, next) => {
-    try {
-        const userId = req.user._id;
-        const completedTaskCount = await Task.countDocuments({ userId, completed: true });
-        const uncompletedTasks = await Task.find({ userId, completed: false });
-    
-        res.json({
-            completedTaskCount,
-            uncompletedTasks
-        });
-    } catch (error) {
-        next(error);
-    }
+  try {
+      const userId = req.user._id;
+      const completedTaskCount = await Task.countDocuments({ userId, completed: true });
+      const uncompletedTasks = await Task.find({ userId, completed: false, timeBlockId: { $exists: false } });
+  
+      res.json({
+          completedTaskCount,
+          uncompletedTasks
+      });
+  } catch (error) {
+      next(error);
+  }
 };
-
-
 
 /**
  * Updates a specific task based on provided parameters.

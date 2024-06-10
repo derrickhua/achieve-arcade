@@ -5,6 +5,7 @@ export interface Task {
   _id: string;
   name: string;
   completed: boolean;
+  difficulty?: string;
 }
 
 export interface TimeBlock {
@@ -13,8 +14,6 @@ export interface TimeBlock {
   startTime: Date;
   endTime: Date;
   tasks: Task[];
-  timerStartedAt?: Date;
-  timerDuration?: number; // in seconds
   category: 'work' | 'leisure' | 'family_friends' | 'atelic'; // Category field
   completed: boolean; // For time blocks without tasks
 }
@@ -31,7 +30,6 @@ export interface TimeBlockUpdateData {
   startTime?: Date | string;
   endTime?: Date | string;
   tasks?: Task[];
-  timerDuration?: number;
   category?: 'work' | 'leisure' | 'family_friends' | 'atelic';
   completed?: boolean;
 }
@@ -60,13 +58,13 @@ api.interceptors.request.use(async (config) => {
 
 // Fetch the daily schedule for the current date
 export const getDailySchedule = async (): Promise<DailySchedule> => {
-  return api.get('/').then(response => response.data);
+  return api.get('/daily').then(response => response.data);
 };
 
 // Add a new time block to the daily schedule
 export const addTimeBlock = async (timeBlockData: Omit<TimeBlock, '_id'>): Promise<DailySchedule> => {
   try {
-    const response = await api.post('/time-block', timeBlockData);
+    const response = await api.post('/timeBlock', timeBlockData);
     return response.data;  // Return only the response data containing the updated schedule
   } catch (error: any) {
     console.error('Error adding time block:', error.response ? error.response.data : error.message);
@@ -76,32 +74,15 @@ export const addTimeBlock = async (timeBlockData: Omit<TimeBlock, '_id'>): Promi
 
 // Update a specific time block within the daily schedule
 export const updateTimeBlock = async (blockId: string, updateData: TimeBlockUpdateData): Promise<DailySchedule> => {
-  return api.put(`/time-block/${blockId}`, updateData).then(response => response.data);
+  return api.put(`/timeBlock/${blockId}`, updateData).then(response => response.data);
 };
 
 // Delete a specific time block from the daily schedule
 export const deleteTimeBlock = async (blockId: string): Promise<void> => {
-  return api.delete(`/time-block/${blockId}`).then(response => response.data);
-}; 
-
-// Start the timer for a specific time block
-export const startTimer = async (blockId: string): Promise<DailySchedule> => {
-  return api.post(`/time-block/${blockId}/start-timer`).then(response => response.data);
-};
-
-// Stop the timer for a specific time block and log the duration
-export const stopTimer = async (blockId: string): Promise<DailySchedule> => {
-  return api.post(`/time-block/${blockId}/stop-timer`).then(response => response.data);
+  return api.delete(`/timeBlock/${blockId}`).then(response => response.data);
 };
 
 // Retrieve the weekly metrics for the user
-export const getWeeklyMetrics = async (): Promise<any> => {
-  return api.get('/weekly-metrics').then(response => response.data);
+export const getWeeklyMetrics = async (date: string): Promise<any> => {
+  return api.get(`/weeklyMetrics?date=${date}`).then(response => response.data);
 };
-
-// Retrieve the weekly hours spent in each category for the user
-export const getWeeklyHours = async (date: string): Promise<any> => {
-  return api.get(`/weekly-hours?date=${date}`).then(response => response.data);
-};
-
-
