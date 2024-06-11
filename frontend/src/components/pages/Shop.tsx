@@ -15,8 +15,8 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
   const chests = [
     { name: 'WOOD CHEST', price: 10, image: '/icons/shop/wood.png', type: 'wood' },
-    { name: 'METAL CHEST', price: 40, image: '/icons/shop/metal.png', type: 'metal' },
-    { name: 'GOLD CHEST', price: 100, image: '/icons/shop/gold.png', type: 'gold' }
+    { name: 'METAL CHEST', price: 60, image: '/icons/shop/metal.png', type: 'metal' },
+    { name: 'GOLD CHEST', price: 150, image: '/icons/shop/gold.png', type: 'gold' }
   ];
 
   const chestProbabilities = {

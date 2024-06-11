@@ -2,6 +2,68 @@ import User from '../models/user.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+const basicRewards = {
+    woodRewards: [
+      { name: 'Coffee', icon: '☕', chestType: 'Wood' },
+      { name: 'Snack', icon: '🍪', chestType: 'Wood' },
+      { name: 'Break', icon: '🛋️', chestType: 'Wood' },
+      { name: 'TV Show', icon: '📺', chestType: 'Wood' },
+      { name: 'Walk', icon: '🚶‍♂️', chestType: 'Wood' },
+      { name: 'Dessert', icon: '🍰', chestType: 'Wood' },
+      { name: 'Stationery', icon: '✏️', chestType: 'Wood' },
+      { name: 'Podcast', icon: '🎧', chestType: 'Wood' },
+      { name: 'Game', icon: '🎮', chestType: 'Wood' },
+      { name: 'Book Chapter', icon: '📖', chestType: 'Wood' }
+    ],
+    metalRewards: [
+      { name: 'Dance Class', icon: '💃', chestType: 'Metal' },
+      { name: 'Nice Dinner', icon: '🍽️', chestType: 'Metal' },
+      { name: 'New Book', icon: '📚', chestType: 'Metal' },
+      { name: 'Movie Night', icon: '🎬', chestType: 'Metal' },
+      { name: 'Half-Day Off', icon: '🏖️', chestType: 'Metal' },
+      { name: 'Museum Visit', icon: '🏛️', chestType: 'Metal' },
+      { name: 'Workshop', icon: '🛠️', chestType: 'Metal' },
+      { name: 'Massage', icon: '💆', chestType: 'Metal' },
+      { name: 'New Clothing', icon: '👗', chestType: 'Metal' },
+      { name: 'Fancy Brunch', icon: '🥂', chestType: 'Metal' }
+    ],
+    goldRewards: [
+      { name: 'Weekend Getaway', icon: '🌴', chestType: 'Gold' },
+      { name: 'New Tech', icon: '💻', chestType: 'Gold' },
+      { name: 'Spa Day', icon: '🧖', chestType: 'Gold' },
+      { name: 'Personal Retreat', icon: '🌄', chestType: 'Gold' },
+      { name: 'Short Vacation', icon: '✈️', chestType: 'Gold' },
+      { name: 'High-End Furniture', icon: '🛋️', chestType: 'Gold' },
+      { name: 'Online Course', icon: '💻', chestType: 'Gold' },
+      { name: 'Special Dinner', icon: '🍣', chestType: 'Gold' },
+      { name: 'Fitness Tracker', icon: '⌚', chestType: 'Gold' },
+      { name: 'Luxury Dining', icon: '🍾', chestType: 'Gold' }
+    ]
+  };
+  
+  // Function to initialize rewards for a new user
+  const initializeUserRewards = async (userId) => {
+    try {
+      const rewardsToCreate = [];
+  
+      basicRewards.woodRewards.forEach(reward => {
+        rewardsToCreate.push({ ...reward, user: userId });
+      });
+  
+      basicRewards.metalRewards.forEach(reward => {
+        rewardsToCreate.push({ ...reward, user: userId });
+      });
+  
+      basicRewards.goldRewards.forEach(reward => {
+        rewardsToCreate.push({ ...reward, user: userId });
+      });
+  
+      await Reward.insertMany(rewardsToCreate);
+    } catch (error) {
+      console.error('Error initializing user rewards:', error);
+    }
+  };
+  
 const generateTokens = (userId) => {
     const accessTokenExpiresIn = 15 * 60 * 1000; // 15 minutes in milliseconds
     const accessToken = jwt.sign({ _id: userId }, process.env.JWT_SECRET, { expiresIn: '15m' }); // Access token expires in 2 minutes
@@ -75,34 +137,38 @@ export const refreshAccessToken = async (req, res, next) => {
 export const register = async (req, res, next) => {
     const { username, email, password, timezone } = req.body;
     try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ error: 'User already exists' });  // Use res.status().json() for proper error handling
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({
-            username,
-            email,
-            password: hashedPassword,
-            timezone
-        });
-
-        const tokens = generateTokens(newUser._id);
-        newUser.refreshToken = tokens.refreshToken;  // Save the refresh token in the user's record
-        await newUser.save();
-
-        res.status(201).json({
-            message: 'User registered successfully',
-            refreshToken: tokens.refreshToken,
-            accessToken: tokens.accessToken,
-            accessTokenExpires: tokens.accessTokenExpires
-        });
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return res.status(409).json({ error: 'User already exists' });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({
+        username,
+        email,
+        password: hashedPassword,
+        timezone,
+        coins: 50 // Initial starter coins
+      });
+  
+      const tokens = generateTokens(newUser._id);
+      newUser.refreshToken = tokens.refreshToken;
+      await newUser.save();
+  
+      // Initialize rewards for the new user
+      await initializeUserRewards(newUser._id);
+  
+      res.status(201).json({
+        message: 'User registered successfully',
+        refreshToken: tokens.refreshToken,
+        accessToken: tokens.accessToken,
+        accessTokenExpires: tokens.accessTokenExpires
+      });
     } catch (error) {
-        console.error("Registration error:", error);
-        next(error);
+      console.error("Registration error:", error);
+      next(error);
     }
-};
+  };
 
 
 /**

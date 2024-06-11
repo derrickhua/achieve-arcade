@@ -1,63 +1,73 @@
 import Reward from "../models/reward.js";
+import User from "../models/user.js";
 
 // Create a new reward
 export const createReward = async (req, res, next) => {
-    const { name, icon, chestType } = req.body;
-    try {
-      const reward = new Reward({ name, icon, chestType });
-      await reward.save();
-      res.status(201).json(reward);
-    } catch (error) {
-      next(error);
-    }
-  };
-  
-  // Get all rewards
-  export const getAllRewards = async (req, res, next) => {
-    try {
-      const rewards = await Reward.find();
-      res.json(rewards);
-    } catch (error) {
-      next(error);
-    }
-  };
-  
-  // Get a specific reward
-  export const getReward = async (req, res, next) => {
-    const { rewardId } = req.params;
-    try {
-      const reward = await Reward.findById(rewardId);
-      if (!reward) return res.status(404).json({ message: 'Reward not found' });
-      res.json(reward);
-    } catch (error) {
-      next(error);
-    }
-  };
-  
-  // Update a reward
-  export const updateReward = async (req, res, next) => {
-    const { rewardId } = req.params;
-    const { name, icon, chestType } = req.body;
-    try {
-      const reward = await Reward.findByIdAndUpdate(rewardId, { name, icon, chestType }, { new: true });
-      if (!reward) return res.status(404).json({ message: 'Reward not found' });
-      res.json(reward);
-    } catch (error) {
-      next(error);
-    }
-  };
-  
-  // Delete a reward
-  export const deleteReward = async (req, res, next) => {
-    const { rewardId } = req.params;
-    try {
-      const reward = await Reward.findByIdAndDelete(rewardId);
-      if (!reward) return res.status(404).json({ message: 'Reward not found' });
-      res.status(204).send();
-    } catch (error) {
-      next(error);
-    }
-  };
+  const { name, icon, chestType } = req.body;
+  const userId = req.user._id;
+  try {
+    const reward = new Reward({ name, icon, chestType, user: userId });
+    await reward.save();
+    res.status(201).json(reward);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all rewards for the logged-in user
+export const getAllRewards = async (req, res, next) => {
+  const userId = req.user._id;
+  try {
+    const rewards = await Reward.find({ user: userId });
+    res.json(rewards);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get a specific reward for the logged-in user
+export const getReward = async (req, res, next) => {
+  const { rewardId } = req.params;
+  const userId = req.user._id;
+  try {
+    const reward = await Reward.findOne({ _id: rewardId, user: userId });
+    if (!reward) return res.status(404).json({ message: 'Reward not found' });
+    res.json(reward);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update a reward for the logged-in user
+export const updateReward = async (req, res, next) => {
+  const { rewardId } = req.params;
+  const { name, icon, chestType } = req.body;
+  const userId = req.user._id;
+  try {
+    const reward = await Reward.findOneAndUpdate(
+      { _id: rewardId, user: userId },
+      { name, icon, chestType },
+      { new: true }
+    );
+    if (!reward) return res.status(404).json({ message: 'Reward not found' });
+    res.json(reward);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete a reward for the logged-in user
+export const deleteReward = async (req, res, next) => {
+  const { rewardId } = req.params;
+  const userId = req.user._id;
+  try {
+    const reward = await Reward.findOneAndDelete({ _id: rewardId, user: userId });
+    if (!reward) return res.status(404).json({ message: 'Reward not found' });
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
 
 /**
  * Purchases a chest and deducts coins from the user.
@@ -70,8 +80,8 @@ export const purchaseChest = async (req, res) => {
 
   const chestCosts = {
     Wood: 10,
-    Metal: 40,
-    Gold: 100
+    Metal: 60,
+    Gold: 150
   };
 
   const chestProbabilities = {
@@ -107,11 +117,20 @@ export const purchaseChest = async (req, res) => {
       rewardCategory = 'Gold';
     }
 
-    const rewards = await Reward.find({ chestType: rewardCategory });
+    const rewards = await Reward.find({ chestType: rewardCategory, user: userId });
     const reward = selectReward(rewardCategory, rewards);
 
     res.status(200).json({ reward });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
+};
+
+// Helper function to select a reward randomly from the available rewards of the given category
+const selectReward = (rewardCategory, rewards) => {
+  if (rewards.length === 0) {
+    return { message: `No rewards available for category ${rewardCategory}` };
+  }
+  const randomIndex = Math.floor(Math.random() * rewards.length);
+  return rewards[randomIndex];
 };
