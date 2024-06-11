@@ -57,7 +57,7 @@ const LineChart = ({ timeData }) => {
       labels: {
         formatter: (val) => {
           const date = new Date(val);
-          return date.toLocaleDateString('en-GB', xAxisLabelFormat === 'dd MMM yyyy' ? { day: '2-digit', month: 'short', year: 'numeric' } : { month: 'short', year: 'numeric' });
+          return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
         }
       }
     },
@@ -68,12 +68,6 @@ const LineChart = ({ timeData }) => {
       enabled: false
     },
     tooltip: {
-      x: {
-        formatter: (val) => {
-          const date = new Date(val);
-          return date.toLocaleDateString('en-GB', xAxisLabelFormat === 'dd MMM yyyy' ? { day: '2-digit', month: 'short', year: 'numeric' } : { month: 'short', year: 'numeric' });
-        }
-      }
     },
     yaxis: {
       title: {

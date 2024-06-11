@@ -43,10 +43,10 @@ const PlayerData: React.FC = () => {
           <LineChartTimeBlock averageTimeBlockEfficiency={metrics.averageTimeBlockEfficiency} />
         </div>
         <div className="w-full md:w-1/3 place-items-center max-w-[450px] flex flex-wrap gap-4">
-          <SquareBlock label="Work Hours" value={metrics.categoryHours.work} color="#F36B5E" />
-          <SquareBlock label="Leisure Hours" value={metrics.categoryHours.leisure} color="#4A90E2" />
-          <SquareBlock label="Social Hours" value={metrics.categoryHours.family_friends} color="#F5ED83" />
-          <SquareBlock label="Atelic Hours" value={metrics.categoryHours.atelic} color="#C0D470" />
+          <SquareBlock label="Work Hours" value={metrics.categoryHours.work} color="#b82c05" />
+          <SquareBlock label="Leisure Hours" value={metrics.categoryHours.leisure} color="#73926d" />
+          <SquareBlock label="Social Hours" value={metrics.categoryHours.family_friends} color="#efbf7b" />
+          <SquareBlock label="Atelic Hours" value={metrics.categoryHours.atelic} color="#a3bdb6" />
         </div>
       </div>
     </div>

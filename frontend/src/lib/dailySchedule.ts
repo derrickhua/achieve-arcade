@@ -23,6 +23,7 @@ export interface DailySchedule {
   date: Date;
   userId: string;
   timeBlocks: TimeBlock[];
+  notes: string; // Added notes field
 }
 
 export interface TimeBlockUpdateData {
@@ -85,4 +86,15 @@ export const deleteTimeBlock = async (blockId: string): Promise<void> => {
 // Retrieve the weekly metrics for the user
 export const getWeeklyMetrics = async (date: string): Promise<any> => {
   return api.get(`/weeklyMetrics?date=${date}`).then(response => response.data);
+};
+
+// Update the notes for the daily schedule
+export const updateNotes = async (notes: string): Promise<DailySchedule> => {
+  try {
+    const response = await api.put('/notes', { notes });
+    return response.data;  // Return only the response data containing the updated schedule
+  } catch (error: any) {
+    console.error('Error updating notes:', error.response ? error.response.data : error.message);
+    throw error;  // Re-throw the error for handling in the calling function
+  }
 };

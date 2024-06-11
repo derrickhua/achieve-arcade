@@ -1,5 +1,6 @@
+import mongoose from 'mongoose';
 import Task from '../models/task.js';
-
+import { DailySchedule, TimeBlock } from '../models/dailySchedule.js';
 /**
  * Creates a new task for the user based on the provided details.
  * Validates the required fields and adds the task to the database.
@@ -49,49 +50,67 @@ export const getTasks = async (req, res, next) => {
   }
 };
 
-/**
- * Updates a specific task based on provided parameters.
- * @param {Request} req - The request object, including task ID and update details.
- * @param {Response} res - The response object used to return the updated task.
- */
 export const updateTask = async (req, res, next) => {
   const { taskId } = req.params;
   const { name, difficulty, completed } = req.body;
 
   try {
-    const updateFields = {};
+      const updateFields = {};
 
-    // Update fields if provided
-    if (name) updateFields.name = name;
-    if (typeof completed === 'boolean') updateFields.completed = completed;
+      // Update fields if provided
+      if (name) updateFields.name = name;
+      if (difficulty) updateFields.difficulty = difficulty;
+      if (typeof completed === 'boolean') updateFields.completed = completed;
 
-    const task = await Task.findById(taskId);
-    if (!task) {
-      const error = new Error('Task not found');
-      error.status = 404;
-      throw error;
-    }
+      const task = await Task.findById(taskId);
+      if (!task) {
+          const error = new Error('Task not found');
+          error.status = 404;
+          throw error;
+      }
 
-    Object.assign(task, updateFields);
+      const wasCompleted = task.completed;
 
-    if (completed) {
-      await task.completeTask();
-    } else {
+      Object.assign(task, updateFields);
       await task.save();
-    }
 
-    res.json(task);
+      // Check if the task is part of a time block
+      if (task.timeBlockId) {
+          let timeBlock = await TimeBlock.findById(task.timeBlockId).populate('tasks');
+
+          // Check if all tasks within the time block are completed
+          let allTasksCompleted;
+          if (completed) {
+            allTasksCompleted = timeBlock.tasks.every(t => t.completed);
+          } else {
+            allTasksCompleted = false;
+          }
+
+          // Update the completion status of the time block based on the tasks
+          if (allTasksCompleted && !timeBlock.completed) {
+              await timeBlock.completeTimeBlock();
+          } else if (!allTasksCompleted && timeBlock.completed) {
+              await timeBlock.incompleteTimeBlock();
+          }
+
+          // Update the DailySchedule document
+          const updateResult = await DailySchedule.updateOne(
+              { 'timeBlocks._id': timeBlock._id },
+              { $set: { 'timeBlocks.$.completed': allTasksCompleted } }
+          );
+      }
+      res.json(task);
   } catch (error) {
-    if (error instanceof mongoose.Error.ValidationError) {
-      error.status = 400;  // Bad Request for validation errors
-    } else if (error instanceof mongoose.Error.CastError) {
-      error.status = 400;  // Bad Request for casting errors, typically invalid format
-      error.message = 'Invalid ID format.';
-    }
-    next(error);
+      if (error instanceof mongoose.Error.ValidationError) {
+          error.status = 400;  // Bad Request for validation errors
+      } else if (error instanceof mongoose.Error.CastError) {
+          error.status = 400;  // Bad Request for casting errors, typically invalid format
+          error.message = 'Invalid ID format.';
+      }
+      console.error(`Error updating task ${taskId}:`, error);
+      next(error);
   }
 };
-
 
 /**
  * Deletes a specific task by its ID.

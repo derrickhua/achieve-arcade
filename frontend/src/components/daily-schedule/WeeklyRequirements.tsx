@@ -1,19 +1,45 @@
 import React from 'react';
 
-const WeeklyHourRequirementsSection: React.FC = () => {
+interface WeeklyMetrics {
+  work: number;
+  leisure: number;
+  family_friends: number;
+  atelic: number;
+}
+
+interface Preferences {
+  workHoursPerWeek: number;
+  leisureHoursPerWeek: number;
+  familyFriendsHoursPerWeek: number;
+  atelicHoursPerWeek: number;
+}
+
+interface WeeklyHourRequirementsSectionProps {
+  weeklyMetrics: {
+    categoryHours: WeeklyMetrics;
+    preferences: Preferences;
+  };
+}
+
+const WeeklyHourRequirementsSection: React.FC<WeeklyHourRequirementsSectionProps> = ({ weeklyMetrics }) => {
+  const { categoryHours, preferences } = weeklyMetrics;
+  const categories = [
+    { label: 'WORK', current: categoryHours.work, target: preferences.workHoursPerWeek, color: 'bg-[#b82c05]' },
+    { label: 'LEISURE', current: categoryHours.leisure, target: preferences.leisureHoursPerWeek, color: 'bg-[#71906a]' },
+    { label: 'ATELIC', current: categoryHours.atelic, target: preferences.atelicHoursPerWeek, color: 'bg-[#a3bdb6]' },
+    { label: 'FRIENDS & FAMILY', current: categoryHours.family_friends, target: preferences.familyFriendsHoursPerWeek, color: 'bg-[#efbf7b]' },
+  ];
+
   return (
-    <div className="flex flex-col w-[20%] h-full">
-      <div className="bg-[#F0F0F0] p-4 rounded-lg shadow-lg h-full">
-        <div className="text-[30px] mb-4">WEEKLY HOUR REQUIREMENTS</div>
-        {[
-          { label: 'WORK', current: 4, target: 16, color: 'red' },
-          { label: 'LEISURE', current: 2, target: 8, color: 'blue' },
-          { label: 'ATELIC', current: 1, target: 4, color: 'green' },
-          { label: 'FRIENDS & FAMILY', current: 8, target: 10, color: 'orange' }
-        ].map(({ label, current, target, color }) => (
-          <div key={label} className={`flex items-center justify-between bg-${color}-200 p-2 m-2 rounded-md`}>
-            <span className="text-[20px]">{label}</span>
-            <span className="text-[20px]">{current}/{target}</span>
+    <div className="flex flex-col items-center p-4 w-[20%] h-full">
+      <div className="text-[30px] text-center mb-4">WEEKLY HOUR REQUIREMENTS</div>
+      <div className="flex flex-col space-y-4">
+        {categories.map(({ label, current, target, color }) => (
+          <div 
+            key={label} 
+            className={`flex flex-col items-center justify-center w-[15vw] h-[15vw] max-w-[180px] max-h-[180px] ${color} rounded-md shadow-md text-black p-4`}>
+            <div className="text-[40px] h-full flex items-center">{current} / {target}</div>
+            <div className="text-[20px] mt-auto text-center">{label}</div>
           </div>
         ))}
       </div>

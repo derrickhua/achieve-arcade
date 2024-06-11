@@ -4,6 +4,7 @@ import Habit from '../models/habit.js';
 import User from '../models/user.js';
 import { DailySchedule } from '../models/dailySchedule.js';
 import Task from '../models/task.js';
+
 export const calculateMetrics = async (req, res, next) => {
   try {
     const userId = req.user._id;
@@ -33,26 +34,33 @@ export const calculateMetrics = async (req, res, next) => {
     ]);
 
     const plannedVsRealizedTime = plannedVsRealizedTimeData.map(data => ({
-      date: data._id,
+      date: new Date(data._id).toISOString(),
       planned: data.planned / 3600, // Convert to hours
       realized: data.actual / 3600, // Convert to hours
     }));
 
     // Tasks completed
-  const totalTasksCompleted = await Task.countDocuments({ userId: new mongoose.Types.ObjectId(userId), completed:
-    true });
-    
+    const totalTasksCompleted = await Task.countDocuments({ userId: new mongoose.Types.ObjectId(userId), completed: true });
+
     // Aggregate Average Time Block Efficiency
     const timeBlockEfficiencyData = await DailySchedule.aggregate([
       { $match: { userId: new mongoose.Types.ObjectId(userId) } },
       { $unwind: '$timeBlocks' },
+      {
+        $lookup: {
+          from: 'tasks',
+          localField: 'timeBlocks.tasks',
+          foreignField: '_id',
+          as: 'taskDetails'
+        }
+      },
       {
         $project: {
           date: { $dateToString: { format: '%Y-%m-%d', date: '$date' } },
           efficiency: {
             $cond: [
               { $eq: [{ $size: '$timeBlocks.tasks' }, 0] },
-              0,
+              { $cond: [{ $eq: ['$timeBlocks.completed', true] }, 100, 0] }, // If no tasks, 100% if completed, 0% otherwise
               {
                 $multiply: [
                   {
@@ -60,13 +68,13 @@ export const calculateMetrics = async (req, res, next) => {
                       {
                         $size: {
                           $filter: {
-                            input: '$timeBlocks.tasks',
+                            input: '$taskDetails',
                             as: 'task',
                             cond: { $eq: ['$$task.completed', true] },
                           },
                         },
                       },
-                      { $size: '$timeBlocks.tasks' },
+                      { $size: '$taskDetails' },
                     ],
                   },
                   100,
@@ -86,7 +94,7 @@ export const calculateMetrics = async (req, res, next) => {
     ]);
 
     const averageTimeBlockEfficiency = timeBlockEfficiencyData.map(data => ({
-      date: data._id,
+      date: new Date(data._id).toISOString(),
       efficiency: data.averageEfficiency,
     }));
 

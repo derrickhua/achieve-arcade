@@ -8,6 +8,7 @@ import GoalKnight from '../pages/GoalKnight';
 import HabitFarm from '../pages/HabitFarm';
 import TaskSlayer from '../pages/TaskSlayer';
 import DailySched from '../pages/DailySched';
+import Shop from '../pages/Shop';
 export const DashboardLayout: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState('PlayerData');
   const [coins, setCoins] = useState(0);
@@ -37,9 +38,9 @@ export const DashboardLayout: React.FC = () => {
       case 'DailySchedule':
         return <DailySched fetchCoins={fetchCoins}/>;
       case 'Shop':
-        return <p>Shop</p>;
+        return <Shop fetchCoins={fetchCoins}/>;
       default:
-        return <p>PlayerData</p>;
+        return <PlayerData />;
     }
   };
 

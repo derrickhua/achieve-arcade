@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AddButton from './AddButton';
 import ScheduleSection from '../daily-schedule/SchedSection';
 import CenterSection from '../daily-schedule/CenterSection';
 import WeeklyHourRequirementsSection from '../daily-schedule/WeeklyRequirements';
-import { getDailySchedule, getWeeklyMetrics } from '@/lib/dailySchedule';
+import { getDailySchedule, getWeeklyMetrics, updateNotes, TimeBlock as TimeBlockType } from '@/lib/dailySchedule';
+import AddTimeBlockForm from '../forms/AddTimeBlock';
+import EditTimeBlockForm from '../forms/EditTimeBlock';
+import DeleteTimeBlockForm from '../forms/DeleteTimeBlock'; // Import the DeleteTimeBlockForm
 
 interface Task {
   _id: string;
   name: string;
   completed: boolean;
+  category: 'work' | 'leisure' | 'family_friends' | 'atelic'; // Add category to Task interface
 }
 
 interface TimeBlock {
@@ -36,54 +40,97 @@ interface WeeklyMetrics {
   atelic: { hoursSpent: number; hoursLeft: number };
 }
 
-const exampleTimeBlocks: TimeBlock[] = [
-  {
-    _id: '1',
-    name: 'Work on Project',
-    startTime: new Date('2024-06-09T13:00:00'),
-    endTime: new Date('2024-06-09T15:00:00'),
-    tasks: [
-      { _id: 'task1', name: 'Design Module', completed: false },
-      { _id: 'task2', name: 'Implement Feature', completed: false }
-    ],
-    category: 'work',
-    completed: false
-  }
-];
-
 const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [dailySchedule, setDailySchedule] = useState<DailySchedule | null>(null);
   const [weeklyMetrics, setWeeklyMetrics] = useState<WeeklyMetrics | null>(null);
+  const [addBlock, setAddBlock] = useState<boolean>(false);
+  const [editBlock, setEditBlock] = useState<TimeBlockType | null>(null);
+  const [deleteBlock, setDeleteBlock] = useState<TimeBlockType | null>(null); // Add state for delete block
+
+  const fetchSchedule = async () => {
+    try {
+      const schedule = await getDailySchedule();
+      setDailySchedule(schedule);
+
+      const metrics = await getWeeklyMetrics(new Date().toISOString());
+      console.log('metrics', metrics)
+      setWeeklyMetrics(metrics);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const schedule = await getDailySchedule();
-        setDailySchedule(schedule);
-
-        const metrics = await getWeeklyMetrics(new Date().toISOString());
-        setWeeklyMetrics(metrics);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
-
-    fetchData();
+    fetchSchedule();
   }, []);
+
+  const handleEdit = (timeBlock: TimeBlockType) => {
+    setEditBlock(timeBlock);
+  };
+
+  const handleDelete = (timeBlock: TimeBlockType) => {
+    setDeleteBlock(timeBlock); // Set the delete block
+  };
+
+  const handleNotesChange = async (newNotes: string) => {
+    if (dailySchedule) {
+      try {
+        const updatedSchedule = { ...dailySchedule, notes: newNotes };
+        setDailySchedule(updatedSchedule);
+        await updateNotes(newNotes);
+      } catch (error) {
+        console.error('Error updating notes:', error);
+      }
+    }
+  };
 
   return (
     <div className="p-8 h-full overflow-auto flex flex-col items-center w-full">
+      {addBlock && (
+        <AddTimeBlockForm
+          isOpen={addBlock}
+          onClose={() => setAddBlock(false)}
+          fetchSchedule={fetchSchedule}
+        />
+      )}
+      {editBlock && (
+        <EditTimeBlockForm
+          isOpen={!!editBlock}
+          onClose={() => setEditBlock(null)}
+          fetchSchedule={fetchSchedule}
+          timeBlock={editBlock}
+        />
+      )}
+      {deleteBlock && ( // Render DeleteTimeBlockForm when deleteBlock is set
+        <DeleteTimeBlockForm
+          isOpen={!!deleteBlock}
+          onClose={() => setDeleteBlock(null)}
+          fetchSchedule={fetchSchedule}
+          timeBlock={deleteBlock}
+        />
+      )}
       <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full">
         <div className="flex items-center">
           <span className='text-[50px] mr-4'>DAILY SCHEDULE</span>
         </div>
-        <AddButton name="ADD TIMEBLOCK" />
+        <AddButton name="ADD TIMEBLOCK" onClick={() => setAddBlock(true)} />
       </div>
       <div className="flex justify-between max-w-[1800px] w-full space-x-4 h-full">
         {dailySchedule && (
           <>
-    <ScheduleSection timeBlocks={exampleTimeBlocks} />
-    <CenterSection tasks={dailySchedule.timeBlocks.flatMap(block => block.tasks)} notes={dailySchedule.notes} />
+            <ScheduleSection 
+              timeBlocks={dailySchedule.timeBlocks} 
+              onEdit={handleEdit} 
+              onDelete={handleDelete} // Pass handleDelete to ScheduleSection
+              fetchSchedule={fetchSchedule} 
+            />
+            <CenterSection 
+              tasks={dailySchedule.timeBlocks.flatMap(block => block.tasks.map(task => ({ ...task, category: block.category })))}
+              notes={dailySchedule.notes}
+              date={new Date(dailySchedule.date).toLocaleDateString()}
+              onNotesChange={handleNotesChange}  // Pass the callback
+              fetchSchedule={fetchSchedule}
+            />
           </>
         )}
         {weeklyMetrics && (

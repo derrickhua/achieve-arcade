@@ -49,13 +49,12 @@ TaskSchema.methods.completeTask = async function() {
   }
 
   // Update the user's coins using $inc
-  const result = await mongoose.model('User').findByIdAndUpdate(
+  await mongoose.model('User').findByIdAndUpdate(
     this.userId,
-    { $inc: { coins: coins } },
-    { new: true } // Return the updated document
+    { $inc: { coins: coins } }
   );
 
-  console.log(`User ${result._id} awarded ${coins} coins, total: ${result.coins}`); // Add log
+  console.log(`User ${this.userId} awarded ${coins} coins.`);
 };
 
 const Task = mongoose.model('Task', TaskSchema);

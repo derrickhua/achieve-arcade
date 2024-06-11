@@ -6,6 +6,7 @@ import 'apexcharts/dist/apexcharts.css';
 const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
+  console.log('ave time block', averageTimeBlockEfficiency)
   if (!averageTimeBlockEfficiency || !Array.isArray(averageTimeBlockEfficiency) || averageTimeBlockEfficiency.length === 0) {
     return <div>No data available</div>;
   }
@@ -24,11 +25,15 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     }
   ];
 
-  const startDate = new Date(validatedEfficiencyData[0].date);
-  const endDate = new Date(validatedEfficiencyData[validatedEfficiencyData.length - 1].date);
+  console.log('validated', validatedEfficiencyData);
+
+  const startDate = validatedEfficiencyData[0].date;
+  console.log('start', startDate)
+  const endDate = validatedEfficiencyData[validatedEfficiencyData.length - 1].date;
+  console.log('end', endDate)
 
   const formatXAxisLabels = (startDate, endDate) => {
-    const diffInDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
+    const diffInDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
     if (diffInDays > 30) {
       return 'MMM yyyy';
     }
@@ -48,13 +53,13 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
       background: '#FEFDF2' // Set background color
     },
     xaxis: {
-      categories: validatedEfficiencyData.map(item => new Date(item.date).getTime()),
+      categories: validatedEfficiencyData.map(item => item.date),
       labels: {
         formatter: (val) => {
-          const date = new Date(val);
-          return date.toLocaleDateString('en-GB', xAxisLabelFormat === 'dd MMM yyyy' ? { day: '2-digit', month: 'short', year: 'numeric' } : { month: 'short', year: 'numeric' });
+          return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
         }
-      }
+      },
+      type: 'category' // Ensure that the x-axis treats the values as categories
     },
     stroke: {
       curve: 'smooth'
@@ -63,12 +68,6 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
       enabled: false
     },
     tooltip: {
-      x: {
-        formatter: (val) => {
-          const date = new Date(val);
-          return date.toLocaleDateString('en-GB', xAxisLabelFormat === 'dd MMM yyyy' ? { day: '2-digit', month: 'short', year: 'numeric' } : { month: 'short', year: 'numeric' });
-        }
-      },
       y: {
         formatter: (val) => `${val}%`
       }
@@ -93,17 +92,13 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
         <h3 className="text-xl mb-2">Average Time Block Efficiency</h3>
         <div className="grid gap-4 grid-cols-1 text-right">
           <div>
-            <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">
-              Average Efficiency
-            </h5>
-            <p className="text-gray-900 text-2xl leading-none">
-              {averageEfficiency.toFixed(2)}%
-            </p>
+            <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">Average Efficiency</h5>
+            <p className="text-gray-900 text-2xl leading-none">{averageEfficiency.toFixed(2)}%</p>
           </div>
         </div>
       </div>
       <div id="line-chart">
-        <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={250} width={'100%'}/>
+        <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={250} width={'100%'} />
       </div>
     </div>
   );

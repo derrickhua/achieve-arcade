@@ -1,7 +1,7 @@
 import { startOfWeek, endOfWeek } from 'date-fns';
 import mongoose from 'mongoose';
-import { DailySchedule, TimeBlock } from '../models/dailySchedule.js';
 import Task from '../models/task.js';
+import { TimeBlock, DailySchedule } from '../models/dailySchedule.js';
 import User from '../models/user.js';
 
 /**
@@ -29,6 +29,40 @@ export const getDailySchedule = async (req, res, next) => {
 };
 
 /**
+ * Updates the notes for the daily schedule for the current date.
+ * @param {Request} req - The request object, including the new notes.
+ * @param {Response} res - The response object used to return the updated schedule.
+ */
+export const updateNotes = async (req, res, next) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const { notes } = req.body;
+
+    if (typeof notes !== 'string') {
+        const error = new Error('Notes must be a string');
+        error.status = 400; // Bad Request
+        return next(error);
+    }
+
+    try {
+        const schedule = await DailySchedule.findOneAndUpdate(
+            { userId: req.user._id, date: today },
+            { $set: { notes } },
+            { new: true }
+        );
+
+        if (schedule) {
+            res.json(schedule);
+        } else {
+            res.status(404).json({ message: 'Schedule not found' });
+        }
+    } catch (error) {
+        next(error); // Pass any server-side errors to the error handling middleware
+    }
+};
+
+
+/**
  * Adds a time block to the daily schedule for the current date.
  * @param {Request} req - The request object, containing time block details.
  * @param {Response} res - The response object used to return the updated schedule.
@@ -45,31 +79,56 @@ export const addTimeBlock = async (req, res, next) => {
     }
 
     try {
-        const schedule = await DailySchedule.findOne({ userId: req.user._id, date: today });
-        const timeBlock = new TimeBlock({ name, startTime, endTime, tasks, category, userId: req.user._id });
-        
-        // Update tasks to link them to this time block
+        // Find or create the daily schedule for today
+        let schedule = await DailySchedule.findOne({ userId: req.user._id, date: today });
+        if (!schedule) {
+            schedule = new DailySchedule({ userId: req.user._id, date: today, timeBlocks: [] });
+        }
+
+        // Create new Task documents if tasks are provided
+        let taskDocs = [];
         if (tasks && tasks.length > 0) {
+            taskDocs = await Task.insertMany(
+                tasks.map(task => ({
+                    name: task.name,
+                    difficulty: task.difficulty,
+                    userId: req.user._id,
+                    timeBlockId: null
+                }))
+            );
+        }
+
+        // Create new TimeBlock document
+        const timeBlock = new TimeBlock({
+            name,
+            startTime,
+            endTime,
+            tasks: taskDocs.map(task => task._id),
+            category,
+            userId: req.user._id,
+        });
+
+        // Update tasks to link them to this time block
+        if (taskDocs.length > 0) {
             await Task.updateMany(
-                { _id: { $in: tasks }, userId: req.user._id },
+                { _id: { $in: taskDocs.map(task => task._id) } },
                 { timeBlockId: timeBlock._id }
             );
         }
 
+        // Add the new time block to the schedule and save
         schedule.timeBlocks.push(timeBlock);
+        await timeBlock.save();
         await schedule.save();
-        await schedule.populate('timeBlocks.tasks').execPopulate();
+
+        await schedule.populate('timeBlocks.tasks');
+
         res.json(schedule);
     } catch (error) {
         next(error); // Pass any server-side errors to the error handling middleware
     }
 };
 
-/**
- * Updates a specific time block within the daily schedule for the current date.
- * @param {Request} req - The request object, including time block ID and update details.
- * @param {Response} res - The response object used to return the updated time block.
- */
 export const updateTimeBlock = async (req, res, next) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -77,71 +136,96 @@ export const updateTimeBlock = async (req, res, next) => {
     const { name, startTime, endTime, tasks, category, completed, timerDuration } = req.body;
 
     try {
-        let allTasksCompleted = completed;
+        // Filter out tasks with temporary IDs and tasks with valid ObjectIds
+        const existingTasks = tasks.filter(task => mongoose.Types.ObjectId.isValid(task._id));
+        const newTasks = tasks.filter(task => !mongoose.Types.ObjectId.isValid(task._id));
 
-        if (tasks && tasks.length > 0) {
-            // Ensure each task has a valid _id and update the tasks
-            const taskIds = tasks.map(task => task._id);
-
-            // Update tasks to link them to this time block
-            await Task.updateMany(
-                { _id: { $in: taskIds }, userId: req.user._id },
-                { timeBlockId: blockId }
+        // Create new Task documents if new tasks are provided
+        let newTaskDocs = [];
+        if (newTasks.length > 0) {
+            newTaskDocs = await Task.insertMany(
+                newTasks.map(task => ({
+                    name: task.name,
+                    difficulty: task.difficulty,
+                    userId: req.user._id,
+                    timeBlockId: blockId
+                }))
             );
-
-            // Check if all tasks are completed
-            const taskCompletionStatuses = await Task.find({ _id: { $in: taskIds }, userId: req.user._id }, 'completed');
-            allTasksCompleted = taskCompletionStatuses.every(task => task.completed);
         }
 
-        // Prepare the $set object for updating fields
+        // Update existing tasks
+        if (existingTasks.length > 0) {
+            for (let task of existingTasks) {
+                await Task.findByIdAndUpdate(task._id, {
+                    name: task.name,
+                    difficulty: task.difficulty,
+                    completed: task.completed
+                });
+            }
+        }
+
+        // Prepare the list of task IDs to retain in the time block
+        const allTaskIds = existingTasks.map(task => task._id).concat(newTaskDocs.map(task => task._id));
+
+        // Check if all tasks are completed if there are any tasks
+        let allTasksCompleted = allTaskIds.length > 0
+            ? (await Task.find({ _id: { $in: allTaskIds }, userId: req.user._id }, 'completed')).every(task => task.completed)
+            : completed;
+
+        // If new tasks are added or existing tasks are updated, set completed to false
+        const shouldSetIncomplete = newTasks.length > 0 || !allTasksCompleted;
+
+        // Prepare the $set object for updating fields in both DailySchedule and TimeBlock
         const updateFields = {
-            'timeBlocks.$.name': name,
-            'timeBlocks.$.startTime': startTime,
-            'timeBlocks.$.endTime': endTime,
-            'timeBlocks.$.tasks': tasks,
-            'timeBlocks.$.category': category,
-            'timeBlocks.$.completed': allTasksCompleted || completed,
-            'timeBlocks.$.timerDuration': timerDuration,
+            name,
+            startTime,
+            endTime,
+            tasks: allTaskIds,
+            category,
+            timerDuration,
         };
 
-        const schedule = await DailySchedule.findOneAndUpdate(
-            { userId: req.user._id, date: today, 'timeBlocks._id': blockId },
-            { $set: updateFields },
+        // Update the TimeBlock document without the completed field
+        const updatedTimeBlock = await TimeBlock.findByIdAndUpdate(
+            blockId,
+            updateFields,
             { new: true }
-        );
+        ).populate('tasks');
 
-        if (schedule) {
-            // Find the updated time block in the schedule
-            const updatedBlock = schedule.timeBlocks.find(block => block._id.toString() === blockId);
+        // Update the DailySchedule document
+        const scheduleUpdateResult = await DailySchedule.findOneAndUpdate(
+            { userId: req.user._id, date: today, 'timeBlocks._id': blockId },
+            { $set: { 'timeBlocks.$': updatedTimeBlock } },
+            { new: true }
+        ).populate('timeBlocks.tasks');
 
-            // If the time block is marked as completed, calculate and add coins
-            if (updatedBlock.completed) {
-                let coins = 0;
-                if (category === 'work' || category === 'leisure') {
-                    const durationInHours = timerDuration / 3600; // Convert seconds to hours
-
-                    if (durationInHours <= 1) {
-                        coins = 2;
-                    } else if (durationInHours <= 3) {
-                        coins = 4;
-                    } else {
-                        coins = 6;
-                    }
+        if (scheduleUpdateResult) {
+            // If the time block should be completed
+            if (!shouldSetIncomplete) {
+                try {
+                    await updatedTimeBlock.completeTimeBlock();
+                } catch (error) {
+                    console.error(`Error completing time block: ${error.message}`);
                 }
-
-                // Efficiently increment the user's coin balance
-                await User.findByIdAndUpdate(req.user._id, { $inc: { coins } });
+            } else {
+                // If the time block should be incomplete
+                try {
+                    await updatedTimeBlock.incompleteTimeBlock();
+                } catch (error) {
+                    console.error(`Error incompleting time block: ${error.message}`);
+                }
             }
 
-            res.json(updatedBlock);
+            res.json(updatedTimeBlock);
         } else {
-            res.status(404).json({ message: 'Time block not found' });
+            res.status(404).json({ message: 'Time block not found in daily schedule' });
         }
     } catch (error) {
+        console.error(`Error updating time block: ${error.message}`);
         next(error); // Pass any server-side errors to the error handling middleware
     }
 };
+
 
 /**
  * Deletes a specific time block from the daily schedule for the current date, including associated tasks.
@@ -174,6 +258,7 @@ export const deleteTimeBlock = async (req, res, next) => {
         next(error); // Pass any server-side errors to the error handling middleware
     }
 };
+
 
 /**
  * Retrieves the total hours spent in each category for a specific week and the user's weekly hour requirements.
@@ -222,6 +307,7 @@ export const getWeeklyMetrics = async (req, res, next) => {
             categoryHours
         });
     } catch (error) {
+        console.error('Error in getWeeklyMetrics:', error);
         next(error); // Pass any server-side errors to the error handling middleware
     }
 };
