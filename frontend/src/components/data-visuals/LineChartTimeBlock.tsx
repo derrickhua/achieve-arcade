@@ -1,20 +1,25 @@
-'use client';
 import React from 'react';
 import dynamic from 'next/dynamic';
 import 'apexcharts/dist/apexcharts.css';
+import Image from 'next/image';
 
 const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
-  console.log('ave time block', averageTimeBlockEfficiency)
-  if (!averageTimeBlockEfficiency || !Array.isArray(averageTimeBlockEfficiency) || averageTimeBlockEfficiency.length === 0) {
-    return <div>No data available</div>;
-  }
-
-  const validatedEfficiencyData = averageTimeBlockEfficiency.filter(item => item && item.date && item.efficiency != null);
+  const validatedEfficiencyData = averageTimeBlockEfficiency?.filter(item => item && item.date && item.efficiency != null) || [];
 
   if (validatedEfficiencyData.length === 0) {
-    return <div>No valid data available</div>;
+    return (
+      <div className="w-full bg-black rounded-sm p-4 md:p-6 h-full justify-center">
+        <div className='w-full flex justify-center items-center h-2/3 gap-[100px]'>
+          <Image src="/icons/no-data/dwarf-run.gif" alt="No Data Gif 1" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
+          <Image src="/icons/no-data/elf-run.gif" alt="No Data Gif 2" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
+          <Image src="/icons/no-data/knight-run.gif" alt="No Data Gif 3" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
+
+        </div>
+        <div className="flex justify-center h-1/3 text-[#FEFDF2] text-[40px]">{`NO DATA AVAILABLE :(`}</div>
+      </div>
+    );
   }
 
   const lineChartData = [
@@ -25,12 +30,8 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     }
   ];
 
-  console.log('validated', validatedEfficiencyData);
-
   const startDate = validatedEfficiencyData[0].date;
-  console.log('start', startDate)
   const endDate = validatedEfficiencyData[validatedEfficiencyData.length - 1].date;
-  console.log('end', endDate)
 
   const formatXAxisLabels = (startDate, endDate) => {
     const diffInDays = (new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24);
@@ -50,11 +51,13 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
       toolbar: {
         show: false
       },
-      background: '#FEFDF2' // Set background color
     },
     xaxis: {
       categories: validatedEfficiencyData.map(item => item.date),
       labels: {
+        style: {
+          colors: '#FEFDF2', // Set x-axis labels color to #FEFDF2
+        },
         formatter: (val) => {
           return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
         }
@@ -62,7 +65,8 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
       type: 'category' // Ensure that the x-axis treats the values as categories
     },
     stroke: {
-      curve: 'smooth'
+      curve: 'smooth',
+      colors: ['#000000'] // Set stroke color to white
     },
     dataLabels: {
       enabled: false
@@ -74,26 +78,33 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     },
     yaxis: {
       title: {
-        text: 'Efficiency (%)'
+        text: 'Efficiency (%)',
+        style: {
+          color: '#000000' // Set y-axis title color to #FEFDF2
+        }
       },
       labels: {
+        style: {
+          colors: '#000000' // Set y-axis labels color to #FEFDF2
+        },
         formatter: function (value) {
           return `${value.toFixed(2)}%`;
         }
       }
     }
   };
+  
 
   const averageEfficiency = validatedEfficiencyData.reduce((total, item) => total + item.efficiency, 0) / validatedEfficiencyData.length;
 
   return (
-    <div className="w-full bg-[#FEFDF2] rounded-lg p-4 md:p-6">
+    <div className="w-full bg-[#FEFDF2] rounded-sm p-4 md:p-6 h-full">
       <div className="flex justify-between mb-5">
         <h3 className="text-xl mb-2">Average Time Block Efficiency</h3>
         <div className="grid gap-4 grid-cols-1 text-right">
           <div>
-            <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">Average Efficiency</h5>
-            <p className="text-gray-900 text-2xl leading-none">{averageEfficiency.toFixed(2)}%</p>
+            <h5 className="inline-flex items-center leading-none font-normal mb-2">Average Efficiency</h5>
+            <p className=" text-2xl leading-none">{averageEfficiency.toFixed(2)}%</p>
           </div>
         </div>
       </div>

@@ -6,9 +6,8 @@ interface IReward {
     name: string;
     icon?: string;
     chestType: "Wood" | "Metal" | "Gold";
-  }
+}
 
-  
 // Create an axios instance configured for your API base URL
 const api = axios.create({
   baseURL: 'http://localhost:8000/api/rewards',
@@ -31,13 +30,13 @@ api.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
-// Get all rewards
+// Get all rewards for the logged-in user
 export const getAllRewards = async (): Promise<IReward[]> => {
   const response = await api.get('/');
   return response.data;
 };
 
-// Create a new reward
+// Create a new reward for the logged-in user
 export const createReward = async (rewardData: IReward): Promise<IReward> => {
   try {
     const response = await api.post('/', rewardData);
@@ -48,24 +47,24 @@ export const createReward = async (rewardData: IReward): Promise<IReward> => {
   }
 };
 
-// Get a specific reward
+// Get a specific reward for the logged-in user
 export const getReward = async (rewardId: string): Promise<IReward> => {
   const response = await api.get(`/${rewardId}`);
   return response.data;
 };
 
-// Update a reward
+// Update a reward for the logged-in user
 export const updateReward = async (rewardId: string, updateData: Partial<IReward>): Promise<IReward> => {
   const response = await api.put(`/${rewardId}`, updateData);
   return response.data;
 };
 
-// Delete a reward
+// Delete a reward for the logged-in user
 export const deleteReward = async (rewardId: string): Promise<void> => {
   await api.delete(`/${rewardId}`);
 };
 
-// Purchase a chest
+// Purchase a chest for the logged-in user
 export const purchaseChest = async (chestType: "Wood" | "Metal" | "Gold"): Promise<IReward | { message: string }> => {
   try {
     const response = await api.post('/purchase-chest', { chestType });

@@ -1,19 +1,23 @@
-'use client';
 import React from 'react';
 import dynamic from 'next/dynamic';
 import 'apexcharts/dist/apexcharts.css';
+import Image from 'next/image';
 
 const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 const LineChart = ({ timeData }) => {
-  if (!timeData || !Array.isArray(timeData) || timeData.length === 0) {
-    return <div>No data available</div>;
-  }
-
-  const validatedTimeData = timeData.filter(item => item && item.date && item.planned != null && item.realized != null);
+  const validatedTimeData = timeData?.filter(item => item && item.date && item.planned != null && item.realized != null) || [];
 
   if (validatedTimeData.length === 0) {
-    return <div>No valid data available</div>;
+    return (
+      <div className="w-full bg-black rounded-sm p-4 md:p-6 h-full justify-center">
+        <div className='w-full flex justify-center items-center h-2/3 gap-[60px]'>
+          <Image src="/icons/no-data/zombie-run.gif" alt="No Data Gif 2" width={160} height={180} style={{ imageRendering: 'pixelated' }} />
+          <Image src="/icons/no-data/wizard-run.gif" alt="No Data Gif 1" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
+        </div>
+        <div className="flex justify-center h-1/3 text-center text-[#FEFDF2] text-[40px]">{`NO DATA AVAILABLE :(`}</div>
+      </div>
+    );
   }
 
   const lineChartData = [
@@ -85,7 +89,7 @@ const LineChart = ({ timeData }) => {
   const totalActualTime = validatedTimeData.reduce((total, item) => total + (item.realized || 0), 0);
 
   return (
-    <div className="w-full bg-[#FEFDF2] rounded-lg p-4 md:p-6 h-full">
+    <div className="w-full bg-[#FEFDF2] rounded-sm p-4 md:p-6 h-full">
       <div className="flex justify-between mb-5">
         <h3 className="text-xl  mb-2">Planned Time vs Realized Time</h3>
         <div className="grid gap-4 grid-cols-2 text-right">

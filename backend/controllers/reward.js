@@ -120,7 +120,7 @@ export const purchaseChest = async (req, res) => {
     const rewards = await Reward.find({ chestType: rewardCategory, user: userId });
     const reward = selectReward(rewardCategory, rewards);
 
-    res.status(200).json({ reward });
+    res.status(200).json(reward);
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

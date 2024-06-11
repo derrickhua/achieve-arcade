@@ -6,7 +6,7 @@ import AddGoalForm from '../forms/AddGoal';
 import EditGoalForm from '../forms/EditGoal';
 import DeleteGoalForm from '../forms/DeleteGoal';
 import { Goal } from '@/lib/goals';
-
+import Image from 'next/image';
 const GoalKnight: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [goals, setGoals] = useState([]);
   const [filter, setFilter] = useState('All');
@@ -88,16 +88,26 @@ const GoalKnight: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
         <AddButton name="ADD GOAL" onClick={openAddGoalForm} />
       </div>
       <div className="flex flex-wrap justify-between max-w-[1800px] w-full">
-        {filteredGoals.map(goal => (
-          <div key={goal._id} className="w-full md:w-1/2 p-4">
-            <GoalCard
-              goal={goal}
-              onOpenEditGoalForm={() => openEditGoalForm(goal)}
-              onOpenDeleteGoalForm={() => openDeleteGoalForm(goal)}
-              fetchCoins={fetchCoins}
-            />
+        {filteredGoals.length > 0 ? (
+          filteredGoals.map(goal => (
+            <div key={goal._id} className="w-full md:w-1/2 p-4">
+              <GoalCard
+                goal={goal}
+                onOpenEditGoalForm={() => openEditGoalForm(goal)}
+                onOpenDeleteGoalForm={() => openDeleteGoalForm(goal)}
+                fetchCoins={fetchCoins}
+              />
+            </div>
+          ))
+        ) : (
+          <div className="w-full bg-[#BDBDBD] rounded-lg p-4 md:p-6 h-full justify-center flex flex-col items-center">
+            <div className="w-full flex justify-center items-center h-2/3 gap-[60px]">
+              <Image src="/icons/no-data/zombie-run.gif" alt="No Data Gif 2" width={160} height={180} style={{ imageRendering: 'pixelated' }} />
+              <Image src="/icons/no-data/wizard-run.gif" alt="No Data Gif 1" className="mt-[50px]" width={80} height={140} style={{ imageRendering: 'pixelated' }} />
+            </div>
+            <div className="flex justify-center h-1/3 text-center text-[40px] text-black">{`NO GOALS???`}</div>
           </div>
-        ))}
+        )}
       </div>
       {isAddGoalFormOpen && (
         <AddGoalForm
