@@ -139,12 +139,12 @@ export default function Authentication() {
   return (
     
     <form onSubmit={handleSubmit} autoComplete="off" className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] h-full ">
-      <div className="flex items-center justify-center py-12 h-full">
-        <div className="mx-auto grid w-[350px] gap-6">
+      <div className="flex items-center justify-center py-12 h-full bg-[#FEFDF2]">
+      <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Register</h1>
             <p className="text-balance text-muted-foreground">
-              Welcome to Tempus
+              Welcome to Achieve Arcade!
             </p>
           </div>
           <div className="grid gap-4">
@@ -216,14 +216,17 @@ export default function Authentication() {
           </div>
         </div>
       </div>
-      <div className="hidden bg-muted lg:block">
-        <Image
-          src="/travel.png"
-          alt="Image"
-          width="1792"
-          height="1024"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+      <div className="hidden bg-black lg:flex lg:items-center lg:justify-center lg:flex-col lg:h-full">
+        <Image 
+          src="/icons/logo.png" 
+          alt="Logo" 
+          width={400} 
+          height={400} 
+          style={{ width: '80vw', height: 'auto', maxWidth: '400px' }}
         />
+        <p className="text-[60px] text-white text-center leading-none" style={{ width: '80vw', maxWidth: '400px' }}>
+          ACHIEVE ARCADE
+        </p>
       </div>
     </form>
   )

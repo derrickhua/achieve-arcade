@@ -9,6 +9,7 @@ import { Input } from "../../../components/ui/input"
 import { Label } from "../../../components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
+
 export default function Authentication() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,10 +19,10 @@ export default function Authentication() {
   const router = useRouter();
 
   const handleLogin = async (event) => {
-    event.preventDefault(); // Prevent default form submission
+    event.preventDefault();
     
     const result = await signIn('login', {
-      redirect: false, // Do not redirect on success, handle it below
+      redirect: false,
       email,
       password,
     });
@@ -34,18 +35,16 @@ export default function Authentication() {
       router.push('/dashboard');
     }
   };
-  
 
   return (
-    
-    <form onSubmit={handleLogin} className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] h-full ">
-      <div className="flex items-center justify-center py-12 h-full">
+    <form onSubmit={handleLogin} className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] h-full">
+      <div className="flex items-center justify-center py-12 h-full bg-[#FEFDF2]">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
             <h1 className="text-3xl font-bold">Login</h1>
             <p className="text-balance text-muted-foreground">
-              Enter your email below to login to your account
-            </p>
+              Welcome back to Achieve Arcade!            
+              </p>
           </div>
           <div className="grid gap-4">
             <div className="grid gap-2">
@@ -97,15 +96,20 @@ export default function Authentication() {
           </div>
         </div>
       </div>
-      <div className="hidden bg-muted lg:block">
-        <Image
-          src="/travel.png"
-          alt="Image"
-          width="1792"
-          height="1024"
-          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-        />
-      </div>
+      <div className="hidden bg-black lg:flex lg:items-center lg:justify-center lg:flex-col lg:h-full">
+  <Image 
+    src="/icons/logo.png" 
+    alt="Logo" 
+    width={400} 
+    height={400} 
+    style={{ width: '80vw', height: 'auto', maxWidth: '400px' }}
+  />
+  <p className="text-[60px] text-white text-center leading-none" style={{ width: '80vw', maxWidth: '400px' }}>
+    ACHIEVE ARCADE
+  </p>
+</div>
+
     </form>
-  )
+  );
 }
+

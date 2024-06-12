@@ -1,14 +1,20 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { Info, MailQuestion, Settings } from 'lucide-react';
+import { Info, MailQuestion, Settings, LogOut } from 'lucide-react';
 import SuggestionForm from '../forms/SuggestionForm'; // Adjust the path as needed
 import SettingsForm from '../forms/Settings';
+import LogoutConfirmationForm from '../forms/Logout';
+import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
 interface TopbarProps {
   coins: number;
 }
 
 const Topbar: React.FC<TopbarProps> = ({ coins }) => {
   const [suggestions, setSuggestions] = useState(false);
+  const [logout, setLogout] = useState(false);
+
   const [help, setHelp] = useState(false);
   const [settings, setSettings] = useState(false);
 
@@ -34,9 +40,13 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
         <button className="p-2" onClick={() => setSettings(true)}>
           <Settings size={32} strokeWidth={2} color="#FEFDF2"/>
         </button>
+        <button className="p-2" onClick={() => setLogout(true)}>
+          <LogOut size={32} strokeWidth={2} color="#FEFDF2"/>
+        </button>
       </div>
       {suggestions && <SuggestionForm isOpen={suggestions} onClose={() => setSuggestions(false)} />}
       {settings && <SettingsForm isOpen={settings} onClose={() => setSettings(false)} />}
+      {logout && <LogoutConfirmationForm isOpen={logout} onClose={() => setLogout(false)} />}
 
     </div>
   );

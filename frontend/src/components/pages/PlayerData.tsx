@@ -50,28 +50,34 @@ const PlayerData: React.FC = () => {
       <div className="flex flex-wrap justify-between mb-4 max-w-[1800px] w-full text-[50px]">
         PLAYER DATA
       </div>
-      <div className="flex flex-wrap justify-between mb-4 max-w-[1800px] w-full">
-        <div className="w-full md:w-2/3 rounded-lg border-black border-[3px] bg-[#FEFDF2]">
-          <LineChart timeData={metrics.plannedVsRealizedTime} />
-        </div>
-        <div className="w-full md:w-1/3 flex flex-wrap max-w-[450px] place-items-center gap-4 h-full">
-          <SquareBlock label="Milestones Completed" value={metrics.milestonesCompleted} color="#000000" />
-          <SquareBlock label="Goals Achieved" value={metrics.goalsAchieved} color="#000000" />
-          <SquareBlock label="Active Habits" value={metrics.activeStreaks} color="#000000" />
-          <SquareBlock label="Tasks Completed" value={metrics.totalTasksCompleted} color="#000000" />
-        </div>
-      </div>
-      <div className="flex flex-wrap justify-between max-w-[1800px] w-full">
-        <div className="w-full md:w-2/3 rounded-lg border-black border-[3px] bg-[#FEFDF2]">
-          <LineChartTimeBlock averageTimeBlockEfficiency={metrics.averageTimeBlockEfficiency} />
-        </div>
-        <div className="w-full md:w-1/3 place-items-center max-w-[450px] flex flex-wrap gap-4">
-          <SquareBlock label="Work Hours" value={metrics.categoryHours.work} color="#b82c05" />
-          <SquareBlock label="Leisure Hours" value={metrics.categoryHours.leisure} color="#73926d" />
-          <SquareBlock label="Social Hours" value={metrics.categoryHours.family_friends} color="#efbf7b" />
-          <SquareBlock label="Atelic Hours" value={metrics.categoryHours.atelic} color="#a3bdb6" />
-        </div>
-      </div>
+      {metrics &&
+        ( 
+          <>
+          <div className="flex flex-wrap justify-between mb-4 max-w-[1800px] w-full">
+            <div className="w-full md:w-2/3 rounded-lg border-black border-[3px] bg-[#FEFDF2]">
+              <LineChart timeData={metrics.plannedVsRealizedTime} />
+            </div>
+            <div className="w-full md:w-1/3 flex flex-wrap max-w-[450px] place-items-center gap-4 h-full">
+              <SquareBlock label="Milestones Completed" value={metrics.milestonesCompleted} color="#000000" />
+              <SquareBlock label="Goals Achieved" value={metrics.goalsAchieved} color="#000000" />
+              <SquareBlock label="Active Habits" value={metrics.activeStreaks} color="#000000" />
+              <SquareBlock label="Tasks Completed" value={metrics.totalTasksCompleted} color="#000000" />
+            </div>
+          </div>
+          <div className="flex flex-wrap justify-between max-w-[1800px] w-full">
+            <div className="w-full md:w-2/3 rounded-lg border-black border-[3px] bg-[#FEFDF2]">
+              <LineChartTimeBlock averageTimeBlockEfficiency={metrics.averageTimeBlockEfficiency} />
+            </div>
+            <div className="w-full md:w-1/3 place-items-center max-w-[450px] flex flex-wrap gap-4">
+              <SquareBlock label="Work Hours" value={metrics.categoryHours.work} color="#b82c05" />
+              <SquareBlock label="Leisure Hours" value={metrics.categoryHours.leisure} color="#73926d" />
+              <SquareBlock label="Social Hours" value={metrics.categoryHours.family_friends} color="#efbf7b" />
+              <SquareBlock label="Atelic Hours" value={metrics.categoryHours.atelic} color="#a3bdb6" />
+            </div>
+          </div>
+          </>
+        )
+      }
     </div>
   );
 };

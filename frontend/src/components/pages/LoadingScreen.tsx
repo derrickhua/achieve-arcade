@@ -12,9 +12,9 @@ const LoadingScreen = () => {
     }, []);
   
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center bg-black text-white z-50">
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#FEFDF2] z-50">
             <Image src={`/icons/loading/frog-run.gif`} alt={'frog running'} width={100} height={100} style={{ imageRendering: 'pixelated' }} />
-            <p className="text-xl">LOADING{dots}</p>
+            <p className="text-xl text-black">LOADING{dots}</p>
     </div>
   );
 };

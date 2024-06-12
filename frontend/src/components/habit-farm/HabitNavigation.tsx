@@ -7,7 +7,7 @@ const HabitNavigation: React.FC<{ habits: any[], selectedHabitId: string, onSele
       {habits.map((habit) => (
         <button 
           key={habit._id} 
-          className={`h-[5vw] w-[14vw] max-h-[50px] max-w-[280px] bg-[#E9D0A6] border-[4px] text-[30px] max-text-[20px] flex items-center justify-between px-6 rounded-xl ${
+          className={`h-[5vw] w-[14vw] max-h-[50px] max-w-[280px] bg-[#E9D0A6] border-[4px] text-[20px] leading-none max-text-[20px] flex items-center justify-between px-6 rounded-xl ${
             habit._id === selectedHabitId 
               ? 'border-[#C0D470] text-[#67835C]'
               : 'border-[#AB7A5A] text-[#AB7A5A]'
