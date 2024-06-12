@@ -4,7 +4,20 @@ import TaskSquare from '../task-slayer/TaskSquare';
 import AddTaskForm from '../forms/AddTask';
 import DeleteTaskForm from '../forms/DeleteTask';
 import { getTasks, updateTask } from '@/lib/task';
+import Image from 'next/image';
 import './taskcursor.css';
+
+
+// Chosen 7 monsters for absolute positioning
+const chosenMonsters = [
+  "big-demon",
+  "big-orc",
+  "doc",
+  "ice-zombie",
+  "lizard",
+  "mask-orc",
+  "mini-demon"
+];
 
 const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [tasks, setTasks] = useState([]);
@@ -83,12 +96,33 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
           <TaskSquare key={task._id} task={task} onDelete={handleDeleteTask} onComplete={handleCompleteTask} />
         ))}
       </div>
-      {
-        addTask && <AddTaskForm fetchTasks={fetchTasks} onClose={() => setAddTask(false)} isOpen={addTask} />
-      }
-      {
-        deleteTask && <DeleteTaskForm task={selectedTask} fetchTasks={fetchTasks} onClose={() => setDeleteTask(false)} isOpen={deleteTask} />
-      }
+      {tasks.length === 0 && (
+      <div className="relative flex flex-col items-center justify-center h-full w-[1800px]">
+        <div className="flex justify-center space-x-[100px] mb-8">
+          <div className='flex'>
+            <Image src={`/icons/task-slayer/${chosenMonsters[0]}.gif`} alt={chosenMonsters[0]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+            <Image src={`/icons/task-slayer/${chosenMonsters[1]}.gif`} alt={chosenMonsters[1]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+            <Image src={`/icons/task-slayer/${chosenMonsters[2]}.gif`} alt={chosenMonsters[2]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+            <Image src={`/icons/task-slayer/${chosenMonsters[3]}.gif`} alt={chosenMonsters[3]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+            <Image src={`/icons/task-slayer/${chosenMonsters[4]}.gif`} alt={chosenMonsters[4]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+            <Image src={`/icons/task-slayer/${chosenMonsters[5]}.gif`} alt={chosenMonsters[5]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+            <Image src={`/icons/task-slayer/${chosenMonsters[6]}.gif`} alt={chosenMonsters[6]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+          </div>
+          <div className='flex'>
+            <Image src="/icons/task-slayer/knight-idle.gif" alt="knight-idle" width={60} height={60} style={{ imageRendering: 'pixelated', transform: 'scaleX(-1)' }} />
+            <p className='ml-4'>I CAN&apos;T STOP <br />
+            BOUNCING</p>
+          </div>
+
+        </div>
+        <p className="text-center text-[40px] text-[#EB5757]">No tasks available. Add a new task to start slaying monsters!</p>
+      </div>
+    )}
+
+
+
+      {addTask && <AddTaskForm fetchTasks={fetchTasks} onClose={() => setAddTask(false)} isOpen={addTask} />}
+      {deleteTask && <DeleteTaskForm task={selectedTask} fetchTasks={fetchTasks} onClose={() => setDeleteTask(false)} isOpen={deleteTask} />}
     </div>
   );
 };

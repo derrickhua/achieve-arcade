@@ -7,7 +7,7 @@ import AddHabitForm from '../forms/AddHabit';
 import EditHabitForm from '../forms/EditHabit';
 import DeleteHabitForm from '../forms/DeleteHabit';
 import { getHabits, updateHabitCompletion } from '@/lib/habit';
-
+import Image from 'next/image';
 const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [habits, setHabits] = useState([]);
   const [selectedHabit, setSelectedHabit] = useState(null);
@@ -96,17 +96,32 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
               onSelectHabit={handleHabitSelect} 
             />
             <div className='max-w-[2000px]'>
-            <HabitFarmVisual
-              habits={habits}
-              selectedHabitId={selectedHabit?._id}
-              onSelectHabit={handleHabitSelect}
-              handleCompletionUpdate={handleCompletionUpdate} // Pass the handleCompletionUpdate function
-            />
             </div>
           </>
         ) : (
-          <div className="text-center text-[30px]">No habits available. Add a new habit to get started!</div>
-        )}
+          <div className="text-center text-[30px] h-[400px] relative flex flex-col items-center justify-center">
+          <div className="relative">
+            <Image 
+              src="/icons/habit-farm/where-habits.gif" 
+              width={200} 
+              height={200} 
+              alt="No habits available"  
+              style={{ imageRendering: 'pixelated', margin: 'auto' }}
+              className="mx-auto"
+            />
+            <div className="absolute top-1/2 left-2/3 ml-4 transform -translate-y-1/2 text-black p-2  text-center text-base">
+              - Where are my carrots?
+            </div>
+          </div>
+          <p className='text-[40px] text-[#8DB15C] mt-4'>No habits available. Add a new habit to get started!</p>
+        </div>
+          )}
+          <HabitFarmVisual
+            habits={habits}
+            selectedHabitId={selectedHabit?._id}
+            onSelectHabit={handleHabitSelect}
+            handleCompletionUpdate={handleCompletionUpdate} // Pass the handleCompletionUpdate function
+          />
       </div>
 
       {isAddHabitFormOpen && (
