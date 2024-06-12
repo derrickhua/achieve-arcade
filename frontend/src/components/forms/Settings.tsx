@@ -58,6 +58,19 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const { workHoursPerWeek, leisureHoursPerWeek, familyFriendsHoursPerWeek, atelicHoursPerWeek } = userData.preferences;
+    if (
+      !workHoursPerWeek || parseInt(workHoursPerWeek) <= 0 ||
+      !leisureHoursPerWeek || parseInt(leisureHoursPerWeek) <= 0 ||
+      !familyFriendsHoursPerWeek || parseInt(familyFriendsHoursPerWeek) <= 0 ||
+      !atelicHoursPerWeek || parseInt(atelicHoursPerWeek) <= 0
+    ) {
+      setIsError(true);
+      setMessage("All preference values must be greater than 0");
+      return;
+    }
+
     if (userData.password && userData.password !== userData.confirmPassword) {
         setIsError(true);
         setMessage("Passwords do not match");
@@ -72,7 +85,6 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
         setMessage('Error updating user data');
     }
 };
-
 
   if (!isOpen) return null;
 
@@ -143,6 +155,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
                 name="workHoursPerWeek"
                 value={userData.preferences.workHoursPerWeek || ''}
                 onChange={handlePreferencesChange}
+                min="1"
                 placeholder="Work Hours"
               />
             </div>
@@ -155,6 +168,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
                 name="leisureHoursPerWeek"
                 value={userData.preferences.leisureHoursPerWeek || ''}
                 onChange={handlePreferencesChange}
+                min="1"
                 placeholder="Leisure Hours"
               />
             </div>
@@ -167,6 +181,7 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
                 name="familyFriendsHoursPerWeek"
                 value={userData.preferences.familyFriendsHoursPerWeek || ''}
                 onChange={handlePreferencesChange}
+                min="1"
                 placeholder="Family & Friends Hours"
               />
             </div>
@@ -179,16 +194,16 @@ const SettingsForm: React.FC<SettingsFormProps> = ({ isOpen, onClose }) => {
                 name="atelicHoursPerWeek"
                 value={userData.preferences.atelicHoursPerWeek || ''}
                 onChange={handlePreferencesChange}
+                min="1"
                 placeholder="Atelic Hours"
               />
             </div>
           </div>
           {message && (
-                <div className={`mb-4 text-[20px] ${isError ? 'text-red-500' : 'text-green-500'}`}>
-                    {message}
-                </div>
-            )}
-
+            <div className={`mb-4 text-[20px] ${isError ? 'text-red-500' : 'text-green-500'}`}>
+              {message}
+            </div>
+          )}
           <div className="flex justify-end">
             <button
               type="submit"

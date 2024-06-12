@@ -10,13 +10,15 @@ const NotesSection: React.FC<NotesSectionProps> = ({ notes, onNotesChange }) => 
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      onNotesChange(currentNotes);
+      if (currentNotes !== notes) {
+        onNotesChange(currentNotes);
+      }
     }, 500); // Debounce delay
 
     return () => {
       clearTimeout(handler);
     };
-  }, [currentNotes, onNotesChange]);
+  }, [currentNotes, notes, onNotesChange]);
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setCurrentNotes(e.target.value);
@@ -46,7 +48,7 @@ const NotesSection: React.FC<NotesSectionProps> = ({ notes, onNotesChange }) => 
     <div>
       <h2 className="text-xl font-bold mb-2">Notes</h2>
       <textarea
-      className='h-48 p-1 px-4'
+        className="h-48 p-1 px-4"
         style={textareaStyle}
         value={currentNotes}
         onChange={handleNotesChange}

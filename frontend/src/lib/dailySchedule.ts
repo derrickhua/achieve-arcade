@@ -91,6 +91,11 @@ export const getWeeklyMetrics = async (date: string): Promise<any> => {
 // Update the notes for the daily schedule
 export const updateNotes = async (notes: string): Promise<DailySchedule> => {
   try {
+    // Ensure notes is a string
+    if (typeof notes !== 'string') {
+      throw new Error('Notes must be a string');
+    }
+
     const response = await api.put('/notes', { notes });
     return response.data;  // Return only the response data containing the updated schedule
   } catch (error: any) {

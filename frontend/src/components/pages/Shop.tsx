@@ -8,6 +8,7 @@ import {
 import { getAllRewards, purchaseChest } from '@/lib/rewards';
 import EditRewardsForm from '../forms/EditRewards';
 import RewardPopup from '../rewards-shop/RewardPopUp';
+import LoadingComponent from './LoadingComponent';
 
 const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [selectedChest, setSelectedChest] = useState('Wood');
@@ -16,7 +17,8 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [isRewardPopupOpen, setIsRewardPopupOpen] = useState(false);
   const [reward, setReward] = useState({});
   const [chestType, setChestType] = useState('');
-  
+  const [loading, setLoading] = useState(true);
+
   const playSound = (soundPath) => {
     const audio = new Audio(soundPath);
     audio.play();
@@ -39,6 +41,7 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       });
 
       setRewards(categorizedRewards);
+      setLoading(false);
     } catch (error) {
       console.error('Failed to fetch rewards:', error);
     }
@@ -63,12 +66,9 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       console.error('Error purchasing chest:', error);
     }
   };
-  
-  
-  
 
   useEffect(() => {
-    fetchRewards();
+    fetchRewards()
   }, []);
 
   const chests = [
@@ -99,12 +99,14 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
     ],
   };
 
+  if (loading) {
+    return <LoadingComponent />;
+  } 
   return (
     <div className="relative p-8 h-full overflow-auto flex flex-col items-center w-full">
       <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full">
         <div className="flex flex-col">
           <span className="text-[50px] mr-4">REWARDS SHOP
-            <Dice6 size={50} className="inline-block ml-4 text-[#F2C94C]" />
           </span>
           <span className="text-[40px] text-[#F2C94C]">REWARD YOURSELF, YOU&apos;VE WORKED HARD!</span>
         </div>

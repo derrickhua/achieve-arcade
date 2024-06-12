@@ -62,6 +62,7 @@ export const updateNotes = async (req, res, next) => {
 };
 
 
+
 /**
  * Adds a time block to the daily schedule for the current date.
  * @param {Request} req - The request object, containing time block details.

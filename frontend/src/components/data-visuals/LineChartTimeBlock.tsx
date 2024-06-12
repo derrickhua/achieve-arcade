@@ -43,6 +43,7 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
 
   const xAxisLabelFormat = formatXAxisLabels(startDate, endDate);
 
+  
   const lineChartOptions = {
     chart: {
       type: 'line',
@@ -56,7 +57,7 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
       categories: validatedEfficiencyData.map(item => item.date),
       labels: {
         style: {
-          colors: '#FEFDF2', // Set x-axis labels color to #FEFDF2
+          colors: '#000000', // Set x-axis labels color to #FEFDF2
         },
         formatter: (val) => {
           return new Date(val).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
@@ -66,7 +67,7 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     },
     stroke: {
       curve: 'smooth',
-      colors: ['#000000'] // Set stroke color to white
+      colors: ['#FEFDF2'] // Set stroke color to white
     },
     dataLabels: {
       enabled: false

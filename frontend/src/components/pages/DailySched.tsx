@@ -7,6 +7,7 @@ import { getDailySchedule, getWeeklyMetrics, updateNotes, TimeBlock as TimeBlock
 import AddTimeBlockForm from '../forms/AddTimeBlock';
 import EditTimeBlockForm from '../forms/EditTimeBlock';
 import DeleteTimeBlockForm from '../forms/DeleteTimeBlock'; // Import the DeleteTimeBlockForm
+import LoadingComponent from './LoadingComponent';
 
 interface Task {
   _id: string;
@@ -46,15 +47,15 @@ const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [addBlock, setAddBlock] = useState<boolean>(false);
   const [editBlock, setEditBlock] = useState<TimeBlockType | null>(null);
   const [deleteBlock, setDeleteBlock] = useState<TimeBlockType | null>(null); // Add state for delete block
+  const [loading, setLoading] = useState(true);
 
   const fetchSchedule = async () => {
     try {
       const schedule = await getDailySchedule();
       setDailySchedule(schedule);
-
       const metrics = await getWeeklyMetrics(new Date().toISOString());
-      console.log('metrics', metrics)
       setWeeklyMetrics(metrics);
+      setLoading(false)
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -83,6 +84,10 @@ const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       }
     }
   };
+
+  if (loading) {
+    return <LoadingComponent />;
+  }
 
   return (
     <div className="p-8 h-full overflow-auto flex flex-col items-center w-full">
@@ -116,7 +121,7 @@ const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
         <AddButton name="ADD TIMEBLOCK" onClick={() => setAddBlock(true)} />
       </div>
       <div className="flex justify-between max-w-[1800px] w-full space-x-4 h-full">
-        {dailySchedule && (
+        {(dailySchedule && weeklyMetrics) && (
           <>
             <ScheduleSection 
               timeBlocks={dailySchedule.timeBlocks} 
@@ -126,7 +131,7 @@ const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
             />
             <CenterSection 
               tasks={dailySchedule.timeBlocks.flatMap(block => block.tasks.map(task => ({ ...task, category: block.category })))}
-              notes={dailySchedule.notes}
+              notes={dailySchedule.notes || ''} // Ensure notes is a string
               date={new Date(dailySchedule.date).toLocaleDateString()}
               onNotesChange={handleNotesChange}  // Pass the callback
               fetchSchedule={fetchSchedule}

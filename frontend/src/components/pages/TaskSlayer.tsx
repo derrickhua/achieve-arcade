@@ -6,7 +6,7 @@ import DeleteTaskForm from '../forms/DeleteTask';
 import { getTasks, updateTask } from '@/lib/task';
 import Image from 'next/image';
 import './taskcursor.css';
-
+import LoadingComponent from './LoadingComponent';
 
 // Chosen 7 monsters for absolute positioning
 const chosenMonsters = [
@@ -25,6 +25,7 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [addTask, setAddTask] = useState(false);
   const [deleteTask, setDeleteTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const fetchTasks = async () => {
     try {
@@ -32,6 +33,7 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       console.log(response);
       setCompletedTaskCount(response.completedTaskCount);
       setTasks(response.uncompletedTasks);
+      setLoading(false)
     } catch (error) {
       console.error('Error fetching tasks:', error);
       setTasks([]); // Set to empty array in case of error
@@ -44,27 +46,29 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
   useEffect(() => {
     const cursor = document.querySelector('.custom-cursor') as HTMLElement;
-
-    const moveCursor = (e: MouseEvent) => {
-      cursor.style.left = `${e.clientX}px`;
-      cursor.style.top = `${e.clientY}px`;
-    };
-
-    const handleMouseDown = () => {
-      cursor.classList.add('custom-cursor-click');
-      setTimeout(() => {
-        cursor.classList.remove('custom-cursor-click');
-      }, 500); // Duration of the animation
-    };
-
-    window.addEventListener('mousemove', moveCursor);
-    window.addEventListener('mousedown', handleMouseDown);
-
-    return () => {
-      window.removeEventListener('mousemove', moveCursor);
-      window.removeEventListener('mousedown', handleMouseDown);
-    };
-  }, []);
+  
+    if (cursor) {
+      const moveCursor = (e: MouseEvent) => {
+        cursor.style.left = `${e.clientX}px`;
+        cursor.style.top = `${e.clientY}px`;
+      };
+  
+      const handleMouseDown = () => {
+        cursor.classList.add('custom-cursor-click');
+        setTimeout(() => {
+          cursor.classList.remove('custom-cursor-click');
+        }, 500); // Duration of the animation
+      };
+  
+      window.addEventListener('mousemove', moveCursor);
+      window.addEventListener('mousedown', handleMouseDown);
+  
+      return () => {
+        window.removeEventListener('mousemove', moveCursor);
+        window.removeEventListener('mousedown', handleMouseDown);
+      };
+    }
+  }, [loading]);
 
   const handleDeleteTask = (task) => {
     setSelectedTask(task);
@@ -80,6 +84,11 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       console.error('Error completing task:', error);
     }
   };
+
+  if (loading) {
+    return <LoadingComponent />;
+  }
+
 
   return (
     <div className="task-slayer-container relative p-8 h-full overflow-auto flex flex-col items-center w-full">

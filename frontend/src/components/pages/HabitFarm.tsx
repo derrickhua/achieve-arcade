@@ -8,19 +8,21 @@ import EditHabitForm from '../forms/EditHabit';
 import DeleteHabitForm from '../forms/DeleteHabit';
 import { getHabits, updateHabitCompletion } from '@/lib/habit';
 import Image from 'next/image';
+import LoadingComponent from './LoadingComponent';
 const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [habits, setHabits] = useState([]);
   const [selectedHabit, setSelectedHabit] = useState(null);
   const [isAddHabitFormOpen, setIsAddHabitFormOpen] = useState(false);
   const [isEditHabitFormOpen, setIsEditHabitFormOpen] = useState(false);
   const [isDeleteHabitFormOpen, setIsDeleteHabitFormOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchHabits = async () => {
     try {
       const { data } = await getHabits();
       setHabits(data);
       fetchCoins(); // Fetch coins after updating habits
-
+      
       if (data.length > 0) {
         // Check if the currently selected habit still exists
         if (selectedHabit) {
@@ -39,6 +41,8 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       }
     } catch (error) {
       console.error('Error fetching habits:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,6 +74,10 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const handleOpenDeleteHabitForm = () => {
     setIsDeleteHabitFormOpen(true);
   };
+
+  if (loading) {
+    return <LoadingComponent />;
+  }
 
   return (
     <div className="p-8 h-full overflow-auto flex flex-col items-center w-full">
