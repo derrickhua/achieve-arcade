@@ -6,10 +6,21 @@ interface Task {
   difficulty: string;
 }
 
+interface TimeBlock {
+  _id: string;
+  name: string;
+  startTime: Date; // Ensure this is Date type
+  endTime: Date; // Ensure this is Date type
+  tasks: Task[];
+  category: string;
+  completed: boolean;
+}
+
 interface AddTimeBlockFormProps {
   isOpen: boolean;
   onClose: () => void;
   fetchSchedule: () => Promise<void>;
+  existingTimeBlocks: TimeBlock[];
 }
 
 const categoryOptions = [
@@ -19,7 +30,7 @@ const categoryOptions = [
   { value: 'atelic', label: 'Atelic' },
 ];
 
-const AddTimeBlockForm: React.FC<AddTimeBlockFormProps> = ({ isOpen, onClose, fetchSchedule }) => {
+const AddTimeBlockForm: React.FC<AddTimeBlockFormProps> = ({ isOpen, onClose, fetchSchedule, existingTimeBlocks }) => {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('work');
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -38,20 +49,71 @@ const AddTimeBlockForm: React.FC<AddTimeBlockFormProps> = ({ isOpen, onClose, fe
     setTasks(newTasks);
   };
 
+  const isOverlapping = (newStart: Date, newEnd: Date) => {
+    console.log('Checking new time block:', { newStart, newEnd });
+  
+    // Extract hours and minutes for normalization
+    const normalizeTime = (date: Date) => ({
+      hours: date.getHours(),
+      minutes: date.getMinutes()
+    });
+  
+    const { hours: newStartHours, minutes: newStartMinutes } = normalizeTime(newStart);
+    const { hours: newEndHours, minutes: newEndMinutes } = normalizeTime(newEnd);
+  
+    return existingTimeBlocks.some(block => {
+      const blockStart = new Date(block.startTime);
+      const blockEnd = new Date(block.endTime);
+  
+      const { hours: blockStartHours, minutes: blockStartMinutes } = normalizeTime(blockStart);
+      const { hours: blockEndHours, minutes: blockEndMinutes } = normalizeTime(blockEnd);
+  
+      const newStartTime = new Date(1970, 0, 1, newStartHours, newStartMinutes).getTime();
+      const newEndTime = new Date(1970, 0, 1, newEndHours, newEndMinutes).getTime();
+      const blockStartTime = new Date(1970, 0, 1, blockStartHours, blockStartMinutes).getTime();
+      const blockEndTime = new Date(1970, 0, 1, blockEndHours, blockEndMinutes).getTime();
+  
+      console.log('Against existing block:', { blockStartTime, blockEndTime });
+  
+      const isOverlap = (
+        (newStartTime < blockEndTime && newEndTime > blockStartTime) || // New block starts before existing block ends and ends after existing block starts
+        (newStartTime >= blockStartTime && newStartTime < blockEndTime) || // New block starts within an existing block
+        (newEndTime > blockStartTime && newEndTime <= blockEndTime) || // New block ends within an existing block
+        (newStartTime <= blockStartTime && newEndTime >= blockEndTime) // New block encompasses an existing block
+      );
+  
+      if (isOverlap) {
+        console.log('Overlap detected');
+      }
+  
+      return isOverlap;
+    });
+  };  
+  
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
-    const currentDate = new Date().toISOString().split('T')[0]; // Get today's date in 'YYYY-MM-DD' format
-    
+  
+    const currentDate = new Date().toISOString().split('T')[0];
+    const newStartTime = new Date(`${currentDate}T${startTime}`);
+    const newEndTime = new Date(`${currentDate}T${endTime}`);
+  
+    console.log('New time block to be added:', { newStartTime, newEndTime });
+  
+    if (isOverlapping(newStartTime, newEndTime)) {
+      setShowAlert(true);
+      setAlertMessage('Time block overlaps with an existing time block. Please choose a different time.');
+      return;
+    }
+  
     const newTimeBlock = {
       name,
       category,
-      startTime: new Date(`${currentDate}T${startTime}`),
-      endTime: new Date(`${currentDate}T${endTime}`),
+      startTime: newStartTime,
+      endTime: newEndTime,
       tasks,
       completed: false,
     };
-
+  
     try {
       await addTimeBlock(newTimeBlock);
       await fetchSchedule();
@@ -60,8 +122,8 @@ const AddTimeBlockForm: React.FC<AddTimeBlockFormProps> = ({ isOpen, onClose, fe
       setShowAlert(true);
       setAlertMessage('Error adding time block. Please try again.');
     }
-  };
-
+  };  
+  
   if (!isOpen) return null;
 
   return (

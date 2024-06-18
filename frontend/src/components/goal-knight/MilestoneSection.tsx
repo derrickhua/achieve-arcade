@@ -7,7 +7,6 @@ const MilestoneSection: React.FC<{ milestones: Milestone[], goalId: string, onMi
   const [selectedMilestoneIndex, setSelectedMilestoneIndex] = useState(0);
   const [milestoneList, setMilestoneList] = useState(milestones);
   const [isEditFormVisible, setIsEditFormVisible] = useState(false);
-  const [selectedMilestone, setSelectedMilestone] = useState<Milestone | null>(null);
   const [isLoading, setIsLoading] = useState(!milestones.length);
 
   useEffect(() => {
@@ -51,9 +50,13 @@ const MilestoneSection: React.FC<{ milestones: Milestone[], goalId: string, onMi
   };
 
   const handleOpenEditForm = async () => {
-    const milestones = await getMilestones(goalId);
-    const milestone = milestones.find(m => m._id === milestoneList[selectedMilestoneIndex]?._id);
-    setSelectedMilestone(milestone || null);
+    console.log('Opening edit form for goalId:', goalId);
+    const fetchedMilestones = await getMilestones(goalId);
+    console.log('Fetched milestones:', fetchedMilestones);
+    
+    const milestone = fetchedMilestones[selectedMilestoneIndex];
+    console.log('Selected milestone:', milestone);
+    
     setIsEditFormVisible(true);
   };
 
@@ -86,33 +89,33 @@ const MilestoneSection: React.FC<{ milestones: Milestone[], goalId: string, onMi
         <div className="absolute bottom-[-22px] left-[-24px] w-[64px] h-[64px] z-10" style={{ backgroundImage: "url('/icons/goal-knight/bot-left.png')", backgroundSize: 'contain' }}></div>
         <div className="absolute bottom-[-22px] right-[-24px] w-[64px] h-[64px] z-10" style={{ backgroundImage: "url('/icons/goal-knight/bot-right.png')", backgroundSize: 'contain' }}></div>
         <div className="absolute top-0 right-3 m-2 flex space-x-1 z-10">
-            <button className="text-black" onClick={handleOpenEditForm}>
+          <button className="text-black" onClick={handleOpenEditForm}>
             <Bolt size={20} strokeWidth={2} />
-            </button>
+          </button>
         </div>
         <div className='w-3/4'>
-            <div className="text-[25px] mb-2">
-                {isLoading || !milestoneList[selectedMilestoneIndex] ? 'Loading...' : `QUEST #${selectedMilestoneIndex + 1}: ${milestoneList[selectedMilestoneIndex].title}`}
-            </div>
-            <div className="text-[15px]">description:</div>
-            <div className="text-[15px] break-words mb-2">
-                {isLoading || !milestoneList[selectedMilestoneIndex] ? 'Loading...' : milestoneList[selectedMilestoneIndex].description}
-            </div>
+          <div className="text-[25px] mb-2">
+            {isLoading || !milestoneList[selectedMilestoneIndex] ? 'Loading...' : `QUEST #${selectedMilestoneIndex + 1}: ${milestoneList[selectedMilestoneIndex].title}`}
+          </div>
+          <div className="text-[15px]">description:</div>
+          <div className="text-[15px] break-words mb-2">
+            {isLoading || !milestoneList[selectedMilestoneIndex] ? 'Loading...' : milestoneList[selectedMilestoneIndex].description}
+          </div>
         </div>
         <div className='w-1/4 flex justify-center'>
-            <div 
-                className={`m-2 h-[60px] w-[60px] space-x-1 hover:bg-[#6FCF97] ${disableButton ? 'bg-gray-300 cursor-not-allowed' : milestoneList[selectedMilestoneIndex]?.completed ? 'bg-[#6FCF97] text-black' : 'bg-transparent'} 
+          <div 
+            className={`m-2 h-[60px] w-[60px] space-x-1 hover:bg-[#6FCF97] ${disableButton ? 'bg-gray-300 cursor-not-allowed' : milestoneList[selectedMilestoneIndex]?.completed ? 'bg-[#6FCF97] text-black' : 'bg-transparent'} 
                         border-2 border-black rounded-xl flex cursor-pointer items-center justify-center`}
-                onClick={handleCompleteMilestone}
-            >
-                {disableButton ? <Lock size={50} className={`text-black`} /> : <Check size={50} className={`text-black`} />}
-            </div>
+            onClick={handleCompleteMilestone}
+          >
+            {disableButton ? <Lock size={50} className={`text-black`} /> : <Check size={50} className={`text-black`} />}
+          </div>
         </div>
       </div>
 
-      {isEditFormVisible && selectedMilestone && (
+      {isEditFormVisible && (
         <EditMilestoneForm
-          milestone={selectedMilestone}
+          milestone={milestoneList[selectedMilestoneIndex]}
           goalId={goalId}
           onClose={handleCloseEditForm}
           fetchMilestones={async () => {

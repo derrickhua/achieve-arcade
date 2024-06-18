@@ -56,6 +56,8 @@ const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
       const metrics = await getWeeklyMetrics(new Date().toISOString());
       setWeeklyMetrics(metrics);
       setLoading(false)
+      console.log('schedule',schedule)
+      fetchCoins();
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -96,6 +98,7 @@ const DailySched: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
           isOpen={addBlock}
           onClose={() => setAddBlock(false)}
           fetchSchedule={fetchSchedule}
+          existingTimeBlocks={dailySchedule?.timeBlocks || []} // Pass existing time blocks
         />
       )}
       {editBlock && (

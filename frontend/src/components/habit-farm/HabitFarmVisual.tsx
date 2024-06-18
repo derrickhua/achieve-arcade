@@ -22,7 +22,7 @@ const HabitFarmVisual: React.FC<{ habits: any[], selectedHabitId: string, onSele
   };
 
   const getPlantImage = (plant, streak) => {
-    const plantStage = (streak % 4) + 1; // Get the stage of the plant (1 to 4)
+    const plantStage = (streak - 1) % 4 + 1; // Correct stage calculation
     return `/icons/habit-farm/${plant}/${plant}(${plantStage}).png`;
   };
 

@@ -38,7 +38,7 @@ const WeeklyHourRequirementsSection: React.FC<WeeklyHourRequirementsSectionProps
           <div 
             key={label} 
             className={`flex flex-col items-center justify-center w-[15vw] h-[15vw] max-w-[180px] max-h-[180px] ${color} rounded-md shadow-md text-black p-4`}>
-            <div className="text-[40px] h-full flex items-center">{current} / {target}</div>
+          <div className="text-[40px] h-full flex items-center">{Math.floor(current)} / {Math.floor(target)}</div>
             <div className="text-[20px] mt-auto text-center">{label}</div>
           </div>
         ))}

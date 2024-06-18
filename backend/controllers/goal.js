@@ -186,6 +186,10 @@ export const completeMilestone = async (req, res) => {
     const { goalId, milestoneId } = req.params;
     const { isLastMilestone } = req.body;
 
+    console.log('goalId:', goalId);
+    console.log('milestoneId:', milestoneId);
+    console.log('isLastMilestone:', isLastMilestone);
+
     try {
         // Step 1: Atomically mark the milestone as completed
         const updateResult = await Goal.updateOne(
@@ -260,7 +264,7 @@ export const completeMilestone = async (req, res) => {
 export const updateMilestone = async (req, res) => {
     const { goalId, milestoneId } = req.params;
     const { title, description, deadline } = req.body;
-
+    console.log('Update Milestone:', goalId, milestoneId, title, description, deadline)
     try {
         const updateFields = {};
         if (title !== undefined) updateFields["milestones.$.title"] = title;

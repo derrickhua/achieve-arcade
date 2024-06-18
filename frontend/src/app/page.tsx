@@ -1,110 +1,94 @@
 import Image from "next/image";
+import { Gamepad2, Gift } from 'lucide-react';
+import Head from "next/head";
+import { Metadata } from 'next';
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: 'Achieve Arcade',
+  description:
+    'game your productivity',
+  icons: {
+      icon: '/icons/logo.png',
+  },
+};
+
+export default function LandingPage() {
   return (
-      <main className="flex h-full flex-col items-center justify-between p-12">
+    <div className="bg-black min-h-screen w-full">
+      <div className="max-w-[1280px] mx-auto">
+        
+        {/* First Section with Navbar */}
+        <section className="h-[900px] flex flex-col w-full">
+          <nav className="py-5 px-8 flex items-center justify-between max-w-7xl mx-auto text-white w-full">
+            <div className="flex items-center ">
+              <div className="flex">
+                <Image src={'/icons/logo.png'} alt="Achieve Arcade Logo" width={24} height={34} />
+                <p className="leading-none text-[18px] ml-2 hover:text-[#FFA501]">ACHIEVE<br/>ARCADE</p>
+              </div>
+              <div className="flex space-x-[30px] ml-[30px]">
+                <a href="#pricing" className="text-white hover:text-[#FFA501]">PRICING</a>
+                <a href="#demo" className="text-white hover:text-[#FFA501]">DEMO</a>
+              </div>
+            </div>
+            <button className="text-black  text-[20px] bg-white rounded-md px-4 hover:bg-[#FFA501]">
+              LOGIN
+            </button>
+          </nav>
+          <div className="w-full mt-[200px] flex px-8 text-white">
+              <div className="w-1/2">
+                  <div className="text-[60px] text-white leading-tight mb-[30px]">
+                      Game your goals <br />
+                      get <span className="text-black bg-white px-4">more done</span>
+                  </div>
+                  <div className="text-[20px] mb-[60px]">
+                  Turn tasks into quests, earn rewards, and boost 
+                  <br/> productivity with Achieve Arcade.
+                  </div>
+                  <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4 py-2 text-[20px] text-black hover:text-[#FFA501] hover:bg-black">
+                    <Gamepad2 size={24} className="inline-block mr-2" />
+                    GET STARTED
+                  </button>
+                  <div className="mt-4">
+                    <Gift size={24} className="inline-block mr-2 text-[#6FCF97]"/>
+                    <span className="text-[#6FCF97] text-[15px]">FREE PRO ACCESS </span> 
+                    for the first 50 users!
+                  </div>
 
-        <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-          <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:size-auto lg:bg-none">
-            <a
-              className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{" "}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className="dark:invert"
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
+                  <div className="mt-[80px] flex flex-col text-[15px]">
+                    <div>
+                      "THIS IS WHAT I&apos;VE BEEN LOOKING FOR!" <br/>
+                    </div>
+                    <div className="flex items-center mt-2">
+                      <div className="rounded-3xl bg-white w-10 h-10 inline-block mr-2"></div>
+                      <div>SOME RANDOM NAME</div>
 
-        <div className="relative z-[-1] flex place-items-center before:absolute before:h-[300px] before:w-full before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 sm:before:w-[480px] sm:after:w-[240px] before:lg:h-[360px]">
-          <Image
-            className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
-          />
-        </div>
+                    </div>
+                  </div>
 
-        <div className="mb-32 grid text-center lg:mb-0 lg:w-full lg:max-w-5xl lg:grid-cols-4 lg:text-left">
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Docs{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Find in-depth information about Next.js features and API.
-            </p>
-          </a>
+              </div>
+              <div className="w-1/2 flex justify-center ">
+              <div>
+                <Image src={'/icons/landing/images/section-1.png'} alt="section 1" 
+                width={564} height={535} style={{ imageRendering: 'pixelated' }}/>
+              </div>
+              </div>
+         </div>
+         <div className="text-white w-full flex justify-center mt-[100px] text-[13px] gap-4">
+            <div>FEATURED ON</div>
 
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Learn{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Templates{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-sm opacity-50">
-              Explore starter templates for Next.js.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className="mb-3 text-2xl font-semibold">
-              Deploy{" "}
-              <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-                -&gt;
-              </span>
-            </h2>
-            <p className="m-0 max-w-[30ch] text-balance text-sm opacity-50">
-              Instantly deploy your Next.js site to a shareable URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+            <div className="">PRODUCT HUNT</div>
+            <div className="">reddit</div>
+            <div className="">X</div>
+         </div>
+        </section>
+        
+        {/* Placeholder for remaining sections */}
+        <section className="h-[900px] w-full">Section 2</section>
+        <section className="h-[900px] w-full">Section 3</section>
+        <section className="h-[900px] w-full">Section 4</section>
+        <section className="h-[900px] w-full">Section 5</section>
+        
+      </div>
+    </div>
   );
 }

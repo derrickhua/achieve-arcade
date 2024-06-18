@@ -1,18 +1,19 @@
+// routes/goal.js
 import express from 'express';
 import authenticate from '../middleware/authenticate.js';
 import {
-    createGoal,
-    getAllGoals,
-    updateGoal,
-    deleteGoal,
-    filterSortGoals,
-    updateCategory,
-    getGoalHistory,
-    getGoalMilestones,
-    getMilestones,  // <-- Add this line
-    updateMilestone,
-    deleteMilestone,
-    completeMilestone
+  createGoal,
+  getAllGoals,
+  updateGoal,
+  deleteGoal,
+  filterSortGoals,
+  updateCategory,
+  getGoalHistory,
+  getGoalMilestones,
+  getMilestones,
+  updateMilestone,
+  deleteMilestone,
+  completeMilestone
 } from '../controllers/goal.js';
 
 const router = express.Router();
@@ -23,7 +24,7 @@ router.use(authenticate);
 // Define the routes and associate them with the controller functions
 router.post('/', createGoal); // Create a new goal
 router.get('/', getAllGoals); // Get all goals for a user
-router.get('/:goalId/milestones', getMilestones); // Get all milestones for a goal <-- Add this line
+router.get('/:goalId/milestones', getMilestones); // Get all milestones for a goal
 router.put('/:id', updateGoal); // Update an existing goal
 router.delete('/:id', deleteGoal); // Delete a goal
 router.get('/filterSort', filterSortGoals); // Filter and sort goals

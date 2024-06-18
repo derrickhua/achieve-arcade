@@ -61,7 +61,7 @@ const VisualKnight: React.FC<{ completedMilestones: number, milestoneJustComplet
         }, 3000); // Extended duration of walk animation
       }, 1050); // Duration of kill animation
     }
-  }, [milestoneJustCompleted, completedMilestones, showKnightSlash, onFinalAnimationComplete]);
+  }, [milestoneJustCompleted, completedMilestones, showKnightSlash]);
 
   const remainingGoblins = Math.max(0, 3 - completedMilestones - 1);
 

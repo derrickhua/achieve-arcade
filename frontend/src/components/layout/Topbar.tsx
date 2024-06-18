@@ -31,9 +31,9 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
           <p className='mt-1'>{coins}</p>
           <Image src={'/icons/coin.png'} alt={`coin icon`} width={20} height={20} quality={100} />
         </span>
-        <button className="p-2 ml-2">
+        {/* <button className="p-2 ml-2">
           <Info size={32} strokeWidth={2} color="#FEFDF2"/>
-        </button>
+        </button> */}
         <button className="p-2" onClick={() => setSuggestions(true)}>
           <MailQuestion size={32} strokeWidth={2} color="#FEFDF2"/>  
         </button>

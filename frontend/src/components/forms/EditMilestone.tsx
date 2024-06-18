@@ -51,6 +51,7 @@ const EditMilestoneForm: React.FC<EditMilestoneFormProps> = ({ milestone, goalId
       description,
     };
 
+    console.log('updatedata', updateData)
     try {
       await updateMilestone(goalId, milestone._id, updateData);
       await fetchMilestones();

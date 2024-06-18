@@ -11,8 +11,6 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
   const [showKnightSlash, setShowKnightSlash] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
-  console.log('the goal i received', goal);
-
   const formatDate = (dateString) => {
     const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
     const date = new Date(dateString);
