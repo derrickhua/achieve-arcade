@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import { useSession, SessionProvider } from "next-auth/react";
 import "./globals.css";
 import LoadingScreen from "@/components/pages/LoadingScreen";
