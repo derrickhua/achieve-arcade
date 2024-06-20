@@ -100,9 +100,9 @@ export default function Authentication() {
   <Image 
     src="/icons/logo.png" 
     alt="Logo" 
-    width={400} 
-    height={400} 
-    style={{ width: '80vw', height: 'auto', maxWidth: '400px' }}
+    width={200} 
+    height={200} 
+    style={{ maxWidth: '400px' }}
   />
   <p className="text-[60px] text-white text-center leading-none" style={{ width: '80vw', maxWidth: '400px' }}>
     ACHIEVE ARCADE

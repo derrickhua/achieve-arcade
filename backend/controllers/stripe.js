@@ -60,10 +60,26 @@ export const cancelSubscription = async (req, res) => {
 
         const subscriptionId = subscriptions.data[0].id;
 
-        // Cancel the subscription
-        const subscription = await stripe.subscriptions.update(subscriptionId, {
-            cancel_at_period_end: true,
-          });
+        // Cancel the subscription immediately
+        const canceledSubscription = await stripe.subscriptions.cancel(subscriptionId);
+
+        // Fetch the latest invoice for the subscription
+        const invoices = await stripe.invoices.list({
+            subscription: subscriptionId,
+            limit: 1,
+        });
+
+        if (invoices.data.length === 0) {
+            return res.status(404).json({ error: 'No invoices found for this subscription' });
+        }
+
+        const latestInvoice = invoices.data[0];
+
+        // Refund the latest invoice's payment
+        const paymentIntentId = latestInvoice.payment_intent;
+        const refund = await stripe.refunds.create({
+            payment_intent: paymentIntentId,
+        });
 
         // Update user subscription information
         await User.updateOne(
@@ -76,12 +92,17 @@ export const cancelSubscription = async (req, res) => {
             }
         );
 
-        res.status(200).json({ subscription });
+        res.status(200).json({
+            canceledSubscription,
+            refund, // Include refund information in the response
+        });
     } catch (error) {
         console.error('Error canceling subscription:', error);
         res.status(500).json({ error: error.message });
     }
 };
+
+
 
 export const refundAllPayments = async (req, res) => {
     try {

@@ -271,7 +271,7 @@ export default function LandingPage() {
                     UNLIMITED NUMBER OF TASKS
                   </div>
                 </div>
-                <Link href="/auth/register" className="w-full flex items-center justify-center mt-auto">
+                <Link href="/auth/premium-register" className="w-full flex items-center justify-center mt-auto">
                   <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4 py-2 
                   text-[20px] text-black flex items-center justify-center hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
                     <Gamepad2 size={24} className="inline-block mr-2 text-black group-hover:text-[#FFA501]" />

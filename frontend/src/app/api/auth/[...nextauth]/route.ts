@@ -22,10 +22,10 @@ const authHandler = NextAuth({
                 });
                 
                 const user = response.data;
-                console.log(user)
                 if (response.status === 200 && user.accessToken) {
                     return {
                         ...user,
+                        userId: user.userId, // Include the user's ID
                         accessTokenExpires: user.accessTokenExpires,
                         refreshToken: user.refreshToken 
                     };  
@@ -59,11 +59,12 @@ const authHandler = NextAuth({
                     withCredentials: true  // Ensures cookies are sent along with the request
                 });
                 const user = response.data;
-                
+                console.log('user in signin register',user)
                 if (response.status === 201 && user.accessToken) {
                     // Use accessTokenExpires directly provided by the backend
                     return {
                         ...user,
+                        userId: user.userId, // Include the user's ID
                         accessTokenExpires: user.accessTokenExpires,
                         refreshToken: user.refreshToken 
                     };
@@ -89,7 +90,8 @@ const authHandler = NextAuth({
       if (user) {
         token.accessToken = user.accessToken;
         token.refreshToken = user.refreshToken;
-        token.accessTokenExpires = user.accessTokenExpires; // Assuming you send this from your backend
+        token.accessTokenExpires = user.accessTokenExpires; 
+        token.userId = user.userId; // Include userId in the token
     }
       console.log(token.accessTokenExpires, Date.now());
       // Refresh token if it has expired
@@ -111,6 +113,8 @@ const authHandler = NextAuth({
       session.accessToken = token.accessToken;
       session.refreshToken = token.refreshToken;
       session.accessTokenExpires = token.accessTokenExpires;
+      session.userId = token.userId; // Ensure userId is included in the session
+
       return session;
     }
   },  

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { cancelSubscription } from '@/lib/stripe';
 
 interface ConfirmSubscriptionCancelFormProps {
@@ -8,12 +8,14 @@ interface ConfirmSubscriptionCancelFormProps {
 }
 
 const ConfirmSubscriptionCancelForm: React.FC<ConfirmSubscriptionCancelFormProps> = ({ isOpen, onClose, onConfirm }) => {
+  const [lastSubscriptionDate, setLastSubscriptionDate] = useState<Date | null>(null);
+
   if (!isOpen) return null;
 
   const handleConfirm = async () => {
-    console.log('handleConfirm called');
     try {
-      await cancelSubscription();
+      const response = await cancelSubscription();
+      setLastSubscriptionDate(new Date(response.lastSubscriptionDate));
       onConfirm();
     } catch (error) {
       console.error('Error canceling subscription:', error);
@@ -26,8 +28,10 @@ const ConfirmSubscriptionCancelForm: React.FC<ConfirmSubscriptionCancelFormProps
         <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[30px] mb-4">Confirm Cancellation</h2>
-        <p className="text-[20px] mb-8">Are you sure you want to cancel your subscription?</p>
+        <h2 className="text-[30px] mb-4 text-[#EB5757]">Confirm Cancellation</h2>
+        <p className="text-[20px] mb-8">
+            Once you click confirm, your last subscription payment will be refunded, and your excess goals, habits, and tasks will be deleted in accordance with the free plan's limit.
+        </p>
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
@@ -42,6 +46,11 @@ const ConfirmSubscriptionCancelForm: React.FC<ConfirmSubscriptionCancelFormProps
             CONFIRM
           </button>
         </div>
+        {lastSubscriptionDate && (
+          <p className="text-[20px] mt-4">
+            Your subscription will end on {lastSubscriptionDate.toDateString()}.
+          </p>
+        )}
       </div>
     </div>
   );

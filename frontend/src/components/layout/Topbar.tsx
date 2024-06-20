@@ -6,6 +6,7 @@ import SettingsForm from '../forms/Settings';
 import LogoutConfirmationForm from '../forms/Logout';
 import PurchasePopUp from './PurchasePopUp'; // Import the new form
 import PurchaseSuccess from './PurchaseSuccess'; // Import the new success form
+import UserWelcomeForm from '../forms/UserWelcomeForm'; // Import the UserWelcomeForm
 import { getUser } from '@/lib/user';
 import './layout.css';
 import { useRouter } from 'next/navigation';
@@ -22,6 +23,7 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
   const [help, setHelp] = useState(false);
   const [settings, setSettings] = useState(false);
   const [user, setUser] = useState(null);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const router = useRouter();
 
@@ -30,6 +32,18 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
       const userData = await getUser();
       console.log('Fetched User:', userData);
       setUser(userData);
+
+      // Check if the preferences object exists and if any of the hours are undefined or zero
+      const { preferences } = userData;
+      if (
+        !preferences ||
+        !preferences.workHoursPerWeek ||
+        !preferences.leisureHoursPerWeek ||
+        !preferences.familyFriendsHoursPerWeek ||
+        !preferences.atelicHoursPerWeek
+      ) {
+        setShowWelcome(true);
+      }
     } catch (error) {
       console.error('Error fetching user:', error);
     }
@@ -55,7 +69,7 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
     <div className="bg-black flex justify-between items-center h-[70px]">
       <div className="flex items-center">
         <div className='w-[100px] flex justify-center'>
-          <Image src={'/icons/logo.png'} alt={`company logo icon`} width={40} height={40} quality={100} />
+          <Image src={'/icons/logo.png'} alt={`company logo icon`} width={40} height={40} quality={100}  style={{ imageRendering: 'pixelated' }} />
         </div>
         <p className='text-2xl text-[#FEFDF2] text-[50px] ml-4'>ACHIEVE ARCADE</p>
         {user?.subscription === 'pro' && (
@@ -87,6 +101,10 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
       {logout && <LogoutConfirmationForm isOpen={logout} onClose={() => setLogout(false)} />}
       {purchase && user && <PurchasePopUp isOpen={purchase} onClose={() => setPurchase(false)} userId={user._id} />} {/* Pass user ID */}
       {purchaseSuccess && <PurchaseSuccess isOpen={purchaseSuccess} onClose={() => setPurchaseSuccess(false)} />} {/* Handle purchase success */}
+      {showWelcome && <UserWelcomeForm isOpen={showWelcome} onClose={() => {
+        setShowWelcome(false)
+        fetchUser()
+      }} />} {/* Render UserWelcomeForm */}
     </div>
   );
 };

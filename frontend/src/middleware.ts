@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
 
   const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
   const isRootPath = request.nextUrl.pathname === '/';
+  const isRegisterProPath = request.nextUrl.pathname === '/auth/register-pro';
   const isRegisterPath = request.nextUrl.pathname === '/auth/register';
   const isSigninPath = request.nextUrl.pathname === '/auth/signin';
   const isDashboardPath = request.nextUrl.pathname === '/dashboard';
@@ -19,7 +20,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(url);
     }
   } else {
-    if (!isAuthPath && !isRootPath && !isRegisterPath && !isSigninPath) {
+    if (!isAuthPath && !isRootPath && !isRegisterPath && !isSigninPath && !isRegisterProPath) {
       // If not authenticated and trying to access protected routes, redirect to sign-in
       const url = request.nextUrl.clone();
       url.pathname = '/auth/signin';

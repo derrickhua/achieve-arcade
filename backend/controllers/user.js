@@ -1,4 +1,5 @@
 import User from '../models/user.js';
+import Reward from '../models/reward.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -125,66 +126,69 @@ export const refreshAccessToken = async (req, res, next) => {
     }
 };
 
-/**
- * Registers a new user with the provided credentials.
- * If the user already exists or there's an issue with user creation, it throws errors
- * that are handled by centralized error handling middleware to maintain consistency.
- *
- * @param {Request} req - The request object containing username, email, password, and timezone.
- * @param {Response} res - The response object used to send back the registration status.
- * @param {Function} next - The next middleware function in the stack for error handling.
- */
-export const register = async (req, res, next) => {
-    const { username, email, password, timezone } = req.body;
-    try {
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        return res.status(409).json({ error: 'User already exists' });
-      }
+    /**
+     * Registers a new user with the provided credentials.
+     * If the user already exists or there's an issue with user creation, it throws errors
+     * that are handled by centralized error handling middleware to maintain consistency.
+     *
+     * @param {Request} req - The request object containing username, email, password, and timezone.
+     * @param {Response} res - The response object used to send back the registration status.
+     * @param {Function} next - The next middleware function in the stack for error handling.
+     */
+    // registration endpoint
+    export const register = async (req, res, next) => {
+        const { username, email, password, timezone } = req.body;
+        try {
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(409).json({ error: 'User already exists' });
+        }
+    
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({
+            username,
+            email,
+            password: hashedPassword,
+            timezone,
+            coins: 0 // Initial starter coins
+        });
+    
+        // Count the number of pro users
+        const proUserCount = await User.countDocuments({ subscription: 'pro' });
+    
+        // Assign the subscription type based on the number of pro users
+        if (proUserCount < 50) {
+            newUser.subscription = 'pro';
+            newUser.subscriptionType = 'freeLifetime';
+        } else if (proUserCount < 100) {
+            newUser.subscription = 'pro';
+            newUser.subscriptionType = 'paidLifetime';
+        } else {
+            newUser.subscription = 'free';
+            newUser.subscriptionType = 'recurring';
+        }
+    
+        const tokens = generateTokens(newUser._id);
+        newUser.refreshToken = tokens.refreshToken;
+        await newUser.save();
+    
+        // Initialize rewards for the new user
+        await initializeUserRewards(newUser._id);
+        console.log('new user at', newUser._id)
+        res.status(201).json({
+            message: 'User registered successfully',
+            refreshToken: tokens.refreshToken,
+            accessToken: tokens.accessToken,
+            accessTokenExpires: tokens.accessTokenExpires,
+            userId: newUser._id,  // Use newUser._id to get the user's ID
+        });
+        } catch (error) {
+        console.error("Registration error:", error);
+        next(error);
+        }
+    };
   
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({
-        username,
-        email,
-        password: hashedPassword,
-        timezone,
-        coins: 0 // Initial starter coins
-      });
-  
-      // Count the number of pro users
-      const proUserCount = await User.countDocuments({ subscription: 'pro' });
-  
-      // Assign the subscription type based on the number of pro users
-      if (proUserCount < 50) {
-        newUser.subscription = 'pro';
-        newUser.subscriptionType = 'freeLifetime';
-      } else if (proUserCount < 100) {
-        newUser.subscription = 'pro';
-        newUser.subscriptionType = 'paidLifetime';
-      } else {
-        newUser.subscription = 'free';
-        newUser.subscriptionType = 'recurring';
-      }
-  
-      const tokens = generateTokens(newUser._id);
-      newUser.refreshToken = tokens.refreshToken;
-      await newUser.save();
-  
-      // Initialize rewards for the new user
-      await initializeUserRewards(newUser._id);
-  
-      res.status(201).json({
-        message: 'User registered successfully',
-        refreshToken: tokens.refreshToken,
-        accessToken: tokens.accessToken,
-        accessTokenExpires: tokens.accessTokenExpires
-      });
-    } catch (error) {
-      console.error("Registration error:", error);
-      next(error);
-    }
-  };
-  
+
 /**
  * Authenticates a user based on email and password.
  * If authentication is successful, it generates and returns access and refresh tokens.
@@ -210,11 +214,12 @@ export const login = async (req, res, next) => {
         const tokens = generateTokens(user._id);
         user.refreshToken = tokens.refreshToken;  // Update the refresh token in the user's record
         await user.save();  // Don't forget to save the updated user record
-
+       
         res.json({
             accessToken: tokens.accessToken,
             refreshToken: tokens.refreshToken,
-            accessTokenExpires: tokens.accessTokenExpires
+            accessTokenExpires: tokens.accessTokenExpires,
+            userId: user._id,  // Use newUser._id to get the user's ID
         });
     } catch (error) {
         console.error("Login error:", error);
@@ -298,6 +303,14 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
+        // Check if the new email is already in use by another user
+        if (email && email !== user.email) {
+            const existingUser = await User.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+        }
+
         if (password) {
             const salt = await bcrypt.genSalt(10);
             user.password = await bcrypt.hash(password, salt);
@@ -329,8 +342,6 @@ export const updateUser = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
-
 
 /**
  * Deletes the user based on the user's ID from the authentication information.

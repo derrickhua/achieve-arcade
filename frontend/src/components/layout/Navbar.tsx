@@ -22,6 +22,8 @@ const Navbar: React.FC<NavbarProps> = ({ setActiveComponent }) => {
             label="PLAYER DATA"
             onClick={() => handleNavItemClick('PlayerData')}
             active={activeComponent === 'PlayerData'}
+            width={27}
+            height={25}
           />
         </li>
         <li>
@@ -30,11 +32,13 @@ const Navbar: React.FC<NavbarProps> = ({ setActiveComponent }) => {
             label="GOAL KNIGHT"
             onClick={() => handleNavItemClick('GoalKnight')}
             active={activeComponent === 'GoalKnight'}
+            width={50}
+            height={50}
           />
         </li>
         <li>
           <NavItem
-            iconSrc="/icons/orange.png" // Update with the correct path
+            iconSrc="/icons/landing/images/sunflower.png" // Update with the correct path
             label="HABIT FARM"
             onClick={() => handleNavItemClick('HabitFarm')}
             active={activeComponent === 'HabitFarm'}
@@ -42,26 +46,32 @@ const Navbar: React.FC<NavbarProps> = ({ setActiveComponent }) => {
         </li>
         <li>
           <NavItem
-            iconSrc="/icons/redsword.png" // Update with the correct path
+            iconSrc="/icons/landing/images/knight.png" // Update with the correct path
             label="TASK SLAYER"
             onClick={() => handleNavItemClick('TaskSlayer')}
             active={activeComponent === 'TaskSlayer'}
+            marginBottom={30}
           />
         </li>
         <li>
           <NavItem
-            iconSrc="/icons/schedule.png" // Update with the correct path
+            iconSrc="/icons/landing/images/calendar.png" // Update with the correct path
             label="DAILY SCHED"
             onClick={() => handleNavItemClick('DailySchedule')}
             active={activeComponent === 'DailySchedule'}
+            
           />
         </li>
         <li>
           <NavItem
-            iconSrc="/icons/reward.png" // Update with the correct path
+            iconSrc="/icons/landing/images/gold-chest.png" // Update with the correct path
             label="SHOP"
             onClick={() => handleNavItemClick('Shop')}
             active={activeComponent === 'Shop'}
+            width={45}
+            height={45}
+            marginLeft={12}
+            marginBottom={20}
           />
         </li>
       </ul>
