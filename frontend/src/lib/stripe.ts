@@ -46,24 +46,22 @@ export async function createPayment(amount, paymentMethodId, email) {
   }
 }
 
-
-
 /**
  * Cancels a subscription on the backend.
  * 
- * @param {string} subscriptionId - The ID of the subscription to cancel.
  * @returns {Promise<Object>} The response from the backend API.
  * @throws {Error} If there is an issue with the API request.
  */
-export async function cancelSubscription(subscriptionId) {
+export async function cancelSubscription() {
   try {
-    const response = await api.post('/cancel-subscription', { subscriptionId });
+    const response = await api.post('/cancel-subscription');
     return response.data;
   } catch (error) {
     console.error('Error canceling subscription:', error);
     throw new Error('Failed to cancel subscription');
   }
 }
+
 
 /**
  * Refunds all payments for a user on the backend.
@@ -78,39 +76,5 @@ export async function refundAllPayments() {
   } catch (error) {
     console.error('Error refunding payments:', error);
     throw new Error('Failed to refund payments');
-  }
-}
-/**
- * Creates a Stripe Checkout session on the backend.
- * 
- * @returns {Promise<string>} The session URL from the backend API.
- * @throws {Error} If there is an issue with the API request.
- */
-export async function createCheckoutSession() {
-  try {
-    const userId = await getUserId(); // Retrieve the user ID
-    const response = await api.post('/create-checkout-session', { userId }); // Send the user ID along with the request
-    console.log(response.data);
-    return response.data.url; // Adjust the response according to your backend response
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
-    throw new Error('Failed to create checkout session');
-  }
-}
-
-/**
- * Retrieves the status of a Stripe Checkout session on the backend.
- * 
- * @param {string} sessionId - The ID of the session to retrieve the status for.
- * @returns {Promise<Object>} The response from the backend API, including the session status and customer email.
- * @throws {Error} If there is an issue with the API request.
- */
-export async function getSessionStatus(sessionId) {
-  try {
-    const response = await api.get('/session-status', { params: { session_id: sessionId } });
-    return response.data;
-  } catch (error) {
-    console.error('Error retrieving session status:', error);
-    throw new Error('Failed to retrieve session status');
   }
 }

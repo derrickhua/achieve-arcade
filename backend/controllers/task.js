@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Task from '../models/task.js';
 import { DailySchedule, TimeBlock } from '../models/dailySchedule.js';
+import User from '../models/user.js';
 /**
  * Creates a new task for the user based on the provided details.
  * Validates the required fields and adds the task to the database.
@@ -8,26 +9,37 @@ import { DailySchedule, TimeBlock } from '../models/dailySchedule.js';
  * @param {Response} res - The response object used to return the status and created task.
  */
 export const addTask = async (req, res, next) => {
-    const { name, difficulty } = req.body;
+  const { name, difficulty } = req.body;
 
-    // Validate input data
-    if (!name) {
-        const error = new Error('Task name is required');
-        error.status = 400;
-        return next(error);
-    }
+  // Validate input data
+  if (!name) {
+      const error = new Error('Task name is required');
+      error.status = 400;
+      return next(error);
+  }
 
-    try {
-        const newTask = new Task({
-            userId: req.user._id,  // Assuming user ID is available from auth middleware
-            name,
-            difficulty
-        });
-        await newTask.save();
-        res.status(201).json(newTask);
-    } catch (error) {
-        next(error);
-    }
+  try {
+      const user = await User.findById(req.user._id);
+
+      if (user.subscriptionType !== 'pro') {
+          const taskCount = await Task.countDocuments({ userId: req.user._id });
+          if (taskCount >= 4) {
+              const error = new Error('Free tier users can only have a maximum of 4 tasks');
+              error.status = 400;
+              return next(error);
+          }
+      }
+
+      const newTask = new Task({
+          userId: req.user._id,  // Assuming user ID is available from auth middleware
+          name,
+          difficulty
+      });
+      await newTask.save();
+      res.status(201).json(newTask);
+  } catch (error) {
+      next(error);
+  }
 };
 
 /**

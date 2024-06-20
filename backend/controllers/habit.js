@@ -1,4 +1,5 @@
 import Habit from '../models/habit.js';
+import User from '../models/user.js';
 
 /**
  * Creates a new habit for the user based on the provided details.
@@ -18,6 +19,17 @@ export const addHabit = async (req, res, next) => {
     }
 
     try {
+        const user = await User.findById(req.user._id);
+
+        if (user.subscriptionType !== 'pro') {
+            const habitCount = await Habit.countDocuments({ user: req.user._id });
+            if (habitCount >= 2) {
+                const error = new Error('Free tier users can only have a maximum of 2 habits');
+                error.status = 400;
+                return next(error);
+            }
+        }
+
         const newHabit = new Habit({
             user: req.user._id,  // Assuming user ID is available from auth middleware
             name,

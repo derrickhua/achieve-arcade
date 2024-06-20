@@ -26,7 +26,7 @@ const Navbar: React.FC<NavbarProps> = ({ setActiveComponent }) => {
         </li>
         <li>
           <NavItem
-            iconSrc="/icons/goal.png" // Update with the correct path
+            iconSrc="/icons/landing/images/warrior.png" // Update with the correct path
             label="GOAL KNIGHT"
             onClick={() => handleNavItemClick('GoalKnight')}
             active={activeComponent === 'GoalKnight'}

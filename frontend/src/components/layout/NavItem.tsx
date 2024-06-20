@@ -6,7 +6,10 @@ interface NavItemProps {
   label: string;
   onClick: () => void;
   active?: boolean;
+  height?: number;
+  width?: number;
 }
+
 
 const NavItem: React.FC<NavItemProps> = ({ iconSrc, label, onClick, active }) => {
   return (

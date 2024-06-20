@@ -32,9 +32,12 @@ app.use((req, res, next) => {
   if (req.originalUrl === '/api/stripe/webhook') {
     next();
   } else {
-    express.json()(req, res, next);
+    bodyParser.json()(req, res, next);
   }
 });
+
+// Parse URL-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost/tempus');

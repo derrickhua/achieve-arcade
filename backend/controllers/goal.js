@@ -16,6 +16,15 @@ export const createGoal = async (req, res) => {
             return res.status(400).json({ message: "User ID is required" });
         }
 
+        const user = await User.findById(req.user._id);
+
+        if (user.subscriptionType !== 'pro') {
+            const goalCount = await Goal.countDocuments({ user: req.user._id });
+            if (goalCount >= 2) {
+                return res.status(400).json({ message: 'Free tier users can only have a maximum of 2 goals' });
+            }
+        }
+
         const newGoal = new Goal({
             user: req.user._id,
             title,

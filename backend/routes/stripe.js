@@ -1,7 +1,6 @@
 import express from 'express';
 import {
   createCheckoutSession,
-  getSessionStatus,
   cancelSubscription,
   refundAllPayments,
   handleStripeWebhook,
@@ -12,8 +11,7 @@ const router = express.Router();
 
 // Stripe routes
 router.post('/create-checkout-session', createCheckoutSession);
-router.get('/session-status', getSessionStatus);
-router.post('/cancel-subscription', cancelSubscription);
+router.post('/cancel-subscription', authenticate, cancelSubscription);
 router.post('/refund-all-payments', refundAllPayments);
 
 // Webhook route

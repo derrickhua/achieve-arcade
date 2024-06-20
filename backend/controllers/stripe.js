@@ -5,59 +5,76 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const YOUR_DOMAIN = 'http://localhost:3000';
 
 export const createCheckoutSession = async (req, res) => {
-    const { userId } = req.body; // Retrieve the user ID from the request body
-  
-    try {
-      const priceId = 'price_1PTRT6P21qukNQhzpzmYWp5T'; // Replace with your actual Price ID
-  
-      const session = await stripe.checkout.sessions.create({
-        line_items: [
-          {
-            price: priceId,
-            quantity: 1,
-          },
-        ],
-        mode: 'subscription',
-        success_url: `${YOUR_DOMAIN}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${YOUR_DOMAIN}/dashboard?canceled=true`,
-        automatic_tax: { enabled: true },
-        metadata: {
-          userId: userId, // Attach the user ID to the metadata
-        },
-      });
-  
-      res.redirect(303, session.url);
-    } catch (error) {
-      console.error('Error creating checkout session:', error);
-      res.status(500).json({ error: error.message });
-    }
-  };
+    const { userId } = req.body;
+    console.log('Received request to create checkout session for user ID:', userId);
 
-export const getSessionStatus = async (req, res) => {
     try {
-        console.log('Received request to get session status for session ID:', req.query.session_id);
-        const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
+        const priceId = 'price_1PTRT6P21qukNQhzpzmYWp5T'; // Replace with your actual Price ID
 
-        res.status(200).json({
-            status: session.status,
-            customer_email: session.customer_details.email,
+        const session = await stripe.checkout.sessions.create({
+            line_items: [
+                {
+                    price: priceId,
+                    quantity: 1,
+                },
+            ],
+            mode: 'subscription',
+            success_url: `${YOUR_DOMAIN}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${YOUR_DOMAIN}/dashboard?canceled=true`,
+            automatic_tax: { enabled: true },
+            metadata: {
+                userId: userId.toString(), // Attach the user ID to the metadata
+            },
         });
+
+      
+        res.redirect(303, session.url);
     } catch (error) {
-        console.error('Error retrieving session status:', error);
+        console.error('Error creating checkout session:', error);
         res.status(500).json({ error: error.message });
     }
 };
 
 export const cancelSubscription = async (req, res) => {
-    const { subscriptionId } = req.body;
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('stripeCustomerId');
 
-        const subscription = await stripe.subscriptions.del(subscriptionId);
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
 
-        user.subscription = 'free';
-        user.subscriptionType = 'freeLifetime';
-        await user.save();
+        if (!user.stripeCustomerId) {
+            return res.status(400).json({ error: 'User does not have a Stripe customer ID' });
+        }
+
+        // Fetch all active subscriptions for the customer
+        const subscriptions = await stripe.subscriptions.list({
+            customer: user.stripeCustomerId,
+            status: 'active',
+            limit: 1, // Assuming the user has only one active subscription
+        });
+
+        if (subscriptions.data.length === 0) {
+            return res.status(404).json({ error: 'No active subscriptions found for this user' });
+        }
+
+        const subscriptionId = subscriptions.data[0].id;
+
+        // Cancel the subscription
+        const subscription = await stripe.subscriptions.update(subscriptionId, {
+            cancel_at_period_end: true,
+          });
+
+        // Update user subscription information
+        await User.updateOne(
+            { _id: req.user._id },
+            {
+                $set: {
+                    subscription: 'free',
+                    subscriptionType: 'freeLifetime'
+                }
+            }
+        );
 
         res.status(200).json({ subscription });
     } catch (error) {
@@ -68,7 +85,12 @@ export const cancelSubscription = async (req, res) => {
 
 export const refundAllPayments = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id);
+        const user = await User.findById(req.user._id).select('stripeCustomerId');
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
         if (!user.stripeCustomerId) {
             return res.status(400).json({ error: 'User does not have a Stripe customer ID' });
         }
@@ -78,11 +100,9 @@ export const refundAllPayments = async (req, res) => {
             limit: 100
         });
 
-        const refundPromises = paymentIntents.data.map(paymentIntent => {
-            return stripe.refunds.create({
-                payment_intent: paymentIntent.id
-            });
-        });
+        const refundPromises = paymentIntents.data.map(paymentIntent => 
+            stripe.refunds.create({ payment_intent: paymentIntent.id })
+        );
 
         const refunds = await Promise.all(refundPromises);
 
@@ -93,7 +113,7 @@ export const refundAllPayments = async (req, res) => {
     }
 };
 
-const lifetimePriceId = process.env.STRIPE_LIFETIME_PRICE_ID; // Add the lifetime price ID to your environment variables
+const lifetimePriceId = 'price_1PTlqFP21qukNQhz03LpRxiX'; 
 
 export const handleStripeWebhook = async (req, res) => {
     const sig = req.headers['stripe-signature'];
@@ -108,122 +128,63 @@ export const handleStripeWebhook = async (req, res) => {
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
 
+    console.log(`Handling event type: ${event.type}`);
+
     switch (event.type) {
         case 'checkout.session.completed': {
             const session = event.data.object;
             const customerId = session.customer;
-            const userId = session.metadata.userId; // Extract user ID from metadata
+            const userId = session.metadata.userId;
+            const mode = session.mode;
 
-            let user = await User.findById(userId); // Find user by ID
+            console.log(`Handling checkout.session.completed for user ${userId} with mode ${mode}`);
 
-            if (user) {
-                user.stripeCustomerId = customerId;
-                user.subscription = 'pro';
+            const sessionWithLineItems = await stripe.checkout.sessions.retrieve(session.id, {
+                expand: ['line_items'],
+            });
 
-                const isLifetime = session.display_items.some(item => item.price.id === lifetimePriceId);
-                user.subscriptionType = isLifetime ? 'paidLifetime' : 'recurring';
+            const isLifetime = sessionWithLineItems.line_items.data.some(item => item.price.id === lifetimePriceId);
 
-                user.subscriptionStartDate = new Date();
-                await user.save();
-            }
-            break;
-        }
-        case 'invoice.payment_succeeded': {
-            const invoice = event.data.object;
-            const customerId = invoice.customer;
-            const userId = invoice.metadata.userId; // Extract user ID from metadata
-
-            let user = await User.findOne({ stripeCustomerId: customerId });
-            if (!user) {
-                user = await User.findById(userId); // Find user by ID if not found by customer ID
-                if (user) {
-                    user.stripeCustomerId = customerId;
-                    await user.save();
+            await User.updateOne(
+                { _id: userId },
+                {
+                    $set: {
+                        stripeCustomerId: customerId,
+                        subscription: 'pro',
+                        subscriptionType: isLifetime ? 'paidLifetime' : (mode === 'subscription' ? 'recurring' : 'oneTime'),
+                        subscriptionStartDate: new Date(),
+                        subscriptionEndDate: isLifetime ? null : (mode === 'subscription' ? new Date(session.current_period_end * 1000) : null)
+                    }
                 }
-            }
+            );
 
-            if (user) {
-                const subscription = await stripe.subscriptions.retrieve(invoice.subscription);
-                user.subscription = 'pro';
-
-                const isLifetime = subscription.items.data.some(item => item.price.id === lifetimePriceId);
-                user.subscriptionType = isLifetime ? 'paidLifetime' : 'recurring';
-
-                user.subscriptionStartDate = new Date(subscription.current_period_start * 1000);
-                user.subscriptionEndDate = isLifetime ? null : new Date(subscription.current_period_end * 1000);
-                await user.save();
-            }
-            break;
-        }
-        case 'payment_intent.succeeded': {
-            const paymentIntent = event.data.object;
-            const customerId = paymentIntent.customer;
-            const userId = paymentIntent.metadata.userId; // Extract user ID from metadata
-
-            let user = await User.findOne({ stripeCustomerId: customerId });
-            if (!user) {
-                user = await User.findById(userId); // Find user by ID if not found by customer ID
-                if (user) {
-                    user.stripeCustomerId = customerId;
-                    await user.save();
-                }
-            }
-
-            if (user) {
-                user.subscription = 'pro';
-
-                const isLifetime = paymentIntent.charges.data[0].invoice.lines.data.some(item => item.price.id === lifetimePriceId);
-                user.subscriptionType = isLifetime ? 'paidLifetime' : 'recurring';
-
-                user.subscriptionStartDate = new Date();
-                await user.save();
-            }
-            break;
-        }
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated': {
-            const subscription = event.data.object;
-            const customerId = subscription.customer;
-            const userId = subscription.metadata.userId; // Extract user ID from metadata
-
-            let user = await User.findOne({ stripeCustomerId: customerId });
-            if (!user) {
-                user = await User.findById(userId); // Find user by ID if not found by customer ID
-                if (user) {
-                    user.stripeCustomerId = customerId;
-                    await user.save();
-                }
-            }
-
-            if (user) {
-                user.subscription = 'pro';
-
-                const isLifetime = subscription.items.data.some(item => item.price.id === lifetimePriceId);
-                user.subscriptionType = isLifetime ? 'paidLifetime' : 'recurring';
-
-                user.subscriptionStartDate = new Date(subscription.current_period_start * 1000);
-                user.subscriptionEndDate = isLifetime ? null : new Date(subscription.current_period_end * 1000);
-                await user.save();
-            }
+            console.log(`User ${userId} updated successfully with subscriptionType: ${isLifetime ? 'paidLifetime' : (mode === 'subscription' ? 'recurring' : 'oneTime')}`);
             break;
         }
         case 'customer.subscription.deleted': {
             const subscription = event.data.object;
             const customerId = subscription.customer;
-            const userId = subscription.metadata.userId; // Extract user ID from metadata
 
-            const user = await User.findOne({ stripeCustomerId: customerId });
-            if (user) {
-                user.subscription = 'free';
-                user.subscriptionType = 'freeLifetime';
-                user.subscriptionStartDate = null;
-                user.subscriptionEndDate = null;
-                await user.save();
-            }
+            console.log(`Handling customer.subscription.deleted for customer ${customerId}`);
+
+            await User.updateOne(
+                { stripeCustomerId: customerId },
+                {
+                    $set: {
+                        subscription: 'free',
+                        subscriptionType: 'freeLifetime',
+                        subscriptionStartDate: null,
+                        subscriptionEndDate: null
+                    }
+                }
+            );
+
+            console.log(`User subscription cancelled for customer ${customerId}`);
             break;
         }
         default:
             console.log(`Unhandled event type ${event.type}`);
+            break;
     }
 
     res.json({ received: true });

@@ -1,12 +1,26 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
+import { getUserId } from '@/lib/user';
 
 interface PurchasePopUpProps {
   isOpen: boolean;
   onClose: () => void;
+  userId: string;
 }
 
-const PurchasePopUp: React.FC<PurchasePopUpProps> = ({ isOpen, onClose }) => {
+const PurchasePopUp: React.FC<PurchasePopUpProps> = ({ isOpen, onClose, userId }) => {
+  const formRef = useRef<HTMLFormElement>(null);
+  console.log('userId:', userId);
+  useEffect(() => {
+    if (formRef.current) {
+      const hiddenInput = formRef.current.querySelector('input[name="userId"]');
+      if (hiddenInput) {
+        hiddenInput.value = userId;
+        console.log('Set hidden input value:', hiddenInput.value);
+      }
+    }
+  }, [isOpen, userId]);
+
   if (!isOpen) return null;
 
   return (
@@ -16,7 +30,8 @@ const PurchasePopUp: React.FC<PurchasePopUpProps> = ({ isOpen, onClose }) => {
           X
         </button>
         <Image src={'/icons/purchase/purchased-card.png'} alt="Purchase Card" layout="fill" objectFit="contain" style={{ imageRendering: 'pixelated' }} />
-        <form action="http://localhost:8000/api/stripe/create-checkout-session" method="POST">
+        <form ref={formRef} action="http://localhost:8000/api/stripe/create-checkout-session" method="POST">
+          <input type="hidden" name="userId" value={userId} />
           <button type="submit" className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-[#FFA501] border border-white text-white px-4 rounded-lg hover:bg-white hover:text-[#FFA501] text-[50px] w-[550px] h-[70px]">
             PURCHASE
           </button>

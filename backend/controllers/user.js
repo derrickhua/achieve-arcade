@@ -232,7 +232,7 @@ export const login = async (req, res, next) => {
  */
 export const getUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user._id).select('username email preferences');
+        const user = await User.findById(req.user._id).select('username email preferences subscription subscriptionType');
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -366,6 +366,7 @@ export const getUserId = async (req, res, next) => {
         if (!userId) {
             return res.status(404).json({ error: 'User ID not found' });
         }
+        console.log("User ID:", userId);
         res.json({ userId });
     } catch (error) {
         next(error);
