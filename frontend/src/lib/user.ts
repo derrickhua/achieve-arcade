@@ -146,3 +146,20 @@ export async function deleteUser() {
     throw new Error('Failed to delete user profile');
   }
 }
+
+/**
+ * Retrieves the user's ID.
+ * Throws an error if there is a problem fetching the user ID from the database.
+ *
+ * @returns {Promise<string>} The user's ID.
+ * @throws {Error} If there is an issue with the API request.
+ */
+export async function getUserId() {
+  try {
+    const response = await api.get('/user-id');
+    return response.data.userId;
+  } catch (error) {
+    console.error('Error fetching user ID:', error);
+    throw new Error('Failed to fetch user ID');
+  }
+}

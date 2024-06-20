@@ -4,9 +4,11 @@ import { Info, MailQuestion, Settings, LogOut } from 'lucide-react';
 import SuggestionForm from '../forms/SuggestionForm'; // Adjust the path as needed
 import SettingsForm from '../forms/Settings';
 import LogoutConfirmationForm from '../forms/Logout';
+import PurchasePopUp from './PurchasePopUp'; // Import the new form
+
 import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-
+import './layout.css'
 interface TopbarProps {
   coins: number;
 }
@@ -14,6 +16,7 @@ interface TopbarProps {
 const Topbar: React.FC<TopbarProps> = ({ coins }) => {
   const [suggestions, setSuggestions] = useState(false);
   const [logout, setLogout] = useState(false);
+  const [purchase, setPurchase] = useState(false); // New state for PurchaseForm
 
   const [help, setHelp] = useState(false);
   const [settings, setSettings] = useState(false);
@@ -27,7 +30,8 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
         <p className='text-2xl text-[#FEFDF2] text-[50px] ml-4'>ACHIEVE ARCADE</p>
       </div>
       <div className="flex items-center mr-4">
-        <span className="flex items-center justify-end text-[#F2C94C] w-[100px] h-[30px] bg-[#FEFDF2] text-[20px] rounded-xl text-right px-3 space-x-1">
+      <button className='px-4 pro-button mr-4 text-[25px] rounded-md w-[150px] text-[#FEFDF2] tracking-[2px]' onClick={() => setPurchase(true)}>UPGRADE</button>
+      <span className="flex items-center justify-end text-[#F2C94C] w-[100px] h-[30px] bg-[#FEFDF2] text-[20px] rounded-xl text-right px-3 space-x-1">
           <p className='mt-1'>{coins}</p>
           <Image src={'/icons/coin.png'} alt={`coin icon`} width={20} height={20} quality={100} />
         </span>
@@ -47,6 +51,7 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
       {suggestions && <SuggestionForm isOpen={suggestions} onClose={() => setSuggestions(false)} />}
       {settings && <SettingsForm isOpen={settings} onClose={() => setSettings(false)} />}
       {logout && <LogoutConfirmationForm isOpen={logout} onClose={() => setLogout(false)} />}
+      {purchase && <PurchasePopUp isOpen={purchase} onClose={() => setPurchase(false)} />} {/* New PurchaseForm */}
 
     </div>
   );

@@ -1,10 +1,9 @@
 import express from 'express';
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import bodyParser from 'body-parser';
 import cors from 'cors';
-import Agenda from 'agenda';
 import cookieParser from 'cookie-parser';
+import Agenda from 'agenda';
 import { defineAndScheduleJobs } from './agendaJobs.js';
 import userRoutes from './routes/user.js';
 import habitRoutes from './routes/habit.js';
@@ -14,25 +13,36 @@ import dashboardRoutes from './routes/dashboard.js';
 import taskRoutes from './routes/task.js';
 import rewardRoutes from './routes/reward.js';
 import suggestionRoutes from './routes/suggestion.js';
+import stripeRoutes from './routes/stripe.js'; // Ensure this is imported
+import bodyParser from 'body-parser';
+
 dotenv.config();
 
 const app = express();
 
 // Enable CORS
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow only your frontend to access the backend
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Specify which methods are allowed
-  credentials: true // Allow cookies to be sent across domains (if using sessions or cookies)
+  origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  credentials: true
 }));
+
+// Use JSON parser for all non-webhook routes
+app.use((req, res, next) => {
+  if (req.originalUrl === '/api/stripe/webhook') {
+    next();
+  } else {
+    express.json()(req, res, next);
+  }
+});
 
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost/tempus');
 const db = mongoose.connection;
 
 // Initialize Agenda
-const agenda = new Agenda({db: {address: 'mongodb://localhost/tempus'}});
+const agenda = new Agenda({ db: { address: 'mongodb://localhost/tempus' } });
 
-// Define and schedule your jobs
 (async function() {
   await defineAndScheduleJobs(agenda);  
   await agenda.start();
@@ -44,8 +54,7 @@ db.once('open', function() {
 });
 
 // Middleware
-app.use(bodyParser.json());
-app.use(express.json());
+
 app.use(cookieParser());
 
 // Routes
@@ -57,46 +66,37 @@ app.use('/api/daily-schedule', dailyScheduleRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/rewards', rewardRoutes);
 app.use('/api/suggestions', suggestionRoutes);
+app.use('/api/stripe', stripeRoutes); // Include the stripe routes here
 
 // Error handler
 app.use((err, req, res, next) => {
   const errorDetails = {
-      path: req.path,
-      method: req.method,
-      message: err.message || 'Something went wrong.',
-      status: err.status || 500,
-      errorName: err.name,
-      clientMessage: 'Something went wrong.' // Default client message
+    path: req.path,
+    method: req.method,
+    message: err.message || 'Something went wrong.',
+    status: err.status || 500,
+    errorName: err.name,
+    clientMessage: 'Something went wrong.'
   };
 
-  // Handle specific types of errors with more context
   if (err.name === 'ValidationError') {
-      errorDetails.status = 400;
-      errorDetails.clientMessage = 'Validation failed.';
+    errorDetails.status = 400;
+    errorDetails.clientMessage = 'Validation failed.';
   } else if (err.name === 'CastError' && err.kind === 'ObjectId') {
-      errorDetails.status = 400;
-      errorDetails.clientMessage = 'Invalid identifier format.';
-  } else if (err.name === 'UnauthorizedError') { // Assuming a custom or JWT auth error
-      errorDetails.status = 401;
-      errorDetails.clientMessage = 'Unauthorized access.';
-  } else if (err.name === 'NotFoundError') { // Custom not found error
-      errorDetails.status = 404;
-      errorDetails.clientMessage = 'Resource not found.';
+    errorDetails.status = 400;
+    errorDetails.clientMessage = 'Invalid identifier format.';
+  } else if (err.name === 'UnauthorizedError') {
+    errorDetails.status = 401;
+    errorDetails.clientMessage = 'Unauthorized access.';
+  } else if (err.name === 'NotFoundError') {
+    errorDetails.status = 404;
+    errorDetails.clientMessage = 'Resource not found.';
   }
 
-  // Structured Logging
   console.error('API Error:', JSON.stringify(errorDetails));
-
-  // Send the error response
   res.status(errorDetails.status).json({ error: errorDetails.clientMessage });
 });
 
 // Start server
 const port = process.env.PORT || 8000;
 app.listen(port, () => console.log(`Server is running on port ${port}`));
-
-// Log memory usage every 30 seconds
-setInterval(() => {
-  const memoryUsage = process.memoryUsage();
-  console.log('Memory usage:', memoryUsage);
-}, 10000);

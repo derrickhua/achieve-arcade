@@ -148,8 +148,23 @@ export const register = async (req, res, next) => {
         email,
         password: hashedPassword,
         timezone,
-        coins: 50 // Initial starter coins
+        coins: 0 // Initial starter coins
       });
+  
+      // Count the number of pro users
+      const proUserCount = await User.countDocuments({ subscription: 'pro' });
+  
+      // Assign the subscription type based on the number of pro users
+      if (proUserCount < 50) {
+        newUser.subscription = 'pro';
+        newUser.subscriptionType = 'freeLifetime';
+      } else if (proUserCount < 100) {
+        newUser.subscription = 'pro';
+        newUser.subscriptionType = 'paidLifetime';
+      } else {
+        newUser.subscription = 'free';
+        newUser.subscriptionType = 'recurring';
+      }
   
       const tokens = generateTokens(newUser._id);
       newUser.refreshToken = tokens.refreshToken;
@@ -169,8 +184,7 @@ export const register = async (req, res, next) => {
       next(error);
     }
   };
-
-
+  
 /**
  * Authenticates a user based on email and password.
  * If authentication is successful, it generates and returns access and refresh tokens.
@@ -271,12 +285,12 @@ export const getUserCoins = async (req, res, next) => {
 
 
 /**
- * Update user's details including password, username, email, and preferences.
+ * Update user's details including password, username, email, preferences, subscription, and stripeCustomerId.
  * @param {Object} req - The request object containing new details.
  * @param {Object} res - The response object used to send back the status and updated user.
  */
 export const updateUser = async (req, res) => {
-    const { password, username, email, preferences } = req.body;
+    const { password, username, email, preferences, subscription, stripeCustomerId } = req.body;
 
     try {
         const user = await User.findById(req.user._id);  // Use req.user._id to find the user
@@ -301,12 +315,21 @@ export const updateUser = async (req, res) => {
             user.preferences = preferences;
         }
 
+        if (subscription) {
+            user.subscription = subscription;
+        }
+
+        if (stripeCustomerId) {
+            user.stripeCustomerId = stripeCustomerId;
+        }
+
         await user.save();
         res.status(200).json({ message: 'User updated successfully', user });
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
+
 
 
 /**
@@ -331,3 +354,20 @@ export const deleteUser = async (req, res, next) => {
     }
 };
 
+/**
+ * Retrieves the user's ID based on the user's authentication information.
+ *
+ * @param {Request} req - The request object containing the user's authentication information.
+ * @param {Response} res - The response object used to send back the user's ID.
+ */
+export const getUserId = async (req, res, next) => {
+    try {
+        const userId = req.user._id;
+        if (!userId) {
+            return res.status(404).json({ error: 'User ID not found' });
+        }
+        res.json({ userId });
+    } catch (error) {
+        next(error);
+    }
+};

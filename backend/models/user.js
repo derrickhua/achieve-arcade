@@ -8,12 +8,15 @@ const UserSchema = new Schema({
   refreshToken: { type: String },
   timezone: { type: String, required: true },
   preferences: {
-    workHoursPerWeek: { type: Number, required: true },
-    leisureHoursPerWeek: { type: Number, required: true },
-    familyFriendsHoursPerWeek: { type: Number, required: true },
-    atelicHoursPerWeek: { type: Number, required: true }
+    workHoursPerWeek: { type: Number},
+    leisureHoursPerWeek: { type: Number},
+    familyFriendsHoursPerWeek: { type: Number},
+    atelicHoursPerWeek: { type: Number}
   },
-  coins: { type: Number, default: 0 }
+  coins: { type: Number, default: 0 },
+  subscription: { type: String, default: 'free', enum: ['free', 'pro'] },
+  subscriptionType: { type: String, enum: ['freeLifetime', 'paidLifetime', 'recurring'] }, // new field
+  stripeCustomerId: { type: String }
 }, { timestamps: true });
 
 UserSchema.methods.awardCoins = function(coins) {
