@@ -22,8 +22,13 @@ const HabitFarmVisual: React.FC<{ habits: any[], selectedHabitId: string, onSele
   };
 
   const getPlantImage = (plant, streak) => {
-    const plantStage = (streak - 1) % 4 + 1; // Correct stage calculation
-    return `/icons/habit-farm/${plant}/${plant}(${plantStage}).png`;
+    if (streak === 0) {
+      return `/icons/habit-farm/beginning.png`;
+    } else {
+      const plantStage = (streak - 1) % 4 + 1; // Correct stage calculation
+      return `/icons/habit-farm/${plant}/${plant}(${plantStage}).png`;
+
+    }
   };
 
   return (

@@ -373,8 +373,13 @@ export default function LandingPage() {
                   <div className="third-col flex flex-col items-center h-[200px] text-left w-[250px]">
                     <div>
                       <div className="text-[#808080]">LEGAL</div>
-                      <div className="hover:text-[#FFA501] cursor-pointer">TERMS OF SERVICE</div>
-                      <div className="hover:text-[#FFA501] cursor-pointer">PRIVACY POLICY</div>
+                      <Link href='/terms-of-service' className="hover:text-[#FFA501] cursor-pointer">
+                      TERMS OF SERVICE
+                      </Link>
+                      <Link href='/privacy-policy' className="block hover:text-[#FFA501] cursor-pointer">
+                      PRIVACY POLICY
+                      </Link>
+                    
 
                     </div>
                   </div>

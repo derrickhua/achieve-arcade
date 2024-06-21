@@ -8,19 +8,21 @@ export async function middleware(request: NextRequest) {
   const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
   const isRootPath = request.nextUrl.pathname === '/';
   const isRegisterProPath = request.nextUrl.pathname === '/auth/register-pro';
+  const tosPath = request.nextUrl.pathname === '/auth/terms-of-service';
+  const privacyPath = request.nextUrl.pathname === '/auth/privacy-policy';
   const isRegisterPath = request.nextUrl.pathname === '/auth/register';
   const isSigninPath = request.nextUrl.pathname === '/auth/signin';
   const isDashboardPath = request.nextUrl.pathname === '/dashboard';
 
   if (token) {
-    if (isSigninPath || isRegisterPath || isRootPath) {
+    if (isSigninPath || isRegisterPath || isRegisterProPath) {
       // If authenticated and trying to access sign-in, register or root, redirect to dashboard
       const url = request.nextUrl.clone();
       url.pathname = '/dashboard';
       return NextResponse.redirect(url);
     }
   } else {
-    if (!isAuthPath && !isRootPath && !isRegisterPath && !isSigninPath && !isRegisterProPath) {
+    if (!isAuthPath && !isRootPath && !isRegisterPath && !isSigninPath && !isRegisterProPath && !tosPath && !privacyPath) {
       // If not authenticated and trying to access protected routes, redirect to sign-in
       const url = request.nextUrl.clone();
       url.pathname = '/auth/signin';
