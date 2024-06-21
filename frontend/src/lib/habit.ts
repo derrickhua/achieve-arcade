@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
-// Create an axios instance configured for your API base URL
+// Create an axios instance configured for your API base URL for habits
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: `${process.env.NEXT_PUBLIC_API_BASE_URL}/habits`,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
-  const session = await getSession();
+  const session: any = await getSession();
   if (session?.accessToken) {
     config.headers.authorization = `Bearer ${session.accessToken}`;
   } else {
@@ -23,13 +23,22 @@ api.interceptors.request.use(async (config) => {
   return Promise.reject(error);
 });
 
+// Fetch all habits
 export const getHabits = async () => {
-  return api.get('/habits');
+  try {
+    const response = await api.get('/');
+    console.log('Fetched habits:', response.data); // Add logging
+    return response.data || []; // Ensure it returns an empty array if response.data is undefined
+  } catch (error) {
+    console.error('Error fetching habits:', error.response ? error.response.data : error.message);
+    throw error; // Rethrow to handle it in the component
+  }
 };
 
+// Add a new habit
 export const addHabit = async (habitData) => {
   try {
-    const response = await api.post('/habits', habitData);
+    const response = await api.post('/', habitData);
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -47,7 +56,7 @@ export const addHabit = async (habitData) => {
 // Simplified API method to update habit completions for today
 export const updateHabitCompletion = async (habitId, completionChange, date) => {
   try {
-    const response = await api.post(`/habits/${habitId}/update`, {
+    const response = await api.post(`/${habitId}/update`, {
       completionChange,
       date
     });
@@ -60,10 +69,10 @@ export const updateHabitCompletion = async (habitId, completionChange, date) => 
 
 // API method to update a habit
 export const updateHabit = async (habitId, updateData) => {
-  return api.put(`/habits/${habitId}`, updateData);  
+  return api.put(`/${habitId}`, updateData).then(response => response.data);  
 };
 
 // API method to delete a habit
 export const deleteHabit = async (habitId) => {
-  return api.delete(`/habits/${habitId}`);  
+  return api.delete(`/${habitId}`).then(response => response.data);  
 };

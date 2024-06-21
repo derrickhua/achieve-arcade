@@ -37,7 +37,7 @@ export interface TimeBlockUpdateData {
 
 // Create an axios instance configured for your API base URL for daily schedules
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/daily-schedule',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL + '/daily-schedule',
   headers: {
     'Content-Type': 'application/json',
   }

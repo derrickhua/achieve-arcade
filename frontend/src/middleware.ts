@@ -3,13 +3,13 @@ import type { NextRequest } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 
 export async function middleware(request: NextRequest) {
-  const token = await getToken({ req: request, secret: process.env.JWT_SECRET });
+  const token = await getToken({ req: request, secret: process.env.NEXT_PUBLIC_JWT_SECRET });
 
   const isAuthPath = request.nextUrl.pathname.startsWith('/auth');
   const isRootPath = request.nextUrl.pathname === '/';
   const isRegisterProPath = request.nextUrl.pathname === '/auth/register-pro';
-  const tosPath = request.nextUrl.pathname === '/auth/terms-of-service';
-  const privacyPath = request.nextUrl.pathname === '/auth/privacy-policy';
+  const tosPath = request.nextUrl.pathname === '/terms-of-service';
+  const privacyPath = request.nextUrl.pathname === '/privacy-policy';
   const isRegisterPath = request.nextUrl.pathname === '/auth/register';
   const isSigninPath = request.nextUrl.pathname === '/auth/signin';
   const isDashboardPath = request.nextUrl.pathname === '/dashboard';

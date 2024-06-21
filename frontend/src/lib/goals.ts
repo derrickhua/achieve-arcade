@@ -41,7 +41,7 @@ export interface MilestoneUpdateData {
 
 // Create an axios instance configured for your API base URL for goals
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/goals',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL + '/goals',
   headers: {
     'Content-Type': 'application/json',
   }

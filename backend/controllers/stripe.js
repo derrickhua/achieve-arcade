@@ -89,21 +89,21 @@ export const cancelSubscription = async (req, res) => {
         const maxTasks = 4;
 
         // Delete extra active goals
-        const activeGoals = await Goal.find({ user: req.user._id, completed: false });
+        const activeGoals = await Goal.find({ user: req.user._id, completed: false }).sort({ createdAt: 1 });
         if (activeGoals.length > maxGoals) {
             const goalsToDelete = activeGoals.slice(0, activeGoals.length - maxGoals);
             await Goal.deleteMany({ _id: { $in: goalsToDelete.map(goal => goal._id) } });
         }
 
         // Delete extra active habits
-        const activeHabits = await Habit.find({ user: req.user._id });
+        const activeHabits = await Habit.find({ user: req.user._id }).sort({ createdAt: 1 });
         if (activeHabits.length > maxHabits) {
             const habitsToDelete = activeHabits.slice(0, activeHabits.length - maxHabits);
             await Habit.deleteMany({ _id: { $in: habitsToDelete.map(habit => habit._id) } });
         }
 
         // Delete extra active tasks
-        const activeTasks = await Task.find({ userId: req.user._id, completed: false });
+        const activeTasks = await Task.find({ userId: req.user._id, completed: false }).sort({ createdAt: 1 });
         if (activeTasks.length > maxTasks) {
             const tasksToDelete = activeTasks.slice(0, activeTasks.length - maxTasks);
             await Task.deleteMany({ _id: { $in: tasksToDelete.map(task => task._id) } });
@@ -129,8 +129,6 @@ export const cancelSubscription = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-
 
 export const refundAllPayments = async (req, res) => {
     try {

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getSession } from 'next-auth/react';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/suggestions',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL + '/suggestions',
   headers: {
     'Content-Type': 'application/json',
   }

@@ -8,7 +8,6 @@ import User from '../models/user.js';
  * @param {Response} res - The response object used to return the status and created habit.
  */
 export const addHabit = async (req, res, next) => {
-    console.log("User ID from req.user:", req.user._id); // Check if user ID is available
     const { name, habitPeriod, goal, effectiveDate, difficulty } = req.body;
 
     // Validate input data
@@ -41,7 +40,6 @@ export const addHabit = async (req, res, next) => {
             difficulty
         });
         await newHabit.save();
-        console.log('New habit added:', newHabit);
         res.status(201).json(newHabit);
     } catch (error) {
         console.error('API Error:', error);

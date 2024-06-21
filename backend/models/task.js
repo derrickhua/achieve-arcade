@@ -54,7 +54,6 @@ TaskSchema.methods.completeTask = async function() {
     { $inc: { coins: coins } }
   );
 
-  console.log(`User ${this.userId} awarded ${coins} coins.`);
 };
 
 const Task = mongoose.model('Task', TaskSchema);

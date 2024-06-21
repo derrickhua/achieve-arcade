@@ -2,7 +2,7 @@ import React from 'react';
 import Image from 'next/image'; // Import Next.js Image component
 import { updateHabitCompletion } from '@/lib/habit'; // Import the function to update completions
 
-const HabitFarmVisual: React.FC<{ habits: any[], selectedHabitId: string, onSelectHabit: (habit: any) => void, handleCompletionUpdate: (habit: any, newCount: number) => void }> = ({ habits, selectedHabitId, onSelectHabit, handleCompletionUpdate }) => {
+const HabitFarmVisual: React.FC<{ habits: any[], selectedHabitId: string, onSelectHabit: (habit: any) => void, handleCompletionUpdate: (habit: any, newCount: number) => void }> = ({ habits = [], selectedHabitId, onSelectHabit, handleCompletionUpdate }) => {
   const handleIncrement = async (habit) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);

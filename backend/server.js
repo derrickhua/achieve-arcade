@@ -3,8 +3,6 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import Agenda from 'agenda';
-import { defineAndScheduleJobs } from './agendaJobs.js';
 import userRoutes from './routes/user.js';
 import habitRoutes from './routes/habit.js';
 import goalRoutes from './routes/goal.js';
@@ -15,6 +13,12 @@ import rewardRoutes from './routes/reward.js';
 import suggestionRoutes from './routes/suggestion.js';
 import stripeRoutes from './routes/stripe.js'; // Ensure this is imported
 import bodyParser from 'body-parser';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -22,7 +26,7 @@ const app = express();
 
 // Enable CORS
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000', // Allow requests from frontend
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   credentials: true
 }));
@@ -40,16 +44,9 @@ app.use((req, res, next) => {
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost/tempus');
+const mongoUri = process.env.MONGODB_URI;
+mongoose.connect(mongoUri);
 const db = mongoose.connection;
-
-// Initialize Agenda
-const agenda = new Agenda({ db: { address: 'mongodb://localhost/tempus' } });
-
-(async function() {
-  await defineAndScheduleJobs(agenda);  
-  await agenda.start();
-})();
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
@@ -57,7 +54,6 @@ db.once('open', function() {
 });
 
 // Middleware
-
 app.use(cookieParser());
 
 // Routes
@@ -70,6 +66,13 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/rewards', rewardRoutes);
 app.use('/api/suggestions', suggestionRoutes);
 app.use('/api/stripe', stripeRoutes); // Include the stripe routes here
+
+app.use(express.static(path.join(__dirname, '../frontend/out')));
+
+// Anything that doesn't match the above, send back the index.html file
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/out/index.html'));
+});
 
 // Error handler
 app.use((err, req, res, next) => {

@@ -25,9 +25,9 @@ export const addTask = async (req, res, next) => {
       }
 
       if (user.subscriptionType !== 'pro') {
-          const taskCount = await Task.countDocuments({ userId: req.user._id });
-          if (taskCount >= 4) {
-              return res.status(400).json({ message: 'Free tier users can only have a maximum of 4 tasks' });
+          const uncompletedTaskCount = await Task.countDocuments({ userId: req.user._id, completed: false });
+          if (uncompletedTaskCount >= 4) {
+              return res.status(400).json({ message: 'Free tier users can only have a maximum of 4 uncompleted tasks' });
           }
       }
 
@@ -44,6 +44,7 @@ export const addTask = async (req, res, next) => {
       res.status(500).json({ message: 'Something went wrong while creating the task', error: error.message });
   }
 };
+
 
 /**
  * Retrieves the number of completed tasks and all uncompleted tasks for the user.

@@ -11,7 +11,7 @@ const config = {
     './components/**/*.{ts,tsx}',
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
-    "./node_modules/flowbite/**/*.js",
+  
 
     
 	],
@@ -83,7 +83,6 @@ const config = {
   },
   plugins: [
     require("tailwindcss-animate"),
-    require('flowbite/plugin'),
     addVariablesForColors,
   ],
 } satisfies Config

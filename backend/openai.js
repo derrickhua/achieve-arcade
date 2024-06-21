@@ -60,8 +60,14 @@ export async function getMilestones(message) {
     const jsonString = threadMessages.data[0].content[0].text.value;
 
     // Parse the JSON string
-    const milestones = JSON.parse(jsonString);
-    return milestones;
+    try {
+      const milestones = JSON.parse(jsonString);
+      return milestones;
+    } catch (jsonParseError) {
+      console.error('Error parsing JSON string:', jsonParseError.message);
+      console.error('JSON content:', jsonString);
+      throw new Error('Failed to parse JSON from OpenAI response');
+    }
   } catch (error) {
     console.error('Error in getMilestones:', error);
   } finally {

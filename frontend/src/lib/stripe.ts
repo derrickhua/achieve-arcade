@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
-import { getUserId } from './user';
+
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/stripe',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL + '/stripe',
   headers: {
     'Content-Type': 'application/json',
   }

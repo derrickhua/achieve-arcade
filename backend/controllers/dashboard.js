@@ -64,17 +64,23 @@ export const calculateMetrics = async (req, res, next) => {
               {
                 $multiply: [
                   {
-                    $divide: [
+                    $cond: [
+                      { $eq: [{ $size: '$taskDetails' }, 0] },
+                      0,
                       {
-                        $size: {
-                          $filter: {
-                            input: '$taskDetails',
-                            as: 'task',
-                            cond: { $eq: ['$$task.completed', true] },
+                        $divide: [
+                          {
+                            $size: {
+                              $filter: {
+                                input: '$taskDetails',
+                                as: 'task',
+                                cond: { $eq: ['$$task.completed', true] },
+                              },
+                            },
                           },
-                        },
+                          { $size: '$taskDetails' },
+                        ],
                       },
-                      { $size: '$taskDetails' },
                     ],
                   },
                   100,

@@ -3,7 +3,7 @@ import { getSession } from 'next-auth/react';
 
 // Create an axios instance configured for your API base URL for dashboard metrics
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/dashboard',
+  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL + '/dashboard',
   headers: {
     'Content-Type': 'application/json',
   }

@@ -9,6 +9,7 @@ import DeleteHabitForm from '../forms/DeleteHabit';
 import { getHabits, updateHabitCompletion } from '@/lib/habit';
 import Image from 'next/image';
 import LoadingComponent from './LoadingComponent';
+
 const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [habits, setHabits] = useState([]);
   const [selectedHabit, setSelectedHabit] = useState(null);
@@ -19,10 +20,16 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
   const fetchHabits = async () => {
     try {
-      const { data } = await getHabits();
+      const data = await getHabits();
+    
+      if (!Array.isArray(data)) {
+        console.error('Fetched data is not an array:', data);
+        throw new Error('Fetched data is not an array');
+      }
+
       setHabits(data);
       fetchCoins(); // Fetch coins after updating habits
-      
+
       if (data.length > 0) {
         // Check if the currently selected habit still exists
         if (selectedHabit) {
@@ -54,8 +61,14 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
     try {
       await updateHabitCompletion(habit._id, newCount, new Date().toISOString());
       const updatedHabits = await getHabits(); // Fetch updated habits
-      setHabits(updatedHabits.data);
-      const updatedHabit = updatedHabits.data.find(h => h._id === habit._id);
+
+      if (!Array.isArray(updatedHabits)) {
+        console.error('Fetched updated data is not an array:', updatedHabits);
+        throw new Error('Fetched updated data is not an array');
+      }
+
+      setHabits(updatedHabits);
+      const updatedHabit = updatedHabits.find(h => h._id === habit._id);
       setSelectedHabit(updatedHabit); // Update the selected habit with the new data
       fetchCoins(); // Fetch coins after updating habits
     } catch (error) {
@@ -78,6 +91,7 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   if (loading) {
     return <LoadingComponent />;
   }
+
 
   return (
     <div className="p-8 h-full overflow-auto flex flex-col items-center w-full">

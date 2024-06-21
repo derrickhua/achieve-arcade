@@ -116,9 +116,9 @@ const authHandler = NextAuth({
       return session;
     }
   },  
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   jwt: {
-    secret: process.env.JWT_SECRET,
+    secret: process.env.NEXT_PUBLIC_JWT_SECRET,
   },
 });
 
