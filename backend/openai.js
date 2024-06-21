@@ -8,6 +8,9 @@ const openai = new OpenAI({
 });
 
 export async function getMilestones(message) {
+  let timeoutId;
+  let intervalId;
+
   try {
     // Create and start the run
     const run = await openai.beta.threads.createAndRun({
@@ -23,9 +26,6 @@ export async function getMilestones(message) {
     // Get the IDs of the thread and run
     const thread_id = run.thread_id;
     const run_id = run.id;
-
-    let timeoutId;
-    let intervalId;
 
     // Set a timeout for the run
     const timeout = new Promise((resolve, reject) => {
@@ -57,10 +57,7 @@ export async function getMilestones(message) {
     const threadMessages = await openai.beta.threads.messages.list(thread_id);
 
     // Log the content before parsing
-    console.log('Received thread message content:', threadMessages.data[0].content);
-
     const jsonString = threadMessages.data[0].content[0].text.value;
-    console.log('JSON string to parse:', jsonString);
 
     // Parse the JSON string
     const milestones = JSON.parse(jsonString);

@@ -68,15 +68,16 @@ export const getAllGoals = async (): Promise<Goal[]> => {
 
 // Create a new goal 
 export const createGoal = async (goalData: Goal): Promise<Goal> => {
-    try {
-        const response = await api.post('/', goalData);
-        console.log('Goal created successfully:', response.data);
-        return response.data;  // Return only the response data containing the goal
-    } catch (error: any) {
-        console.error('Error creating goal:', error.response ? error.response.data : error.message);
-        throw error;  // Re-throw the error for handling in the calling function
-    }
+  try {
+    const response = await api.post('/', goalData);
+    console.log('Goal created successfully:', response.data);
+    return response.data;  // Return only the response data containing the goal
+  } catch (error: any) {
+    console.error('Error creating goal:', error.response ? error.response.data : error.message);
+    throw new Error(error.response?.data?.message || error.message || 'Error creating goal');
+  }
 };
+
 
 // Update a specific goal
 export const updateGoal = async (goalId: string, updateData: GoalUpdateData): Promise<Goal> => {

@@ -104,7 +104,7 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
     if (!validateForm()) {
       return;
     }
-
+  
     const goalData: Goal = {
       title,
       description,
@@ -112,7 +112,7 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
       category,
       difficulty,
     };
-
+  
     try {
       await createGoal(goalData);
       await fetchGoals();
@@ -124,12 +124,13 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
       setShowAlert(true);
       setAlertMessage('Goal added successfully!');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create goal:', error);
       setShowAlert(true);
-      setAlertMessage('Error adding goal. Please try again.');
+      setAlertMessage(error.message || 'Error adding goal. Please try again.');
     }
   };
+  
 
   if (!isOpen) return null;
 

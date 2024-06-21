@@ -13,9 +13,9 @@ export const addHabit = async (req, res, next) => {
 
     // Validate input data
     if (!name || !habitPeriod || !goal || !effectiveDate || !difficulty) {
-        const error = new Error('All fields (name, habitPeriod, goal, effectiveDate, difficulty) must be provided');
-        error.status = 400; // Set the HTTP status for the error
-        return next(error);
+        return res.status(400).json({
+            message: 'All fields (name, habitPeriod, goal, effectiveDate, difficulty) must be provided'
+        });
     }
 
     try {
@@ -24,9 +24,9 @@ export const addHabit = async (req, res, next) => {
         if (user.subscriptionType !== 'pro') {
             const habitCount = await Habit.countDocuments({ user: req.user._id });
             if (habitCount >= 2) {
-                const error = new Error('Free tier users can only have a maximum of 2 habits');
-                error.status = 400;
-                return next(error);
+                return res.status(400).json({
+                    message: 'Free tier users can only have a maximum of 2 habits'
+                });
             }
         }
 
@@ -44,8 +44,11 @@ export const addHabit = async (req, res, next) => {
         console.log('New habit added:', newHabit);
         res.status(201).json(newHabit);
     } catch (error) {
-        // Pass any server-side errors to the error handling middleware
-        next(error);
+        console.error('API Error:', error);
+        res.status(500).json({
+            message: 'Something went wrong while creating the habit',
+            error: error.message
+        });
     }
 };
 

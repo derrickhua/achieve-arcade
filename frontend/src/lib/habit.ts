@@ -3,7 +3,7 @@ import { getSession } from 'next-auth/react';
 
 // Create an axios instance configured for your API base URL
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api/habits',
+  baseURL: 'http://localhost:8000/api',
   headers: {
     'Content-Type': 'application/json',
   }
@@ -24,23 +24,30 @@ api.interceptors.request.use(async (config) => {
 });
 
 export const getHabits = async () => {
-  return api.get('/');
+  return api.get('/habits');
 };
 
 export const addHabit = async (habitData) => {
   try {
-    const response = await api.post('/', habitData);  
-    return response;
+    const response = await api.post('/habits', habitData);
+    return response.data;
   } catch (error) {
-    console.error('Error adding habit:', error.response ? error.response.data : error.message);
-    throw error;
+    if (error.response) {
+      // Handle specific error messages from the backend
+      const { data } = error.response;
+      console.error('Error adding habit:', data.message);
+      throw new Error(data.message || 'An error occurred while adding the habit');
+    } else {
+      console.error('Error adding habit:', error.message);
+      throw new Error(error.message || 'An error occurred while adding the habit');
+    }
   }
 };
 
 // Simplified API method to update habit completions for today
 export const updateHabitCompletion = async (habitId, completionChange, date) => {
   try {
-    const response = await api.post(`/${habitId}/update`, {
+    const response = await api.post(`/habits/${habitId}/update`, {
       completionChange,
       date
     });
@@ -53,10 +60,10 @@ export const updateHabitCompletion = async (habitId, completionChange, date) => 
 
 // API method to update a habit
 export const updateHabit = async (habitId, updateData) => {
-  return api.put(`/${habitId}`, updateData);  
+  return api.put(`/habits/${habitId}`, updateData);  
 };
 
 // API method to delete a habit
 export const deleteHabit = async (habitId) => {
-  return api.delete(`/${habitId}`);  
+  return api.delete(`/habits/${habitId}`);  
 };

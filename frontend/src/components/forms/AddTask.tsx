@@ -62,10 +62,10 @@ const AddTaskForm: React.FC<AddTaskFormProps> = ({ isOpen, onClose, fetchTasks }
       setShowAlert(true);
       setAlertMessage('Task added successfully!');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create task:', error);
       setShowAlert(true);
-      setAlertMessage('Error adding task. Please try again.');
+      setAlertMessage(error.message || 'Error adding task. Please try again.');
     }
   };
 

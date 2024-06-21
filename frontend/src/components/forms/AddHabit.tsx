@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { addHabit } from '@/lib/habit';
 
@@ -89,10 +88,10 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
       setShowAlert(true);
       setAlertMessage('Habit added successfully!');
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create habit:', error);
       setShowAlert(true);
-      setAlertMessage('Error adding habit. Please try again.');
+      setAlertMessage(error.message || 'Error adding habit. Please try again.');
     }
   };
 
@@ -133,24 +132,24 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="Daily">Daily</SelectItem>
-                <SelectItem value="Weekly">Weekly</SelectItem>
+                <SelectItem value="Weekly">Weekly">Weekly</SelectItem>
                 </SelectContent>
             </Select>
-            </div>
+          </div>
 
-            <div className="mb-4">
-                <label className="block text-black text-[25px]" htmlFor="consistencyGoal">Consistency Goal</label>
-                <p className='text-[20px] text-[#BDBDBD] mb-2'>The # of times you aim to do the habit within the chosen habit period</p>
-                <input
-                    className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
-                    type="number"
-                    id="consistencyGoal"
-                    value={consistencyGoal}
-                    onChange={(e) => setConsistencyGoal(Number(e.target.value))}
-                    min="1"
-                    required
-                />
-            </div>
+          <div className="mb-4">
+            <label className="block text-black text-[25px]" htmlFor="consistencyGoal">Consistency Goal</label>
+            <p className='text-[20px] text-[#BDBDBD] mb-2'>The # of times you aim to do the habit within the chosen habit period</p>
+            <input
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
+              type="number"
+              id="consistencyGoal"
+              value={consistencyGoal}
+              onChange={(e) => setConsistencyGoal(Number(e.target.value))}
+              min="1"
+              required
+            />
+          </div>
           <div className="">
             <label className="block text-black text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
             <Select onValueChange={setDifficulty} value={difficulty}>

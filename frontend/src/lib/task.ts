@@ -36,10 +36,10 @@ export const getTasks = async () => {
 export const addTask = async (taskData) => {
   try {
     const response = await api.post('/', taskData);
-    return response;
+    return response.data; // Return only the response data containing the task
   } catch (error) {
     console.error('Error adding task:', error.response ? error.response.data : error.message);
-    throw error;
+    throw new Error(error.response?.data?.message || error.message || 'Error adding task'); // Re-throw the error with the proper message
   }
 };
 

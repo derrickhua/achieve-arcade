@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import Task from '../models/task.js';
 import { DailySchedule, TimeBlock } from '../models/dailySchedule.js';
 import User from '../models/user.js';
+
 /**
  * Creates a new task for the user based on the provided details.
  * Validates the required fields and adds the task to the database.
@@ -13,20 +14,20 @@ export const addTask = async (req, res, next) => {
 
   // Validate input data
   if (!name) {
-      const error = new Error('Task name is required');
-      error.status = 400;
-      return next(error);
+      return res.status(400).json({ message: 'Task name is required' });
   }
 
   try {
       const user = await User.findById(req.user._id);
 
+      if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+      }
+
       if (user.subscriptionType !== 'pro') {
           const taskCount = await Task.countDocuments({ userId: req.user._id });
           if (taskCount >= 4) {
-              const error = new Error('Free tier users can only have a maximum of 4 tasks');
-              error.status = 400;
-              return next(error);
+              return res.status(400).json({ message: 'Free tier users can only have a maximum of 4 tasks' });
           }
       }
 
@@ -35,10 +36,12 @@ export const addTask = async (req, res, next) => {
           name,
           difficulty
       });
+
       await newTask.save();
       res.status(201).json(newTask);
   } catch (error) {
-      next(error);
+      console.error('Error creating task:', error);
+      res.status(500).json({ message: 'Something went wrong while creating the task', error: error.message });
   }
 };
 
