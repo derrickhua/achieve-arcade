@@ -9,7 +9,7 @@ import { Input } from "../../../components/ui/input";
 import { Label } from "../../../components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { getSession, signIn } from "next-auth/react";
-import axios from 'axios';
+
 
 interface UserData {
   username: string;
