@@ -44,7 +44,7 @@ const UserWelcomeForm = ({ onClose }) => {
             <Image src="/logo/logo.png" width={154} height={216} alt="arcade" />
             <div className='w-full'>
                 <p className="text-[30px] leading-none mb-4">I&apos;m excited to have you here!</p>
-                <p className="text-[25px]  mb-4">Before you get started, please tell me how many hours a week you'll dedicate to each activity category.</p>
+                <p className="text-[25px]  mb-4">Before you get started, please tell me how many hours a week you&apos;ll dedicate to each activity category.</p>
             </div>
         </div>
         <div className="flex flex-wrap justify-between mb-4 mt-4">

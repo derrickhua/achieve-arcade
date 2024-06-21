@@ -6,6 +6,10 @@
       "postinstall": "cd frontend && npm install && cd ../backend && npm install",
       "heroku-postbuild": "cd frontend && npm run build",
       "start": "cd backend && npm start"
+    },
+    "engines": {
+        "node": "21.7.3"
     }
+
   }
   

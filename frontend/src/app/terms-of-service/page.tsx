@@ -93,7 +93,8 @@ const TermsOfService: React.FC = () => {
           <section>
             <h2 className="text-2xl ">10. Disclaimers and Limitation of Liability</h2>
             <p>
-              Achieve Arcade is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not warrant that the app will be uninterrupted or error-free. To the fullest extent permitted by law, Achieve Arcade disclaims all warranties, express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
+              Achieve Arcade is provided &quot;as is&quot; and &quot;as available&quot; without warranties of any kind, either express or implied. We do not warrant that the app will be uninterrupted or error-free. 
+              To the fullest extent permitted by law, Achieve Arcade disclaims all warranties, express or implied, including but not limited to implied warranties of merchantability, fitness for a particular purpose, and non-infringement.
             </p>
             <p>
               In no event shall Achieve Arcade be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses, resulting from:
@@ -107,7 +108,8 @@ const TermsOfService: React.FC = () => {
           <section>
             <h2 className="text-2xl ">11. Indemnification</h2>
             <p>
-              You agree to indemnify and hold harmless Achieve Arcade and its affiliates, officers, agents, employees, and partners from any claims, liabilities, damages, losses, and expenses, including reasonable attorney's fees, arising out of or in any way connected with your use of the app, your violation of these Terms of Service, or your violation of any rights of another.
+              You agree to indemnify and hold harmless Achieve Arcade and its affiliates, officers, agents, employees, and partners from any claims, liabilities, damages, losses, and expenses, including 
+              reasonable attorney&apos;s fees, arising out of or in any way connected with your use of the app, your violation of these Terms of Service, or your violation of any rights of another.
             </p>
           </section>
           <section>

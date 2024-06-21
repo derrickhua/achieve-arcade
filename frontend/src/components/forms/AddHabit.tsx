@@ -132,7 +132,7 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
                 </SelectTrigger>
                 <SelectContent>
                 <SelectItem value="Daily">Daily</SelectItem>
-                <SelectItem value="Weekly">Weekly">Weekly</SelectItem>
+                <SelectItem value="Weekly">Weekly</SelectItem>
                 </SelectContent>
             </Select>
           </div>

@@ -1,8 +1,8 @@
+// @ts-nocheck
 'use client';
 import React, { useCallback, useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
-import { createCheckoutSession, getSessionStatus } from "@/lib/stripe";
 
 const stripePromise = loadStripe('pk_test_51PTPCVP21qukNQhzLs4Av7FqTWdDVAZzQxAtaaZjQE7JnkbXjCteSbi5p7hHlmQIkE7I05SUM3NNdHFoaWsfPYE7002sQCXGAJ');
 

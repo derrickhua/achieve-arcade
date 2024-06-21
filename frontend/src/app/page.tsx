@@ -87,7 +87,7 @@ export default function LandingPage() {
 
               <div className="mt-[80px] flex flex-col text-[15px] items-center md:items-start">
                 <div>
-                  "THIS IS WHAT I&apos;VE BEEN LOOKING FOR!" <br/>
+                  &quot;THIS IS WHAT I&apos;VE BEEN LOOKING FOR!&quot; <br/>
                 </div>
                 <div className="flex items-center mt-2">
                   <div className="rounded-3xl bg-white w-10 h-10 inline-block mr-2"></div>

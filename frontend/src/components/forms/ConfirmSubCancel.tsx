@@ -30,7 +30,7 @@ const ConfirmSubscriptionCancelForm: React.FC<ConfirmSubscriptionCancelFormProps
         </button>
         <h2 className="text-[30px] mb-4 text-[#EB5757]">Confirm Cancellation</h2>
         <p className="text-[20px] mb-8">
-            Once you click confirm, your last subscription payment will be refunded, and your excess goals, habits, and tasks will be deleted in accordance with the free plan's limit.
+            Once you click confirm, your last subscription payment will be refunded, and your excess goals, habits, and tasks will be deleted in accordance with the free plan&apos;s limit.
         </p>
         <div className="flex justify-end space-x-4">
           <button
