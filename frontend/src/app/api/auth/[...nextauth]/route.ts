@@ -93,11 +93,9 @@ const authHandler = NextAuth({
         token.accessTokenExpires = user.accessTokenExpires; 
         token.userId = user.userId; // Include userId in the token
     }
-      console.log(token.accessTokenExpires, Date.now());
       // Refresh token if it has expired
       if (token.accessTokenExpires && Date.now() > token.accessTokenExpires) {
         const refreshedToken = await refreshAccessToken(token.refreshToken); // Use the existing refresh token to obtain a new one
-        console.log(refreshedToken)
         if (refreshedToken.accessToken) {
           token.accessToken = refreshedToken.accessToken;
           token.accessTokenExpires = refreshedToken.accessTokenExpires; // Update the expiration time

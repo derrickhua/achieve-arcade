@@ -3,12 +3,12 @@ import { useState, useRef } from 'react';
 import Image from 'next/image';
 
 const images = [
-  { src: '/icons/landing/images/heart.png', alt: 'Heart', width: 27, height: 25, style: {}, video: 'player-data.mp4' },
-  { src: '/icons/landing/images/warrior.png', alt: 'Warrior', width: 100, height: 100, style: { top: '4px' }, video: 'goal-knight.mp4' },
-  { src: '/icons/landing/images/sunflower.png', alt: 'Sunflower', width: 30, height: 30, style: {}, video: 'habit-farm.mp4' },
-  { src: '/icons/landing/images/knight.png', alt: 'Knight', width: 33, height: 59, style: { top: '5px' }, video: 'task-slayer.mp4' },
-  { src: '/icons/landing/images/calendar.png', alt: 'Calendar', width: 42, height: 35, style: {}, video: 'daily-sched.mp4' },
-  { src: '/icons/landing/images/gold-chest.png', alt: 'Gold Chest', width: 72, height: 48, style: { top: '15px', left: '19px' }, video: 'rewards.mp4' },
+  { src: '/icons/landing/images/heart.png', alt: 'Heart', width: 40, height: 40, mobileWidth: 30, mobileHeight: 30, style: {}, video: 'player-data.mp4' },
+  { src: '/icons/landing/images/warrior.png', alt: 'Warrior', width: 60, height: 60, mobileWidth: 60, mobileHeight: 60, style: { top: '4px' }, video: 'goal-knight.mp4' },
+  { src: '/icons/landing/images/sunflower.png', alt: 'Sunflower', width: 40, height: 40, mobileWidth: 30, mobileHeight: 30, style: {}, video: 'habit-farm.mp4' },
+  { src: '/icons/landing/images/knight.png', alt: 'Knight', width: 50, height: 80, mobileWidth: 25, mobileHeight: 55, style: { top: '5px' }, video: 'task-slayer.mp4' },
+  { src: '/icons/landing/images/calendar.png', alt: 'Calendar', width: 60, height: 50, mobileWidth: 25, mobileHeight: 35, style: {}, video: 'daily-sched.mp4' },
+  { src: '/icons/landing/images/gold-chest.png', alt: 'Gold Chest', width: 72, height: 48, mobileWidth: 54, mobileHeight: 36, style: { top: '15px', left: '19px' }, video: 'rewards.mp4' },
 ];
 
 const FeatureSelect = () => {
@@ -22,8 +22,8 @@ const FeatureSelect = () => {
   };
 
   return (
-    <div className="feature-select flex flex-col items-center mt-8">
-      <div className="flex flex-wrap justify-center space-x-[30px]">
+    <div className="feature-select flex flex-col items-center mt-8 w-full max-w-[700px]">
+      <div className="grid grid-cols-3 gap-4">
         {images.map((image, index) => (
           <div
             key={index}
@@ -31,25 +31,40 @@ const FeatureSelect = () => {
               setSelected(index);
               setIsPlaying(false);
             }}
-            className={`w-[100px] h-[100px] m-2 relative rounded-xl flex justify-center items-center cursor-pointer ${selected === index ? 'border-[#FFA501]' : 'border-white'}`}
+            className={`w-[80px] h-[80px] md:w-[100px] md:h-[100px] relative rounded-xl flex justify-center items-center cursor-pointer ${selected === index ? 'border-[#FFA501]' : 'border-white'}`}
             style={{
-              borderWidth: '7px',
+              borderWidth: '5px',
               borderStyle: 'solid',
             }}
           >
-            <div style={{ position: 'absolute', ...image.style }}>
-              <Image src={image.src} alt={image.alt} width={image.width} height={image.height} style={{ imageRendering: 'pixelated' }} />
+            <div className="absolute" style={image.style}>
+              <Image 
+                src={image.src} 
+                alt={image.alt} 
+                width={image.mobileWidth} 
+                height={image.mobileHeight} 
+                className="md:hidden" 
+                style={{ imageRendering: 'pixelated' }} 
+              />
+              <Image 
+                src={image.src} 
+                alt={image.alt} 
+                width={image.width} 
+                height={image.height} 
+                className="hidden md:block" 
+                style={{ imageRendering: 'pixelated' }} 
+              />
             </div>
           </div>
         ))}
       </div>
-      <div className="w-[945px] h-[540px] mt-[60px] relative flex justify-center items-center border-[#FFA501]" style={{ borderWidth: '4px', borderStyle: 'solid', borderRadius: '12px' }}>
+      <div className="w-full md:w-[945px] h-[240px] md:h-[540px] mt-8 md:mt-[60px] relative flex justify-center items-center border-[#FFA501]" style={{ borderWidth: '4px', borderStyle: 'solid', borderRadius: '12px' }}>
         {!isPlaying && (
           <div
             className="absolute inset-0 flex justify-center items-center bg-black bg-opacity-50 z-10"
             onClick={handlePlay}
           >
-            <button className="text-white bg-[#FFA501] text-[30px]  rounded-md py-2 px-8 hover:text-[#FFA501] hover:bg-white ">
+            <button className="text-white bg-[#FFA501] text-[20px] md:text-[30px] rounded-md py-2 px-4 md:py-2 md:px-8 hover:text-[#FFA501] hover:bg-white">
               PLAY
             </button>
           </div>
@@ -58,12 +73,10 @@ const FeatureSelect = () => {
           ref={videoRef}
           key={images[selected].video}
           src={`/icons/landing/videos/${images[selected].video}`} 
-          width="960" 
-          height="540" 
           controls 
           preload="none" 
           autoPlay 
-          className='h-full w-full'
+          className="h-full w-full"
           style={{ borderRadius: '10px', display: 'block' }} 
           onPlay={() => setIsPlaying(true)}
         >
