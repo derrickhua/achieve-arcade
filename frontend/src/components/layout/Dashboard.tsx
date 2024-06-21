@@ -9,6 +9,7 @@ import HabitFarm from '../pages/HabitFarm';
 import TaskSlayer from '../pages/TaskSlayer';
 import DailySched from '../pages/DailySched';
 import Shop from '../pages/Shop';
+
 export const DashboardLayout: React.FC = () => {
   const [activeComponent, setActiveComponent] = useState('PlayerData');
   const [coins, setCoins] = useState(0);
