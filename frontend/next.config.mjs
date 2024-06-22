@@ -3,13 +3,7 @@ const nextConfig = {
     typescript: {
       ignoreBuildErrors: true,
     },
-    webpack: async (config, { isServer }) => {
-      const CaseSensitivePathsPlugin = await import('case-sensitive-paths-webpack-plugin');
-  
-      config.plugins.push(new CaseSensitivePathsPlugin.default());
-  
-      return config;
-    },
+    // Other configurations
   };
   
   export default nextConfig;
