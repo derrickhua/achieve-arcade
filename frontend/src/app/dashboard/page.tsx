@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { DashboardLayout } from "../../components/layouts/Dashboard";
+import { DashboardLayout } from "../../components/layout/Dashboard";
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
