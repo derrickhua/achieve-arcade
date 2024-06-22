@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "heroku-postbuild": "next build"
+    "heroku-postbuild": "next build",
+    "tsc": "tsc"
   },
   "dependencies": {
     "@next-auth/mongodb-adapter": "^1.1.3",

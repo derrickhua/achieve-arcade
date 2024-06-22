@@ -1,15 +1,13 @@
 {
-    "name": "achieve-arcade",
-    "version": "1.0.0",
-    "private": true,
-    "scripts": {
-      "postinstall": "cd frontend && npm install && cd ../backend && npm install",
-      "heroku-postbuild": "cd frontend && npm run build",
-      "start": "cd backend && npm start"
-    },
-    "engines": {
-        "node": "21.7.3"
-    }
-
+  "name": "achieve-arcade",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix frontend && npm run tsc --prefix frontend && npm install --prefix backend",
+    "heroku-postbuild": "npm run build --prefix frontend",
+    "start": "node backend/server.js"
+  },
+  "engines": {
+    "node": "21.7.3"
   }
-  
+}
