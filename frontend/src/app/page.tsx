@@ -8,11 +8,11 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "../components/ui/accordion";
 
 
 // Dynamically import FeatureSelect, which will be loaded only on the client side
-const FeatureSelect = dynamic(() => import('@/components/landing/FeatureSelect'), {
+const FeatureSelect = dynamic(() => import('../components/landing/FeatureSelect'), {
   ssr: false, // This line is important. It disables server-side rendering for the component
 });
 
