@@ -3,11 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "postinstall": "npm install --prefix frontend && npx --prefix frontend tsc && npm install --prefix backend",
+    "postinstall": "npm install --prefix frontend && npm install --prefix backend",
     "heroku-postbuild": "npm run build --prefix frontend",
     "start": "node backend/server.js"
   },
   "engines": {
     "node": "21.7.3"
+  },
+  "dependencies": {
+    "typescript": "^5.5.2"
   }
 }
