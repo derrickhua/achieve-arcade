@@ -3,7 +3,6 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  trailingSlash: trueemote -v
   
   // Other configurations
 };

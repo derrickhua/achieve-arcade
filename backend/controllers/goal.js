@@ -9,7 +9,6 @@ import mongoose from 'mongoose';
  */
 export const createGoal = async (req, res) => {
     try {
-        console.log("User ID from req.user:", req.user?._id); // Ensure this is not undefined
         const { title, description, deadline, category, difficulty } = req.body;
 
         if (!req.user?._id) {
@@ -18,10 +17,13 @@ export const createGoal = async (req, res) => {
 
         const user = await User.findById(req.user._id);
 
-        if (user.subscriptionType !== 'pro') {
-            const goalCount = await Goal.countDocuments({ user: req.user._id });
-            if (goalCount >= 2) {
-                return res.status(400).json({ message: 'Free tier users can only have a maximum of 2 goals' });
+        if (user.subscription !== 'pro') {
+            const incompleteGoalCount = await Goal.countDocuments({
+                user: req.user._id,
+                completed: false
+            });
+            if (incompleteGoalCount >= 2) {
+                return res.status(400).json({ message: 'Free tier users can only have a maximum of 2 incomplete goals' });
             }
         }
 
@@ -45,7 +47,7 @@ export const createGoal = async (req, res) => {
 
 
 /**
- * Retrieves all goals for a specific user.
+ * Retrieves all incomplete goals for a specific user.
  * This integration allows for a single API call to fetch the goals,
  * facilitating efficient data handling and visualization on the client side.
  *
@@ -55,12 +57,13 @@ export const createGoal = async (req, res) => {
  */
 export const getAllGoals = async (req, res, next) => {
     try {
-        const goals = await Goal.find({ user: req.user._id });
+        const goals = await Goal.find({ user: req.user._id, completed: false });
         res.status(200).json(goals);
     } catch (error) {
         next(error);  // Pass any errors to the centralized error handler
     }
 };
+
 
 /**
  * Retrieves all milestones for a specific goal.

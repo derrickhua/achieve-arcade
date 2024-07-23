@@ -1,14 +1,13 @@
 'use client';
-import Image from "next/image"
-import Link from "next/link"
+import Image from "next/image";
+import Link from "next/link";
 import { useState } from 'react';
 import { useRouter } from "next/navigation";
-import { Button } from "../../../components/ui/button"
-import { Input } from "../../../components/ui/input"
-import { Label } from "../../../components/ui/label"
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Label } from "../../../components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "../../../components/ui/alert";
 import { signIn } from "next-auth/react";
-
 
 interface UserData {
   username: string;
@@ -98,14 +97,13 @@ export default function Authentication() {
 
     const register = async ({ username, email, password }: UserData): Promise<any> => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      console.log(username, email, password, timezone)
+      console.log(username, email, password, timezone);
       const result = await signIn('register', {
           username,
           email,
           password,
           timezone,
           redirect: false,
-
       });
       
       if (result.error) {
@@ -223,6 +221,7 @@ export default function Authentication() {
           width={200} 
           height={200} 
           style={{maxWidth: '400px' }}
+          onContextMenu={(e) => e.preventDefault()}
         />
         <p className="text-[60px] text-white text-center leading-none" style={{ width: '80vw', maxWidth: '400px' }}>
           ACHIEVE ARCADE

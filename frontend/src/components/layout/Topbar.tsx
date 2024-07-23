@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { Info, MailQuestion, Settings, LogOut } from 'lucide-react';
-import SuggestionForm from '../forms/SuggestionForm'; // Adjust the path as needed
+import { MailQuestion, Settings, LogOut } from 'lucide-react';
+import SuggestionForm from '../forms/SuggestionForm';
 import SettingsForm from '../forms/Settings';
 import LogoutConfirmationForm from '../forms/Logout';
-import PurchasePopUp from './PurchasePopUp'; // Import the new form
-import PurchaseSuccess from './PurchaseSuccess'; // Import the new success form
-import UserWelcomeForm from '../forms/UserWelcomeForm'; // Import the UserWelcomeForm
+import PurchasePopUp from './PurchasePopUp';
+import PurchaseSuccess from './PurchaseSuccess';
 import { getUser } from '@/lib/user';
-import './layout.css';
 import { useRouter } from 'next/navigation';
-
+import './layout.css';
+import UserWelcomeForm from '../forms/UserWelcomeForm';
+import { useMediaQuery } from 'react-responsive';
 interface TopbarProps {
   coins: number;
 }
@@ -18,29 +18,32 @@ interface TopbarProps {
 const Topbar: React.FC<TopbarProps> = ({ coins }) => {
   const [suggestions, setSuggestions] = useState(false);
   const [logout, setLogout] = useState(false);
-  const [purchase, setPurchase] = useState(false); // New state for PurchaseForm
-  const [purchaseSuccess, setPurchaseSuccess] = useState(false); // New state for PurchaseSuccess
-  const [help, setHelp] = useState(false);
+  const [purchase, setPurchase] = useState(false);
+  const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [settings, setSettings] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState<any>(null);
   const [showWelcome, setShowWelcome] = useState(false);
-
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const router = useRouter();
 
   const fetchUser = async () => {
     try {
       const userData = await getUser();
-      console.log('Fetched User:', userData);
+      console.log('user', userData);
       setUser(userData);
 
-      // Check if the preferences object exists and if any of the hours are undefined or zero
-      const { preferences } = userData;
+      const { preferences, createdAt } = userData;
+      const userCreationTime = new Date(createdAt).getTime();
+      const currentTime = Date.now();
+      const timeDifference = currentTime - userCreationTime;
+
       if (
         !preferences ||
         !preferences.workHoursPerWeek ||
         !preferences.leisureHoursPerWeek ||
         !preferences.familyFriendsHoursPerWeek ||
-        !preferences.atelicHoursPerWeek
+        !preferences.atelicHoursPerWeek ||
+        timeDifference <= 60 * 60 * 1000
       ) {
         setShowWelcome(true);
       }
@@ -57,7 +60,6 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
     const query = new URLSearchParams(window.location.search);
     if (query.get('success') === 'true' && query.get('session_id')) {
       setPurchaseSuccess(true);
-      // Clear the query parameters from the URL
       const url = new URL(window.location.href);
       url.searchParams.delete('success');
       url.searchParams.delete('session_id');
@@ -66,45 +68,54 @@ const Topbar: React.FC<TopbarProps> = ({ coins }) => {
   }, [router]);
 
   return (
-    <div className="bg-black flex justify-between items-center h-[70px]">
+    <div className="bg-black flex justify-between items-center h-[70px] p-2 md:px-4 w-full overflow-hidden">
       <div className="flex items-center">
-        <div className='w-[100px] flex justify-center'>
-          <Image src={'/icons/logo.png'} alt={`company logo icon`} width={40} height={40} quality={100}  style={{ imageRendering: 'pixelated' }} />
+        <div className="relative w-[40px] md:w-[50px] h-[40px] md:h-[50px] flex justify-center">
+          <Image
+            src={'/icons/logo.png'}
+            alt={`company logo icon`}
+            fill
+            quality={100}
+            unoptimized
+            style={{ imageRendering: 'pixelated', objectFit: 'contain' }}
+          />
         </div>
-        <p className='text-2xl text-[#FEFDF2] text-[50px] ml-4'>ACHIEVE ARCADE</p>
-        {user?.subscription === 'pro' && (
-          <p className='text-[30px] text-white pro-text ml-2 mt-2'>PRO</p>
-        )}
+        <div className="ml-1 md:ml-4 flex flex-col md:flex-row md:items-center md:space-x-2">
+          <p className={`text-[16px] sm:text-[20px] md:text-[30px] lg:text-[40px] text-[#FEFDF2] leading-none ${user?.subscription === 'pro' ? 'pro-text' : ''}`}>ACHIEVE&nbsp;</p>
+          <p className={`text-[16px] sm:text-[20px] md:text-[30px] lg:text-[40px] text-[#FEFDF2] leading-none ${user?.subscription === 'pro' ? 'pro-text' : ''}`}>ARCADE</p>
+          {user?.subscription === 'pro' && (
+            <p className='text-[16px] md:text-[30px] text-white pro-text ml-2 hidden md:block'>PRO</p>
+          )}
+        </div>
       </div>
-      <div className="flex items-center mr-4">
+      <div className="flex items-center mr-2 md:mr-4 space-x-1 md:space-x-0">
         {user && user.subscription !== 'pro' && (
-          <button className='px-4 pro-button mr-4 text-[25px] rounded-md w-[150px] text-[#FEFDF2] tracking-[2px]' onClick={() => setPurchase(true)}>
+          <button className='px-2 mr-1 md:mr-2 md:px-4 py-1 md:py-2 pro-button text-[#FEFDF2] text-[14px] md:text-[18px] rounded-md tracking-[0.5px] md:tracking-[1px]' onClick={() => setPurchase(true)}>
             UPGRADE
           </button>
         )}
-        <span className="flex items-center justify-end text-[#F2C94C] w-[100px] h-[30px] bg-[#FEFDF2] text-[20px] rounded-xl text-right px-3 space-x-1">
-          <p className='mt-1'>{coins}</p>
-          <Image src={'/icons/coin.png'} alt={`coin icon`} width={20} height={20} quality={100} />
+        <span className="flex items-center justify-end text-[#F2C94C] w-[60px] md:w-[80px] h-[25px] md:h-[30px] bg-[#FEFDF2] text-[16px] md:text-[20px] rounded-lg text-right px-1 md:px-2 space-x-1">
+          <p>{coins}</p>
+          <Image src={'/icons/coin.png'} alt={`coin icon`} width={15} height={15} quality={100} unoptimized />
         </span>
-        <button className="p-2" onClick={() => setSuggestions(true)}>
-          <MailQuestion size={32} strokeWidth={2} color="#FEFDF2"/>  
+        {!isMobile && 
+          <button className="p-1 md:p-2 hidden md:block" onClick={() => setSuggestions(true)}>
+            <MailQuestion className="w-6 h-6 md:w-8 md:h-8" strokeWidth={2} color="#FEFDF2" />
+          </button>
+        }
+        <button className="mx-2 sm:p-1 md:p-2" onClick={() => setSettings(true)}>
+          <Settings className="w-6 h-6 md:w-8 md:h-8" strokeWidth={2} color="#FEFDF2" />
         </button>
-        <button className="p-2" onClick={() => setSettings(true)}>
-          <Settings size={32} strokeWidth={2} color="#FEFDF2"/>
-        </button>
-        <button className="p-2" onClick={() => setLogout(true)}>
-          <LogOut size={32} strokeWidth={2} color="#FEFDF2"/>
+        <button className="sm:p-1 md:p-2" onClick={() => setLogout(true)}>
+          <LogOut className="w-6 h-6 md:w-8 md:h-8" strokeWidth={2} color="#FEFDF2" />
         </button>
       </div>
       {suggestions && <SuggestionForm isOpen={suggestions} onClose={() => setSuggestions(false)} />}
-      {settings && <SettingsForm isOpen={settings} onClose={() => setSettings(false)} isPro={user?.subscription === 'pro'} fetchUser={fetchUser} user={user}/>} {/* Pass isPro prop and fetchUser */}
+      {settings && <SettingsForm isOpen={settings} onClose={() => setSettings(false)} isPro={user?.subscription === 'pro'} fetchUser={fetchUser} user={user} />}
       {logout && <LogoutConfirmationForm isOpen={logout} onClose={() => setLogout(false)} />}
-      {purchase && user && <PurchasePopUp isOpen={purchase} onClose={() => setPurchase(false)} userId={user._id} />} {/* Pass user ID */}
-      {purchaseSuccess && <PurchaseSuccess isOpen={purchaseSuccess} onClose={() => setPurchaseSuccess(false)} />} {/* Handle purchase success */}
-      {showWelcome && <UserWelcomeForm isOpen={showWelcome} onClose={() => {
-        setShowWelcome(false)
-        fetchUser()
-      }} />} {/* Render UserWelcomeForm */}
+      {purchase && user && <PurchasePopUp isOpen={purchase} onClose={() => setPurchase(false)} userId={user._id} />}
+      {purchaseSuccess && <PurchaseSuccess isOpen={purchaseSuccess} onClose={() => setPurchaseSuccess(false)} />}
+      {showWelcome && <UserWelcomeForm isOpen={showWelcome} onClose={() => setShowWelcome(false)} />}
     </div>
   );
 };

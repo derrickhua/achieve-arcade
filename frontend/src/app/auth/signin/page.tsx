@@ -21,14 +21,18 @@ export default function Authentication() {
   const handleLogin = async (event) => {
     event.preventDefault();
     
+    console.log("Attempting to log in with email:", email);
+  
     const result = await signIn('login', {
       redirect: false,
       email,
       password,
     });
   
+    console.log("SignIn result:", result);
+  
     if (result.error) {
-      console.error(result.error);
+      console.error("Login error:", result.error);
       setAlertMessage(result.error);
       setShowAlert(true);
     } else {
@@ -103,6 +107,8 @@ export default function Authentication() {
     width={200} 
     height={200} 
     style={{ maxWidth: '400px' }}
+    onContextMenu={(e) => e.preventDefault()}
+
   />
   <p className="text-[60px] text-white text-center leading-none" style={{ width: '80vw', maxWidth: '400px' }}>
     ACHIEVE ARCADE

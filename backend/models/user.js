@@ -15,7 +15,7 @@ const UserSchema = new Schema({
   },
   coins: { type: Number, default: 0 },
   subscription: { type: String, default: 'free', enum: ['free', 'pro'] },
-  subscriptionType: { type: String, enum: ['freeLifetime', 'paidLifetime', 'recurring'] }, // new field
+  subscriptionType: { type: String, enum: ['freeLifetime', 'paidLifetime', 'recurring', 'free'], default: 'free' },
   stripeCustomerId: { type: String }
 }, { timestamps: true });
 

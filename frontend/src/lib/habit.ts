@@ -11,7 +11,7 @@ const api = axios.create({
 
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
-  const session: any = await getSession();
+  const session = await getSession();
   if (session?.accessToken) {
     config.headers.authorization = `Bearer ${session.accessToken}`;
   } else {
@@ -27,11 +27,11 @@ api.interceptors.request.use(async (config) => {
 export const getHabits = async () => {
   try {
     const response = await api.get('/');
-    console.log('Fetched habits:', response.data); // Add logging
-    return response.data || []; // Ensure it returns an empty array if response.data is undefined
+    console.log('Fetched habits:', response.data);
+    return response.data || [];
   } catch (error) {
     console.error('Error fetching habits:', error.response ? error.response.data : error.message);
-    throw error; // Rethrow to handle it in the component
+    throw error;
   }
 };
 
@@ -42,7 +42,6 @@ export const addHabit = async (habitData) => {
     return response.data;
   } catch (error) {
     if (error.response) {
-      // Handle specific error messages from the backend
       const { data } = error.response;
       console.error('Error adding habit:', data.message);
       throw new Error(data.message || 'An error occurred while adding the habit');
@@ -53,14 +52,17 @@ export const addHabit = async (habitData) => {
   }
 };
 
-// Simplified API method to update habit completions for today
-export const updateHabitCompletion = async (habitId, completionChange, date) => {
+// API method to update habit completions for today
+export const updateHabitCompletion = async (habitId, newCount) => {
   try {
+    const date = new Date().toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+    console.log('date today:', date)
     const response = await api.post(`/${habitId}/update`, {
-      completionChange,
+      completionChange: newCount,
       date
     });
-    return response;
+    console.log('Habit updated:', response.data);
+    return response.data; // Ensure the updated habit data is returned
   } catch (error) {
     console.error('Error updating habit completion:', error.response ? error.response.data : error.message);
     throw error;

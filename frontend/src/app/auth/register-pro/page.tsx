@@ -121,7 +121,7 @@ export default function Authentication() {
         timezone,
         redirect: false,
       });
-
+  
       if (result.error) {
         console.error('Registration failed:', result.error);
         throw new Error(result.error);
@@ -129,9 +129,9 @@ export default function Authentication() {
         console.log('Registration successful', result);
         return result;
       }
-    } catch (error) {
-      console.error('Error during registration:', error);
-      throw new Error(error.message || 'Registration failed');
+    } catch (error: any) {
+      console.error('Error during registration:', error.message);
+      throw new Error(error.response?.data?.error || error.message || 'Registration failed');
     }
   };
 
@@ -139,19 +139,19 @@ export default function Authentication() {
     event.preventDefault();
     setShowAlert(false);  // Hide previous alerts if any
     if (!validateInputs()) {
-        return; 
+      return; 
     }
     try {
-        await register(userData);
-        const session: CustomSession = await getSession();
-        console.log('session', session);
-        const userId = session?.user?.id;
-        console.log('Fetched User ID:', userId);
-        setUserId(userId || null);  // Set the userId state
+      await register(userData);
+      const session: CustomSession = await getSession();
+      console.log('session', session);
+      const userId = session?.user?.id;
+      console.log('Fetched User ID:', userId);
+      setUserId(userId || null);  // Set the userId state
     } catch (error: any) {
-        console.error('Registration or fetching user ID failed', error.message);
-        setAlertMessage(error.message);  // Set the alert message based on the error
-        setShowAlert(true);  // Show the alert on the UI
+      console.error('Registration or fetching user ID failed', error.message);
+      setAlertMessage(error.message);  // Set the alert message based on the error
+      setShowAlert(true);  // Show the alert on the UI
     }
   };
 
@@ -248,13 +248,15 @@ export default function Authentication() {
             width={200} 
             height={200} 
             style={{maxWidth: '400px' }}
+            onContextMenu={(e) => e.preventDefault()}
+
           />
           <p className="text-[60px] text-white text-center leading-none" style={{ width: '80vw', maxWidth: '400px' }}>
             ACHIEVE ARCADE
           </p>
         </div>
       </form>
-      <form ref={formRef} action="http://localhost:8000/api/stripe/create-checkout-session" method="POST">
+      <form ref={formRef} action={`${process.env.NEXT_PUBLIC_API_BASE_URL}/stripe/create-checkout-session`} method="POST">
         <input type="hidden" name="userId" value={userId || ''} />
       </form>
     </>

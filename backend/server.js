@@ -14,12 +14,6 @@ import rewardRoutes from './routes/reward.js';
 import suggestionRoutes from './routes/suggestion.js';
 import stripeRoutes from './routes/stripe.js';
 import bodyParser from 'body-parser';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 dotenv.config();
 
@@ -46,7 +40,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Connect to MongoDB
 const mongoUri = process.env.MONGODB_URI;
-mongoose.connect(mongoUri, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(mongoUri);
 const db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));

@@ -98,17 +98,17 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-y-auto" onClick={onClose}>
+      <div className="bg-[#FEFDF2] rounded-xl p-6 relative w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[40px] mr-4">ADD NEW HABIT</h2>
-        <p className="text-[#BDBDBD] mb-4 text-[20px]">Enter your habit details here!</p>
+        <h2 className="text-[20px] md:text-[30px]">ADD NEW HABIT</h2>
+        <p className="text-[#BDBDBD] text-[15px] md:text-[20px] mb-4">Enter your habit details here!</p>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="name">Name</label>
+          <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="name">Name</label>
             <input
               className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="text"
@@ -119,14 +119,14 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
               maxLength={maxNameLength}
               required
             />
-            <div className="text-right text-[14px] text-[#BDBDBD]">
-              {name.length}/{maxNameLength} characters
-            </div>
+          <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
+            {name.length}/{maxNameLength} characters
+          </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px]" htmlFor="habitPeriod">Habit Period</label>
-            <p className='text-[20px] text-[#BDBDBD] mb-2'>Time frame in which you aim to complete the habit</p>
-            <Select onValueChange={setHabitPeriod} value={habitPeriod}>
+          <label className="block text-black text-[16px] md:text-[20px]" htmlFor="habitPeriod">Habit Period</label>
+          <p className="text-[15px] md:text-[20px] text-[#BDBDBD] mb-2">Time frame in which you aim to complete the habit</p>
+          <Select onValueChange={setHabitPeriod} value={habitPeriod}>
                 <SelectTrigger className="w-full bg-white border border-[#BDBDBD]">
                 <SelectValue placeholder="Select Habit Period" />
                 </SelectTrigger>
@@ -138,8 +138,8 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
           </div>
 
           <div className="mb-4">
-            <label className="block text-black text-[25px]" htmlFor="consistencyGoal">Consistency Goal</label>
-            <p className='text-[20px] text-[#BDBDBD] mb-2'>The # of times you aim to do the habit within the chosen habit period</p>
+          <label className="block text-black text-[16px] md:text-[20px]" htmlFor="consistencyGoal">Consistency Goal</label>
+          <p className="text-[15px] md:text-[20px] text-[#BDBDBD] mb-2">The # of times you aim to do the habit within the chosen habit period</p>
             <input
               className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="number"
@@ -151,8 +151,8 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
             />
           </div>
           <div className="">
-            <label className="block text-black text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
-            <Select onValueChange={setDifficulty} value={difficulty}>
+          <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="difficulty">Difficulty</label>
+          <Select onValueChange={setDifficulty} value={difficulty}>
               <SelectTrigger className="w-full border border-[#BDBDBD] bg-white">
                 <SelectValue placeholder="Select Difficulty" />
               </SelectTrigger>
@@ -166,7 +166,7 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
           {showAlert && (
             <Alert variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
               <AlertTitle>{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
-              <AlertDescription>
+              <AlertDescription className="text-[12px] md:text-[14px]">
                 {alertMessage}
               </AlertDescription>
             </Alert>
@@ -174,7 +174,7 @@ const AddHabitForm: React.FC<AddHabitFormProps> = ({ isOpen, onClose, fetchHabit
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[20px]"
+              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[15px] md:text-[20px]"
             >
               ADD HABIT
             </button>

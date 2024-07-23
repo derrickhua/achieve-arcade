@@ -19,8 +19,7 @@ export const addHabit = async (req, res, next) => {
 
     try {
         const user = await User.findById(req.user._id);
-
-        if (user.subscriptionType !== 'pro') {
+        if (user.subscription !== 'pro') {
             const habitCount = await Habit.countDocuments({ user: req.user._id });
             if (habitCount >= 2) {
                 return res.status(400).json({
@@ -61,10 +60,8 @@ export const getHabits = async (req, res, next) => {
         const habits = await Habit.find({ user: req.user._id });
         const habitsWithData = await Promise.all(habits.map(async (habit) => {
             const heatmapData = await habit.getHeatmapData();
-            if (habit.name === "Walking Stanley") {
-                console.log(heatmapData)
-            }
             const occurrences = habit.getWeeklyOccurrences();
+
             return {
                 ...habit.toObject(),
                 heatmapData,
@@ -76,6 +73,7 @@ export const getHabits = async (req, res, next) => {
         next(error);
     }
 };
+
 
 /**
  * Updates a specific habit based on provided parameters such as new goal, habit name, or completion count.
@@ -149,31 +147,32 @@ export const deleteHabit = async (req, res, next) => {
     }
 };
 
-    /**
-     * Updates the completion count for a specified date for a habit.
-     * If decreasing, it ensures completions don't go below zero. Also updates the streak.
-     * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
-     * @param {Response} res - The response object used to return the updated habit.
-     */
-    export const updateHabitCompletion = async (req, res, next) => {
-        const { habitId } = req.params;
-        const { completionChange, date } = req.body;
-
-        try {
-            const habit = await Habit.findById(habitId);
-            if (!habit) {
-                const error = new Error('Habit not found');
-                error.status = 404;
-                throw error;
-            }
-            await habit.changeCompletion(date, completionChange);
-            await habit.save(); // Ensure the habit is saved with the updated streak
-            res.json(habit);
-        } catch (error) {
-            next(error);
-        }
-    };
-
+/**
+ * Updates the completion count for a specified date for a habit.
+ * If decreasing, it ensures completions don't go below zero. Also updates the streak.
+ * @param {Request} req - The request object, containing the habit ID, new completion count, and the specific date.
+ * @param {Response} res - The response object used to return the updated habit.
+ */
+export const updateHabitCompletion = async (req, res, next) => {
+    const { habitId } = req.params;
+    const { completionChange, date } = req.body;
+    
+    try {
+      const habit = await Habit.findById(habitId);
+      if (!habit) {
+        const error = new Error('Habit not found');
+        error.status = 404;
+        throw error;
+      }
+  
+      // Use the changeCompletion method to update the completions
+      const result = await habit.changeCompletion(date, completionChange);
+      res.json(habit); // Ensure the entire habit object is returned
+    } catch (error) {
+      console.error(`Error updating habit completion: ${error.message}`); // Added log
+      next(error);
+    }
+  };
 
 /**
  * Calculates and retrieves the current streak for a specified habit.
@@ -198,4 +197,3 @@ export const calculateStreak = async (req, res, next) => {
         next(error);
     }
 };
-

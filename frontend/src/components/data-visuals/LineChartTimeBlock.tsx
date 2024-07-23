@@ -12,12 +12,24 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
     return (
       <div className="w-full bg-black rounded-sm p-4 md:p-6 h-full justify-center">
         <div className='w-full flex justify-center items-center h-2/3 gap-[100px]'>
-          <Image src="/icons/no-data/dwarf-run.gif" alt="No Data Gif 1" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
-          <Image src="/icons/no-data/elf-run.gif" alt="No Data Gif 2" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
-          <Image src="/icons/no-data/knight-run.gif" alt="No Data Gif 3" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
+          <Image src="/icons/no-data/dwarf-run.gif" alt="No Data Gif 1" 
+          className='mt-[50px]' width={80} height={140} 
+          style={{ imageRendering: 'pixelated' }}
+          onContextMenu={(e) => e.preventDefault()}
+          />
+          <Image src="/icons/no-data/elf-run.gif" alt="No Data Gif 2" 
+          className='mt-[50px]' width={80} height={140} 
+          style={{ imageRendering: 'pixelated' }}
+          onContextMenu={(e) => e.preventDefault()}
+          />
+          <Image src="/icons/no-data/knight-run.gif" alt="No Data Gif 3" 
+          className='mt-[50px]' width={80} height={140} 
+          style={{ imageRendering: 'pixelated' }}
+          onContextMenu={(e) => e.preventDefault()}
+          />
 
         </div>
-        <div className="flex justify-center h-1/3 text-[#FEFDF2] text-[40px]">{`NO DATA AVAILABLE :(`}</div>
+        <div className="flex justify-center h-1/3 text-[#FEFDF2] text-[25px] md:text-[40px]">{`NO DATA AVAILABLE :(`}</div>
       </div>
     );
   }
@@ -101,16 +113,16 @@ const LineChartTimeBlock = ({ averageTimeBlockEfficiency }) => {
   return (
     <div className="w-full bg-[#FEFDF2] rounded-sm p-4 md:p-6 h-full">
       <div className="flex justify-between mb-5">
-        <h3 className="text-xl mb-2">Average Time Block Efficiency</h3>
-        <div className="grid gap-4 grid-cols-1 text-right">
+        <h3 className="text-lg md:text-xl mb-2">Average Time Block Efficiency</h3>
+        <div className="grid gap-4 grid-cols-1 text-right hidden md:grid">
           <div>
             <h5 className="inline-flex items-center leading-none font-normal mb-2">Average Efficiency</h5>
             <p className=" text-2xl leading-none">{averageEfficiency.toFixed(2)}%</p>
           </div>
         </div>
       </div>
-      <div id="line-chart">
-        <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={250} width={'100%'} />
+      <div id="line-chart" className='h-[13vh] md:h-[270px] max-h-[270px]'>
+        <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={'100%'} width={'100%'} />
       </div>
     </div>
   );

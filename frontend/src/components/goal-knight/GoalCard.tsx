@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Bolt } from 'lucide-react';
-import MilestoneSection from './MilestoneSection'; // Adjust the path based on your file structure
-import VisualKnight from './VisualKnight'; // Adjust the path based on your file structure
-import GoalSuccess from './GoalSuccess'; // Adjust the path based on your file structure
+import MilestoneSection from './MilestoneSection'; 
+import VisualKnight from './VisualKnight'; 
+import GoalSuccess from './GoalSuccess'; 
 
 const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, onOpenDeleteGoalForm: (id: string) => void, fetchCoins: () => void }> = ({ goal, onOpenEditGoalForm, onOpenDeleteGoalForm, fetchCoins }) => {
   const [completedMilestones, setCompletedMilestones] = useState(goal.milestones.filter(milestone => milestone.completed).length);
@@ -10,18 +10,6 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
   const [milestoneJustCompleted, setMilestoneJustCompleted] = useState(false);
   const [showKnightSlash, setShowKnightSlash] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
-
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', options);
-  };
-
-  const getCurrentDate = () => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
-    const date = new Date();
-    return date.toLocaleDateString('en-US', options);
-  };
 
   useEffect(() => {
     if (goal.milestones.length > 0 && completedMilestones === goal.milestones.length) {
@@ -31,7 +19,7 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
 
   const handleMilestoneCompletion = () => {
     if (isAnimating) return; // Prevent double clicking
-    
+
     setMilestoneJustCompleted(true);
     setIsAnimating(true);
   };
@@ -50,14 +38,28 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
   };
 
   const handleFinalAnimationComplete = async () => {
-    setGoalCompleted(true);
-    setShowKnightSlash(false);
-    setIsAnimating(false);
-    await fetchCoins();
+    setTimeout(async () => {
+      setGoalCompleted(true);
+      setShowKnightSlash(false);
+      setIsAnimating(false);
+      await fetchCoins();
+    }, 1500); // Adjust the delay to match the duration of the slashing animation
+  };
+
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  const getCurrentDate = () => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' };
+    const date = new Date();
+    return date.toLocaleDateString('en-US', options);
   };
 
   return (
-    <div className="relative h-[468px] rounded-3xl border-black border-[3px] bg-[#FEFDF2] p-6">
+    <div className="relative md:h-[468px] rounded-3xl border-black border-[3px] bg-[#FEFDF2] p-6">
       {goalCompleted ? (
         <GoalSuccess 
           goalName={goal.title} 
@@ -76,19 +78,25 @@ const GoalCard: React.FC<{ goal: any, onOpenEditGoalForm: (id: string) => void, 
               X
             </button>
           </div>
-          <div className='flex justify-around items-center mt-4 h-[100px]'>
-            <div className='min-w-[300px]'>
-              <div className="text-[40px] leading-none">{goal.title}</div>
+          <div className='flex justify-around items-center mt-2 md:mt-4 md:h-[100px]'>
+            <div className='md:min-w-[300px]'>
+              <div className="text-[40px] leading-none text-center md:text-left">{goal.title}</div>
               <div className="text-[#EB5757] text-[20px] mt-[-8px]">
                 deadline: {goal.deadline && formatDate(goal.deadline)}
               </div>
             </div>
-            <div className="p-2 text-[15px] w-[400px] mr-6 bg-[#EFE1AB] rounded-lg border-[3px] border-black">
+            <div className="p-2 hidden md:block text-[15px] w-[400px] mr-6 bg-[#EFE1AB] rounded-lg border-[3px] border-black">
               <div className="">description:</div>
               <div className="break-words">{goal.description}</div>
             </div>
           </div>
-          <MilestoneSection milestones={goal.milestones} goalId={goal._id} onMilestoneComplete={handleMilestoneCompletion} setGoalComplete={setGoalCompleted} disableButton={isAnimating} />
+          <MilestoneSection 
+            milestones={goal.milestones} 
+            goalId={goal._id} 
+            onMilestoneComplete={handleMilestoneCompletion} 
+            setGoalComplete={handleFinalAnimationComplete} 
+            disableButton={isAnimating} 
+          />
           <div className="mt-8 flex justify-center">
             <VisualKnight 
               completedMilestones={completedMilestones} 

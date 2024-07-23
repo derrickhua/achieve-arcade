@@ -73,20 +73,20 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onEdit, onDelete, fetchSch
       <div
         className={`time-block flex h-full flex-col justify-between p-2 rounded-lg relative ${colorClass} text-[#FEFDF2] ${isSmall ? 'small-timeblock' : ''}`}
       >
-        <div className="flex space-x-1 absolute top-3 right-2">
-          <button onClick={handleExpandClick} className="text-[#FEFDF2] mr-1">
+        <div className="absolute top-[2px] right-2 flex items-center space-x-1 md:top-3">
+          <button onClick={handleExpandClick} className="text-[#FEFDF2] flex items-center justify-center">
             <Clock size={18} />
           </button>
-          <button onClick={handleSettingsClick} className="text-[#FEFDF2]">
+          <button onClick={handleSettingsClick} className="text-[#FEFDF2] flex items-center justify-center">
             <Bolt size={18} />
           </button>
-          <button onClick={handleDeleteClick} className="text-[#FEFDF2]">
+          <button onClick={handleDeleteClick} className="text-[#FEFDF2] flex items-center justify-center">
             <X size={20} />
           </button>
         </div>
         <div className={`timeblock-labels flex h-full ${isSmall ? 'flex-row items-center' : 'flex-col justify-center'}`}>
           <span className={`block-name ${isSmall ? '' : 'justify-center '} text-center flex items-center gap-1`}>
-            <p className={`mt-1 ${isSmall ? 'mr-2 ml-2 text-[30px]' : 'text-[30px]'}`}>
+            <p className={`mt-1 text-[15px] ${isSmall ? 'mr-2 ml-2 md:text-[30px]' : 'md:text-[30px]'}`}>
               {block.name}
             </p>
             {block.tasks.length === 0 && (
@@ -98,9 +98,9 @@ const TimeBlock: React.FC<TimeBlockProps> = ({ block, onEdit, onDelete, fetchSch
               />
             )}
           </span>
-          <div className={`block-tasks flex items-center justify-center flex-wrap ${isSmall ? '' : 'mt-2'}`}>
+          <div className={`block-tasks flex items-center justify-center flex-wrap ${isSmall ? '' : 'md:mt-2'}`}>
             {block.tasks && block.tasks.map((task, index) => (
-              <Circle key={task._id} strokeWidth={3} className={`task-indicator w-6 h-6 text-[#FEFDF2] mx-1 ${task.completed ? 'bg-white rounded-xl' : ''}`} />
+              <Circle key={task._id} strokeWidth={3} className={`task-indicator h-4 w-4 md:w-6 md:h-6 text-[#FEFDF2] mx-1 ${task.completed ? 'bg-white rounded-xl' : ''}`} />
             ))}
           </div>
         </div>

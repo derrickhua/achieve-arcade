@@ -7,7 +7,7 @@ import { getTasks, updateTask } from '@/lib/task';
 import Image from 'next/image';
 import './taskcursor.css';
 import LoadingComponent from './LoadingComponent';
-
+import { useMediaQuery } from 'react-responsive';
 // Chosen 7 monsters for absolute positioning
 const chosenMonsters = [
   "big-demon",
@@ -26,7 +26,7 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [deleteTask, setDeleteTask] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const fetchTasks = async () => {
     try {
       const response = await getTasks();
@@ -91,40 +91,55 @@ const TaskSlayer: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
 
   return (
-    <div className="task-slayer-container relative p-8 h-full overflow-auto flex flex-col items-center w-full">
-      <div className="custom-cursor"></div>
-      <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full">
+    <div className="task-slayer-container relative p-2 md:p-4 overflow-auto flex flex-col items-center h-full w-full">
+      <div className="custom-cursor hidden md:block"></div>
+      <div className="flex justify-between items-center mb-4 max-w-[1800px] w-full">
         <div className="flex flex-col">
-          <span className="text-[50px] mr-4">Task Slayer</span>
-          <span className="text-[40px] text-[#EB5757]">TOTAL # OF MONSTERS SLAIN: {completedTaskCount}</span>
+          <span className="text-[22px] sm:text-[35px] md:text-[50px] leading-none mr-4">Task Slayer</span>
+          {!isMobile && <span className="text-[15px] md:text-[40px] text-[#EB5757]">TOTAL # OF MONSTERS SLAIN: {completedTaskCount}</span>}
         </div>
         <AddButton name="ADD TASK" onClick={() => { setAddTask(true); }} />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-[1800px] w-full place-items-center">
+      {isMobile && <span className="text-[20px] text-[#EB5757]">TOTAL # OF MONSTERS SLAIN: {completedTaskCount}</span>}
+
+      {tasks.length !== 0 &&
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-[1800px] w-full place-items-center">
         {tasks && tasks.map(task => (
           <TaskSquare key={task._id} task={task} onDelete={handleDeleteTask} onComplete={handleCompleteTask} />
         ))}
       </div>
+      }
+
       {tasks.length === 0 && (
-      <div className="relative flex flex-col items-center justify-center h-full w-[1800px]">
+      <div className="relative flex flex-col items-center justify-center h-full md:w-[1800px]">
         <div className="flex justify-center space-x-[100px] mb-8">
-          <div className='flex'>
-            <Image src={`/icons/task-slayer/${chosenMonsters[0]}.gif`} alt={chosenMonsters[0]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
-            <Image src={`/icons/task-slayer/${chosenMonsters[1]}.gif`} alt={chosenMonsters[1]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
-            <Image src={`/icons/task-slayer/${chosenMonsters[2]}.gif`} alt={chosenMonsters[2]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
-            <Image src={`/icons/task-slayer/${chosenMonsters[3]}.gif`} alt={chosenMonsters[3]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
-            <Image src={`/icons/task-slayer/${chosenMonsters[4]}.gif`} alt={chosenMonsters[4]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
-            <Image src={`/icons/task-slayer/${chosenMonsters[5]}.gif`} alt={chosenMonsters[5]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
-            <Image src={`/icons/task-slayer/${chosenMonsters[6]}.gif`} alt={chosenMonsters[6]} width={60} height={60} style={{ imageRendering: 'pixelated' }} />
+          <div className='hidden md:flex'>
+            <Image src={`/icons/task-slayer/${chosenMonsters[1]}.gif`} alt={chosenMonsters[1]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
+            <Image src={`/icons/task-slayer/${chosenMonsters[0]}.gif`} alt={chosenMonsters[0]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
+            <Image src={`/icons/task-slayer/${chosenMonsters[2]}.gif`} alt={chosenMonsters[2]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
+            <Image src={`/icons/task-slayer/${chosenMonsters[3]}.gif`} alt={chosenMonsters[3]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
+            <Image src={`/icons/task-slayer/${chosenMonsters[4]}.gif`} alt={chosenMonsters[4]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
+            <Image src={`/icons/task-slayer/${chosenMonsters[5]}.gif`} alt={chosenMonsters[5]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
+            <Image src={`/icons/task-slayer/${chosenMonsters[6]}.gif`} alt={chosenMonsters[6]} width={60} height={60} style={{ imageRendering: 'pixelated' }} 
+              onContextMenu={(e) => e.preventDefault()}/>
           </div>
           <div className='flex'>
-            <Image src="/icons/task-slayer/knight-idle.gif" alt="knight-idle" width={60} height={60} style={{ imageRendering: 'pixelated', transform: 'scaleX(-1)' }} />
-            <p className='ml-4'>I CAN&apos;T STOP <br />
-            BOUNCING</p>
+            <Image src="/icons/task-slayer/knight-idle.gif" alt="knight-idle" 
+             width={60} height={60} 
+             onContextMenu={(e) => e.preventDefault()}
+             style={{ imageRendering: 'pixelated', transform: 'scaleX(-1)' }} />
+            <p className='text-[15px] ml-4'>I CAN&apos;T STOP <br />
+            BOUNCING (╯•ᗣ•╰)</p>
           </div>
 
         </div>
-        <p className="text-center text-[40px] text-[#EB5757]">No tasks available. Add a new task to start slaying monsters!</p>
+        <p className="text-center text-[20px] md:text-[40px] text-[#EB5757]">No tasks available. Add a new task to start slaying monsters!</p>
       </div>
     )}
 

@@ -12,10 +12,15 @@ const LineChart = ({ timeData }) => {
     return (
       <div className="w-full bg-black rounded-sm p-4 md:p-6 h-full justify-center">
         <div className='w-full flex justify-center items-center h-2/3 gap-[60px]'>
-          <Image src="/icons/no-data/zombie-run.gif" alt="No Data Gif 2" width={160} height={180} style={{ imageRendering: 'pixelated' }} />
-          <Image src="/icons/no-data/wizard-run.gif" alt="No Data Gif 1" className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}/>
+          <Image src="/icons/no-data/zombie-run.gif" alt="No Data Gif 2" 
+          width={160} height={180} style={{ imageRendering: 'pixelated' }} 
+
+          />
+          <Image src="/icons/no-data/wizard-run.gif" alt="No Data Gif 1" 
+          className='mt-[50px]' width={80} height={140} style={{ imageRendering: 'pixelated' }}
+          />
         </div>
-        <div className="flex justify-center h-1/3 text-center text-[#FEFDF2] text-[40px]">{`NO DATA AVAILABLE :(`}</div>
+        <div className="flex justify-center h-1/3 text-center text-[#FEFDF2] text-[25px] md:text-[40px]">{`NO DATA AVAILABLE :(`}</div>
       </div>
     );
   }
@@ -49,7 +54,7 @@ const LineChart = ({ timeData }) => {
   const lineChartOptions = {
     chart: {
       type: 'line',
-      height: 270,
+      height: '100%',
       width: '100%',
       toolbar: {
         show: false
@@ -91,13 +96,13 @@ const LineChart = ({ timeData }) => {
   return (
     <div className="w-full bg-[#FEFDF2] rounded-sm p-4 md:p-6 h-full">
       <div className="flex justify-between mb-5">
-        <h3 className="text-xl  mb-2">Planned Time vs Realized Time</h3>
-        <div className="grid gap-4 grid-cols-2 text-right">
+        <h3 className="text-lg md:text-xl  mb-2">Planned Time vs Realized Time</h3>
+        <div className="grid gap-4 grid-cols-2 text-right hidden md:grid ">
           <div>
             <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">
               Planned Time
             </h5>
-            <p className="text-gray-900 text-2xl leading-none">
+            <p className="text-gray-900 text-lg md:text-2xl leading-none">
               {totalPlannedTime.toFixed(0)} hours
             </p>
           </div>
@@ -105,15 +110,17 @@ const LineChart = ({ timeData }) => {
             <h5 className="inline-flex items-center text-gray-500 leading-none font-normal mb-2">
               Actual Time
             </h5>
-            <p className="text-gray-900 text-2xl leading-none">
+            <p className="text-gray-900 text-lg md:text-2xl leading-none">
               {totalActualTime.toFixed(0)} hours
             </p>
           </div>
         </div>
       </div>
-      <div id="line-chart">
-        <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height={270} width={'100%'}/>
-      </div>
+      <div id="line-chart" className='h-[13vh] md:h-[270px] max-h-[270px]'>
+       <ApexCharts options={lineChartOptions} series={lineChartData} type="line" height="100%" width="100%"/>
+    </div>
+
+      
     </div>
   );
 };

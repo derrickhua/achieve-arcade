@@ -98,15 +98,14 @@ const EditRewardsForm: React.FC<{ isOpen: boolean, onClose: () => void, fetchRew
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#FEFDF2] rounded-xl p-4 md:p-8 relative w-[90%] md:w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[40px] mr-4">EDIT REWARDS</h2>
-        <p className="text-[#BDBDBD] mb-4 text-[20px]">Treat yourself fairly!</p>
-
+        <h2 className="text-[30px] md:text-[40px] mr-4">EDIT REWARDS</h2>
+        <p className="text-[#BDBDBD] mb-4 text-[16px] md:text-[20px]">Treat yourself fairly!</p>
         <div className="mb-4">
-          <label className="block text-black text-[25px] mb-2" htmlFor="chestType">Chest Type</label>
+          <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="chestType">Chest Type</label>
           <Select onValueChange={setSelectedChestType} value={selectedChestType}>
             <SelectTrigger className="w-full bg-white border border-[#BDBDBD]">
               <SelectValue placeholder="Select Chest Type" />
@@ -120,9 +119,9 @@ const EditRewardsForm: React.FC<{ isOpen: boolean, onClose: () => void, fetchRew
         </div>
 
         <div className="mb-4">
-          <label className="block text-black text-[25px] mb-2">Rewards</label>
-          <div className='max-h-[800px] overflow-y-auto'>
-            {chestRewards.map((reward, index) => (
+        <label className="block text-black text-[20px] md:text-[25px] mb-2">Rewards</label>
+        <div className='max-h-[300px] md:max-h-[400px] overflow-y-auto'>
+        {chestRewards.map((reward, index) => (
             <div key={index} className="flex mb-2 space-x-2">
                 <button
                 className="w-1/5 px-2 py-1 border border-[#BDBDBD] rounded-lg bg-white"
@@ -137,35 +136,37 @@ const EditRewardsForm: React.FC<{ isOpen: boolean, onClose: () => void, fetchRew
                 onChange={e => handleNameChange(index, e.target.value)}
                 placeholder="Name"
                 />
-                <button className="text-black h-[40px] w-[40px] flex justify-center items-center hover:bg-black hover:text-white rounded-xl border border-black" onClick={() => handleRemoveReward(index)}>
-                <Trash size={20} />
+                <button className="text-black h-[30px] md:h-[40px] w-[30px] md:w-[40px] flex justify-center 
+                items-center hover:bg-black hover:text-white rounded-lg border border-black" 
+                onClick={() => handleRemoveReward(index)}>
+                  <Trash size={20} />
                 </button>
             </div>
             ))}
         </div>
-          <button className="mt-4 text-[40px] text-[#F2C94C] w-full flex justify-center"    >
-            <div className='border-[4px] hover:bg-black bg-[#F2C94C] border-black h-[50px] w-[50px] flex justify-center items-center rounded-xl' onClick={handleAddReward}>
-              <Plus size={40} strokeWidth={4} className='text-black hover:text-[#F2C94C]' />
+         <button className="mt-4 text-[30px] md:text-[40px] text-[#F2C94C] w-full flex justify-center">
+            <div className='border-[4px] hover:bg-black bg-[#F2C94C] border-black h-[40px] md:h-[50px] w-[40px] md:w-[50px] flex justify-center items-center rounded-xl' onClick={handleAddReward}>
+             <Plus size={40} strokeWidth={4} className='text-black hover:text-[#F2C94C]' />
             </div>
           </button>
         </div>
 
         {showAlert && (
           <Alert className="mb-4" variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
-            <AlertTitle>{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
-            <AlertDescription>
+            <AlertTitle className="text-[16px] md:text-[20px]">{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
+            <AlertDescription className="text-[14px] md:text-[16px]">
               {alertMessage}
             </AlertDescription>
           </Alert>
         )}
 
-        <div className="flex justify-end">
-          <button
+      <div className="flex justify-end mt-4">
+         <button
             type="button"
-            className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[20px]"
+            className="bg-black text-white px-2 py-1 md:px-4 md:py-2 rounded-lg hover:bg-white border-[2px] md:border-[3px] border-black hover:text-black text-[16px] md:text-[20px]"
             onClick={handleSave}
           >
-            Save
+            SAVE
           </button>
         </div>
 

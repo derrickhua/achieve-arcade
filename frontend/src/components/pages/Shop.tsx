@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import AddButton from './AddButton';
 import { Dice6 } from 'lucide-react';
+import { useMediaQuery } from 'react-responsive';
 import Image from 'next/image';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
@@ -18,12 +19,11 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [reward, setReward] = useState({});
   const [chestType, setChestType] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
   const playSound = (soundPath) => {
     const audio = new Audio(soundPath);
     audio.play();
   };
-  
 
   const fetchRewards = async () => {
     try {
@@ -76,7 +76,6 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
     { name: 'METAL CHEST', price: 60, image: '/icons/shop/metal.png', type: 'Metal' },
     { name: 'GOLD CHEST', price: 150, image: '/icons/shop/gold.png', type: 'Gold' },
   ];
-  
 
   const chestProbabilities = {
     wood: [
@@ -101,36 +100,44 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
   if (loading) {
     return <LoadingComponent />;
-  } 
+  }
+
   return (
-    <div className="relative p-8 h-full overflow-auto flex flex-col items-center w-full">
+    <div className="relative p-4 justify-around overflow-auto flex flex-col items-center md:h-full w-full">
       <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full">
         <div className="flex flex-col">
-          <span className="text-[50px] mr-4">REWARDS SHOP
-          </span>
-          <span className="text-[40px] text-[#F2C94C]">REWARD YOURSELF, YOU&apos;VE WORKED HARD!</span>
+          <span className="text-[20px] sm:text-[35px] md:text-[50px] md:mr-4 leading-none">REWARDS SHOP</span>
+          {!isMobile && 
+            <span className="text-[20px] md:text-[40px] text-[#F2C94C] leading-none">
+              REWARD YOURSELF, YOU&apos;VE WORKED HARD!</span>
+          }
         </div>
         <AddButton name="EDIT REWARDS" onClick={() => setIsEditRewardsOpen(true)} />
       </div>
-      <div className="flex mt-4 gap-4 max-w-[1800px] w-full h-[600px] items-center justify-center space-x-[70px]">
+      <div className="flex flex-col md:flex-row md:mt-4 md:gap-4 max-w-[1800px] w-full gap-4 md:h-auto 
+      md:h-[600px] items-center justify-around md:justify-center space-x-0 md:space-x-[70px]">
         {chests.map((chest) => (
-          <div key={chest.type} className="flex relative flex-col items-center justify-between py-6 max-w-[400px] 
-          max-h-[400px] h-[20vw] w-[20vw] border border-black border-[8px] rounded-3xl">
-            <span className="text-[40px]">{chest.name}</span>
+          <div key={chest.type} className="flex relative flex-col items-center justify-between py-2 md:py-6 
+          max-w-[190px] 
+          max-h-[190px]
+          md:max-w-[400px] 
+          md:max-h-[400px] h-[100vw] 
+          w-[100vw] md:h-[20vw] aspect-square
+          md:w-[20vw] border border-black border-[8px] rounded-3xl">
+            <span className="text-[20px] md:text-[40px]">{chest.name}</span>
             <Image
               src={chest.image}
               alt={chest.name}
-              width={355}
-              height={236}
-              className="absolute left-[70px]"
+              width={isMobile ? 179: 355}
+              height={isMobile ? 100: 236}
+              className="absolute bottom-[65px] md:bottom-[120px] left-[30px] md:left-[70px]"
               style={{ imageRendering: 'pixelated' }}
+              onContextMenu={(e) => e.preventDefault()}
             />
             <div className="flex flex-col items-center">
-              <span className="text-[30px] mt-4 text-[#F2C94C]">{chest.price} coins
-              </span>
+              <span className="text-[20px] md:text-[30px] mt-4 text-[#F2C94C]">{chest.price} coins</span>
               <button
-                className="border rounded-xl border-black hover:bg-black hover:text-[#F2C94C]
-                text-[20px] text-black w-[190px] h-[40px]"
+                className="border rounded-lg md:rounded-xl border-black hover:bg-black hover:text-[#F2C94C] text-[20px] text-black w-[150px] md:w-[190px] h-[30px] md:h-[40px]"
                 onClick={() => handlePurchaseChest(chest.type)}
               >
                 BUY CHEST
@@ -139,41 +146,43 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
           </div>
         ))}
       </div>
-      <div className="probabilities-section mt-8 w-full flex flex-col items-center">
-      <Select value={selectedChest} onValueChange={(value) => setSelectedChest(value)}>
-      <SelectTrigger className="w-[300px] h-[50px] text-[40px] text-center flex justify-center mb-4">
-        <SelectValue placeholder="Wood Chest" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="Wood">Wood Chest</SelectItem>
-        <SelectItem value="Metal">Metal Chest</SelectItem>
-        <SelectItem value="Gold">Gold Chest</SelectItem>
-      </SelectContent>
-    </Select>
+      {!isMobile && (
+        <div className="probabilities-section mt-8 w-full flex flex-col items-center">
+          <Select value={selectedChest} onValueChange={(value) => setSelectedChest(value)}>
+            <SelectTrigger className="w-[200px] md:w-[300px] h-[40px] md:h-[50px] text-[20px] md:text-[40px] text-center flex justify-center mb-4">
+              <SelectValue placeholder="Wood Chest" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Wood">Wood Chest</SelectItem>
+              <SelectItem value="Metal">Metal Chest</SelectItem>
+              <SelectItem value="Gold">Gold Chest</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <div className="probabilities-display flex mt-4 w-full justify-center max-w-[1800px] border-black border-[5px] rounded-3xl relative">
-        {chestProbabilities[selectedChest.toLowerCase()].map((prob, index) => (
-          <React.Fragment key={index}>
-            <div
-              className={`flex flex-col items-center h-[130px] ${index === 0 ? 'rounded-l-2xl' : ''} ${index === chestProbabilities[selectedChest.toLowerCase()].length - 1 ? 'rounded-r-2xl' : ''}`}
-              style={{ backgroundColor: prob.color, width: prob.width, flexWrap: 'wrap', overflow: 'hidden' }}
-            >
-              <div className="flex mt-[20px] flex-wrap justify-center">
-                {prob.icons.map((icon, i) => (
-                  <span key={i} className="reward-icon">{icon}</span>
-                ))}
-              </div>
+          <div className="probabilities-display flex flex-col md:flex-row mt-4 w-full justify-center max-w-[1800px] border-black border-[5px] rounded-3xl relative">
+            {chestProbabilities[selectedChest.toLowerCase()].map((prob, index) => (
+              <React.Fragment key={index}>
+                <div
+                  className={`flex flex-col items-center h-[100px] md:h-[130px] ${index === 0 ? 'rounded-t-2xl md:rounded-l-2xl' : ''} ${index === chestProbabilities[selectedChest.toLowerCase()].length - 1 ? 'rounded-b-2xl md:rounded-r-2xl' : ''}`}
+                  style={{ backgroundColor: prob.color, width: prob.width, flexWrap: 'wrap', overflow: 'hidden' }}
+                >
+                  <div className="flex mt-[10px] md:mt-[20px] flex-wrap justify-center">
+                    {prob.icons.map((icon, i) => (
+                      <span key={i} className="reward-icon">{icon}</span>
+                    ))}
+                  </div>
+                </div>
+                <div className="absolute top-[-20px] md:top-[-40px]" style={{ left: `calc(${prob.position})` }}>
+                  {prob.range}
+                </div>
+              </React.Fragment>
+            ))}
+            <div className="absolute top-[-20px] md:top-[-40px] right-0">
+              100%
             </div>
-            <div className="absolute top-[-40px]" style={{ left: `calc(${prob.position})` }}>
-              {prob.range}
-            </div>
-          </React.Fragment>
-        ))}
-          <div className="absolute top-[-40px] right-0">
-            100%
           </div>
         </div>
-      </div>
+      )}
       <EditRewardsForm
         isOpen={isEditRewardsOpen}
         onClose={() => setIsEditRewardsOpen(false)}
@@ -187,8 +196,6 @@ const Shop: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
           onClose={() => setIsRewardPopupOpen(false)}
         />
       )}
-
-
     </div>
   );
 };

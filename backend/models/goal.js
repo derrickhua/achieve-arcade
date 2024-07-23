@@ -153,7 +153,6 @@ GoalSchema.methods.generateMilestones = async function() {
         $push: { milestones: { $each: milestones } }
       }, { new: true });
 
-      console.log('Milestones generated and added to the goal.');
     } catch (error) {
       console.error('Failed to generate milestones:', error);
     }

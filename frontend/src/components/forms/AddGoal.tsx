@@ -135,19 +135,19 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 overflow-y-auto" onClick={onClose}>
+      <div className="bg-[#FEFDF2] rounded-xl p-6 relative w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[40px] mr-4">ADD NEW GOAL</h2>
-        <p className="text-[#BDBDBD] mb-4 text-[20px]">Enter your goal details here!</p>
+        <h2 className="text-[20px] md:text-[30px]">ADD NEW GOAL</h2>
+        <p className="text-[#BDBDBD] text-[15px] md:text-[20px] mb-4">Enter your goal details here!</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-2">
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="title">Title</label>
+            <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="title">Title</label>
             <input
-              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg bg-white"
               type="text"
               id="title"
               value={title}
@@ -156,14 +156,14 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
               maxLength={maxTitleLength}
               required
             />
-            <div className="text-right text-[14px] text-text-[#BDBDBD]">
+            <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
               {title.length}/{maxTitleLength} characters
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="description">Description</label>
+            <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="description">Description</label>
             <textarea
-              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg bg-white"
               id="description"
               value={description}
               onChange={handleDescriptionChange}
@@ -172,12 +172,12 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
               rows={4}
               required
             />
-            <div className="text-right text-[14px] text-text-[#BDBDBD]">
+            <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
               {description.length}/{maxDescriptionLength} characters
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="deadline">Deadline</label>
+            <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="deadline">Deadline</label>
             <Popover>
               <PopoverTrigger asChild>
                 <button className="w-full px-3 py-2 border border-[#BDBDBD] bg-white rounded-lg flex items-center justify-between">
@@ -186,30 +186,30 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
                 </button>
               </PopoverTrigger>
               <PopoverContent>
-              <Calendar
-                mode="single"
-                selected={deadline ? new Date(new Date(deadline).getTime() + 24 * 60 * 60 * 1000) : undefined}
-                onSelect={handleDateSelect}
-              />
+                <Calendar
+                  mode="single"
+                  selected={deadline ? new Date(new Date(deadline).getTime() + 24 * 60 * 60 * 1000) : undefined}
+                  onSelect={handleDateSelect}
+                />
               </PopoverContent>
             </Popover>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
+            <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="difficulty">Difficulty</label>
             <Select onValueChange={setDifficulty} value={difficulty}>
-                <SelectTrigger className="w-full border border-[#BDBDBD] bg-white">
+              <SelectTrigger className="w-full border border-[#BDBDBD] bg-white">
                 <SelectValue placeholder="Select Difficulty" />
-                </SelectTrigger>
-                <SelectContent>
+              </SelectTrigger>
+              <SelectContent>
                 <SelectItem value="Easy">Easy</SelectItem>
                 <SelectItem value="Medium">Medium</SelectItem>
                 <SelectItem value="Hard">Hard</SelectItem>
-                </SelectContent>
+              </SelectContent>
             </Select>
-            </div>
+          </div>
 
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="category">Category</label>
+            <label className="block text-black text-[16px] md:text-[20px] mb-2" htmlFor="category">Category</label>
             <Select onValueChange={setCategory} value={category}>
               <SelectTrigger className="w-full bg-white border border-[#BDBDBD]">
                 <SelectValue placeholder="Select Category" />
@@ -226,7 +226,7 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
           {showAlert && (
             <Alert variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
               <AlertTitle>{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
-              <AlertDescription>
+              <AlertDescription className="text-[12px] md:text-[14px]">
                 {alertMessage}
               </AlertDescription>
             </Alert>
@@ -234,9 +234,9 @@ const AddGoalForm: React.FC<AddGoalFormProps> = ({ isOpen, onClose, fetchGoals }
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[20px]"
+              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[15px] md:text-[20px]"
             >
-              Add Goal
+              ADD GOAL
             </button>
           </div>
         </form>

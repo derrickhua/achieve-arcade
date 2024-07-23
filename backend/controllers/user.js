@@ -2,7 +2,7 @@ import User from '../models/user.js';
 import Reward from '../models/reward.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-
+import { sendWelcomeEmailProLifetime, sendWelcomeEmailRegular } from './email.js';
 const basicRewards = {
     woodRewards: [
       { name: 'Coffee', icon: '☕', chestType: 'Wood' },
@@ -126,67 +126,70 @@ export const refreshAccessToken = async (req, res, next) => {
     }
 };
 
-    /**
-     * Registers a new user with the provided credentials.
-     * If the user already exists or there's an issue with user creation, it throws errors
-     * that are handled by centralized error handling middleware to maintain consistency.
-     *
-     * @param {Request} req - The request object containing username, email, password, and timezone.
-     * @param {Response} res - The response object used to send back the registration status.
-     * @param {Function} next - The next middleware function in the stack for error handling.
-     */
-    // registration endpoint
-    export const register = async (req, res, next) => {
-        const { username, email, password, timezone } = req.body;
-        try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ error: 'User already exists' });
-        }
-    
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = new User({
-            username,
-            email,
-            password: hashedPassword,
-            timezone,
-            coins: 0 // Initial starter coins
-        });
-    
-        // Count the number of pro users
-        const proUserCount = await User.countDocuments({ subscription: 'pro' });
-    
-        // Assign the subscription type based on the number of pro users
-        if (proUserCount < 50) {
-            newUser.subscription = 'pro';
-            newUser.subscriptionType = 'freeLifetime';
-        } else if (proUserCount < 100) {
-            newUser.subscription = 'pro';
-            newUser.subscriptionType = 'paidLifetime';
+/**
+ * Registers a new user with the provided credentials.
+ * If the user already exists or there's an issue with user creation, it throws errors
+ * that are handled by centralized error handling middleware to maintain consistency.
+ *
+ * @param {Request} req - The request object containing username, email, password, and timezone.
+ * @param {Response} res - The response object used to send back the registration status.
+ * @param {Function} next - The next middleware function in the stack for error handling.
+ */
+// registration endpoint
+export const register = async (req, res, next) => {
+    const { username, email, password, timezone } = req.body;
+    try {
+      const existingUser = await User.findOne({ $or: [{ email }, { username }] });
+      if (existingUser) {
+        if (existingUser.email === email) {
+          return res.status(409).json({ error: 'Email already exists' });
         } else {
-            newUser.subscription = 'free';
-            newUser.subscriptionType = 'recurring';
+          return res.status(409).json({ error: 'Username already exists' });
         }
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const newUser = new User({
+        username,
+        email,
+        password: hashedPassword,
+        timezone,
+        coins: 0 // Initial starter coins
+      });
     
-        const tokens = generateTokens(newUser._id);
-        newUser.refreshToken = tokens.refreshToken;
-        await newUser.save();
-    
-        // Initialize rewards for the new user
-        await initializeUserRewards(newUser._id);
-        console.log('new user at', newUser._id)
-        res.status(201).json({
-            message: 'User registered successfully',
-            refreshToken: tokens.refreshToken,
-            accessToken: tokens.accessToken,
-            accessTokenExpires: tokens.accessTokenExpires,
-            userId: newUser._id,  // Use newUser._id to get the user's ID
-        });
-        } catch (error) {
-        console.error("Registration error:", error);
-        next(error);
-        }
-    };
+      newUser.subscription = 'free';
+      newUser.subscriptionType = 'free';
+  
+      const tokens = generateTokens(newUser._id);
+      newUser.refreshToken = tokens.refreshToken;
+      await newUser.save();
+  
+      // Initialize rewards for the new user
+      await initializeUserRewards(newUser._id);
+      console.log('new user at', newUser._id);
+  
+      // Send the appropriate welcome email
+      if (newUser.subscriptionType === 'freeLifetime') {
+        await sendWelcomeEmailProLifetime(newUser.email, username);
+      } else {
+        await sendWelcomeEmailRegular(newUser.email, username);
+      }
+  
+      res.status(201).json({
+        message: 'User registered successfully',
+        refreshToken: tokens.refreshToken,
+        accessToken: tokens.accessToken,
+        accessTokenExpires: tokens.accessTokenExpires,
+        userId: newUser._id,  // Use newUser._id to get the user's ID
+      });
+    } catch (error) {
+      console.error("Registration error:", error);
+      if (error.name === 'MongoServerError' && error.code === 11000) {
+        return res.status(409).json({ error: 'Duplicate key error: Username or Email already exists' });
+      }
+      next(error);
+    }
+  };
   
 
 /**
@@ -237,7 +240,7 @@ export const login = async (req, res, next) => {
  */
 export const getUser = async (req, res, next) => {
     try {
-        const user = await User.findById(req.user._id).select('username email preferences subscription subscriptionType');
+        const user = await User.findById(req.user._id).select('username email preferences subscription subscriptionType createdAt');
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -246,6 +249,7 @@ export const getUser = async (req, res, next) => {
         next(error);
     }
 };
+
 
 /**
  * Retrieves the user's preferences based on the user's ID stored in the request.

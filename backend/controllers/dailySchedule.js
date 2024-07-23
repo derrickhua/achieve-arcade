@@ -1,8 +1,10 @@
 import { startOfWeek, endOfWeek } from 'date-fns';
+import moment from 'moment-timezone';
 import mongoose from 'mongoose';
 import Task from '../models/task.js';
 import { TimeBlock, DailySchedule } from '../models/dailySchedule.js';
 import User from '../models/user.js';
+
 
 /**
  * Retrieves the daily schedule for the user for the current date.
@@ -12,13 +14,22 @@ import User from '../models/user.js';
  * @param {Response} res - The response object used to return the daily schedule.
  */
 export const getDailySchedule = async (req, res, next) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
     try {
-        let schedule = await DailySchedule.findOne({ userId: req.user._id, date: today }).populate('timeBlocks.tasks');
+        const { date, timezone } = req.query; // Get the date and timezone from the query parameters
+
+        if (!date || !timezone) {
+            const error = new Error('Date and timezone must be provided');
+            error.status = 400; // Bad Request
+            return next(error);
+        }
+
+        // Create a moment object using the provided date and timezone
+        const localDateTime = moment.tz(date, timezone).startOf('day');
+        const utcDate = localDateTime.clone().utc().toDate();
+
+        let schedule = await DailySchedule.findOne({ userId: req.user._id, date: utcDate }).populate('timeBlocks.tasks');
         if (!schedule) {
-            schedule = new DailySchedule({ userId: req.user._id, date: today, timeBlocks: [] });
+            schedule = new DailySchedule({ userId: req.user._id, date: utcDate, timeBlocks: [] });
             await schedule.save();
         }
 
@@ -28,25 +39,27 @@ export const getDailySchedule = async (req, res, next) => {
     }
 };
 
+
 /**
  * Updates the notes for the daily schedule for the current date.
  * @param {Request} req - The request object, including the new notes.
  * @param {Response} res - The response object used to return the updated schedule.
  */
 export const updateNotes = async (req, res, next) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const { notes } = req.body;
+    const { notes, timezone } = req.body;
 
-    if (typeof notes !== 'string') {
-        const error = new Error('Notes must be a string');
+    if (typeof notes !== 'string' || !timezone) {
+        const error = new Error('Notes must be a string and timezone must be provided');
         error.status = 400; // Bad Request
         return next(error);
     }
 
     try {
+        const localDateTime = moment().tz(timezone).startOf('day');
+        const utcDate = localDateTime.clone().utc().toDate();
+
         const schedule = await DailySchedule.findOneAndUpdate(
-            { userId: req.user._id, date: today },
+            { userId: req.user._id, date: utcDate },
             { $set: { notes } },
             { new: true }
         );
@@ -69,17 +82,22 @@ export const updateNotes = async (req, res, next) => {
  * @param {Response} res - The response object used to return the updated schedule.
  */
 export const addTimeBlock = async (req, res, next) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const { name, startTime, endTime, tasks, category } = req.body;
+    const { name, startTime, endTime, tasks, category, timezone } = req.body;
 
-    if (!name || !startTime || !endTime || !category) {
-        const error = new Error('Name, start time, end time, and category must be provided');
+    if (!name || !startTime || !endTime || !category || !timezone) {
+        const error = new Error('Name, start time, end time, category, and timezone must be provided');
         error.status = 400; // Bad Request
         return next(error);
     }
 
     try {
+        // Parse start and end times with the provided timezone
+        const parsedStartTime = moment.tz(startTime, timezone).utc().toDate();
+        const parsedEndTime = moment.tz(endTime, timezone).utc().toDate();
+
+        // Get the current date in the user's timezone
+        const today = moment().tz(timezone).startOf('day').utc().toDate();
+
         // Find or create the daily schedule for today
         let schedule = await DailySchedule.findOne({ userId: req.user._id, date: today });
         if (!schedule) {
@@ -102,8 +120,8 @@ export const addTimeBlock = async (req, res, next) => {
         // Create new TimeBlock document
         const timeBlock = new TimeBlock({
             name,
-            startTime,
-            endTime,
+            startTime: parsedStartTime,
+            endTime: parsedEndTime,
             tasks: taskDocs.map(task => task._id),
             category,
             userId: req.user._id,
@@ -131,12 +149,18 @@ export const addTimeBlock = async (req, res, next) => {
 };
 
 export const updateTimeBlock = async (req, res, next) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const { blockId } = req.params;
-    const { name, startTime, endTime, tasks, category, completed, timerDuration } = req.body;
+    const { name, startTime, endTime, tasks, category, completed, timerDuration, timezone } = req.body;
+
+    if (!timezone) {
+        const error = new Error('Timezone must be provided');
+        error.status = 400; // Bad Request
+        return next(error);
+    }
 
     try {
+        const today = moment().tz(timezone).startOf('day').utc().toDate();
+
         // Filter out tasks with temporary IDs and tasks with valid ObjectIds
         const existingTasks = tasks.filter(task => mongoose.Types.ObjectId.isValid(task._id));
         const newTasks = tasks.filter(task => !mongoose.Types.ObjectId.isValid(task._id));
@@ -179,8 +203,8 @@ export const updateTimeBlock = async (req, res, next) => {
         // Prepare the $set object for updating fields in both DailySchedule and TimeBlock
         const updateFields = {
             name,
-            startTime,
-            endTime,
+            startTime: moment.tz(startTime, timezone).utc().toDate(),
+            endTime: moment.tz(endTime, timezone).utc().toDate(),
             tasks: allTaskIds,
             category,
             timerDuration,
@@ -227,19 +251,24 @@ export const updateTimeBlock = async (req, res, next) => {
     }
 };
 
-
-/**
- * Deletes a specific time block from the daily schedule for the current date, including associated tasks.
- * @param {Request} req - The request object, including time block ID.
- * @param {Response} res - The response object used to confirm deletion.
- */
 export const deleteTimeBlock = async (req, res, next) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     const { blockId } = req.params;
+    const { timezone } = req.body; // Get the timezone from the request body
+
+    if (!timezone) {
+        const error = new Error('Timezone must be provided');
+        error.status = 400; // Bad Request
+        return next(error);
+    }
 
     try {
-        const schedule = await DailySchedule.findOne({ userId: req.user._id, date: today });
+        console.log(`Attempting to delete time block with ID: ${blockId}, Timezone: ${timezone}`);
+
+        // Get the current date in the user's timezone
+        const localDateTime = moment().tz(timezone).startOf('day');
+        const utcDate = localDateTime.clone().utc().toDate();
+
+        const schedule = await DailySchedule.findOne({ userId: req.user._id, date: utcDate });
         if (schedule) {
             const block = schedule.timeBlocks.id(blockId);
             if (block) {
@@ -248,17 +277,22 @@ export const deleteTimeBlock = async (req, res, next) => {
 
                 schedule.timeBlocks.pull(blockId);
                 await schedule.save();
+                console.log('Time block deleted successfully');
                 res.status(204).send(); // No content to send back
             } else {
+                console.log('Time block not found');
                 res.status(404).json({ message: 'Time block not found' });
             }
         } else {
+            console.log('Schedule not found');
             res.status(404).json({ message: 'Schedule not found' });
         }
     } catch (error) {
+        console.error(`Error deleting time block: ${error.message}`);
         next(error); // Pass any server-side errors to the error handling middleware
     }
 };
+
 
 
 /**
@@ -268,11 +302,17 @@ export const deleteTimeBlock = async (req, res, next) => {
  */
 export const getWeeklyMetrics = async (req, res, next) => {
     const userId = req.user._id;
-    const date = req.query.date;
+    const { date, timezone } = req.query;
+
+    if (!date || !timezone) {
+        const error = new Error('Date and timezone must be provided');
+        error.status = 400; // Bad Request
+        return next(error);
+    }
 
     // Calculate start and end dates of the week for the given date
-    const startDate = startOfWeek(new Date(date));
-    const endDate = endOfWeek(new Date(date));
+    const startDate = moment.tz(date, timezone).startOf('week').utc().toDate();
+    const endDate = moment.tz(date, timezone).endOf('week').utc().toDate();
 
     try {
         // Fetch user preferences from the User model

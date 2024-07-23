@@ -17,12 +17,13 @@ const FeatureSelect = dynamic(() => import('../components/landing/FeatureSelect'
 });
 
 export const metadata: Metadata = {
-  title: 'Achieve Arcade',
-  description: 'game your productivity',
+  title: 'Achieve Arcade - Gamified Productivity Tools, Goal Tracker, Habit Tracker',
+  description: 'Achieve Arcade: Gamify your productivity with our goal and habit trackers. Boost your productivity with our gamified tools.',
   icons: {
     icon: '/icons/logo.png',
   },
 };
+
 
 
 export default function LandingPage() {
@@ -32,11 +33,11 @@ export default function LandingPage() {
       <div className="max-w-[1280px] mx-auto">
         
         {/* First Section with Navbar */}
-        <section className="min-h-[1100px] flex flex-col w-full">
+        <section className="min-h-[875px] md:min-h-[1100px] flex flex-col w-full">
           <nav className="py-5 px-8 flex items-center justify-between max-w-7xl mx-auto text-white w-full">
             <div className="flex items-center">
               <div className="flex">
-                <Image src={'/icons/logo.png'} alt="Achieve Arcade Logo" width={24} height={34} />
+               <Image src={'/icons/logo.png'} alt="Achieve Arcade - Gamified Productivity Tools" width={24} height={34} />
                 <p className="leading-none text-[18px] ml-2 hover:text-[#FFA501]">ACHIEVE<br/>ARCADE</p>
               </div>
               <div className="flex space-x-[30px] ml-[30px]">
@@ -52,40 +53,50 @@ export default function LandingPage() {
               </button>
             </div>
           </nav>
-          <div className="w-full mt-[150px] flex flex-col md:flex-row px-8 text-white items-center md:items-start">
-            <div className="w-full md:w-1/2 text-center md:text-left flex flex-col items-center md:items-start">
-              <div className="text-[40px] md:text-[60px] text-white leading-tight mb-[30px]">
+          <div className="w-full mt-[150px] flex flex-col md:flex-row px-8 text-white items-center">
+            <div className="w-full h-full justify-center md:w-1/2 text-center md:text-left flex flex-col items-center md:items-start">
+              <h1 className="text-[40px] md:text-[60px] text-white leading-tight mb-[30px]">
                 Game your goals <br />
-                get <span className="text-black bg-white px-4">more done</span>
-              </div>
-              <div className="text-[16px] md:text-[20px] mb-[60px]">
+                get <span className="text-black bg-white px-4">more done</span> <span className="hidden">with our productivity tools</span>
+              </h1>
+              <div className="text-[16px] md:text-[20px] mb-[40px]">
                 Turn tasks into quests, earn rewards, and boost 
-                <br className="hidden md:block"/> productivity with Achieve Arcade.
+                <br className="hidden md:block"/> productivity with Achieve Arcade. <span className="hidden">your ultimate goal. tracker and habit tracker</span>
               </div>
               <div className="w-full flex items-center justify-center max-w-[300px]">
-                <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4 py-2 text-[16px] md:text-[20px] text-black flex items-center justify-center hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
-                  <span className="inline-block md:hidden">
-                    <HeartCrack className="inline-block mr-2 text-black group-hover:text-[#FFA501] w-5 h-5" />
-                    Not Yet on Mobile
-                  </span>
-                  <span className="hidden md:inline-block">
-                    <Link href="/auth/register" className="w-full flex items-center justify-center">
+                <Link href="/auth/register" className="w-full flex items-center justify-center">
+                  <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4 py-2 text-[16px] md:text-[20px] text-black flex items-center justify-center hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
+                    <span className="">
                       <Gamepad2 className="inline-block mr-2 text-black group-hover:text-[#FFA501] w-6 h-6" />
                       START PLAYING
-                    </Link>
-                  </span>
-                </button>
+                    </span>
+                  </button>
+                </Link>
               </div>
-              <div className="mt-4">
-                <Gift size={24} className="inline-block mr-2 text-[#6FCF97]"/>
-                <span className="text-[#6FCF97] text-[15px]">FREE PRO ACCESS </span> 
-                for the first 50 users!
-              </div>
+  
               <div className="text-[15px] text-white mt-2">
                 <Sparkle size={24} className="inline-block mr-2 text-[#6FCF97]"/>
-                Start your journey with our free version</div>
+                Start your journey with our free version
+              </div>
+            </div>
+            <div className="w-full md:w-1/2 flex justify-center md:block hidden">
+              <div>
+                <Image src={'/icons/landing/images/section-1.png'} alt="Achieve Arcade Productivity Tools"
+                 width={564} height={535} style={{ imageRendering: 'pixelated' }} />
+              </div>
+            </div>
+          </div>
 
-              <div className="mt-[80px] flex flex-col text-[15px] items-center md:items-start">
+          <div className="text-white w-full flex justify-center mt-[100px] text-[15px] gap-4">
+            <div>FEATURED ON</div>
+            <div>Product Hunt</div>
+            <div>reddit</div>
+            <div>X</div>
+            <div>Hacker News</div>
+          </div>
+        </section>
+
+              {/* <div className="mt-[80px] flex flex-col text-[15px] items-center md:items-start">
                 <div>
                   &quot;THIS IS WHAT I&apos;VE BEEN LOOKING FOR!&quot; <br/>
                 </div>
@@ -93,76 +104,55 @@ export default function LandingPage() {
                   <div className="rounded-3xl bg-white w-10 h-10 inline-block mr-2"></div>
                   <div>SOME RANDOM NAME</div>
                 </div>
-              </div>
-            </div>
-            <div className="w-full md:w-1/2 flex justify-center md:block hidden">
-              <div>
-                <Image src={'/icons/landing/images/section-1.png'} alt="section 1" 
-                width={564} height={535} style={{ imageRendering: 'pixelated' }}/>
-              </div>
-            </div>
-          </div>
-          <div className="text-white w-full flex justify-center mt-[100px] text-[13px] gap-4">
-            <div>FEATURED ON</div>
-            <div>PRODUCT HUNT</div>
-            <div>reddit</div>
-            <div>X</div>
-          </div>
-        </section>
-
+              </div> */}
 
 
         
         {/* 2: FEATURE SHOWCASE */}
-        <section id="features" className="min-h-[1100px] w-full flex flex-col justify-center items-center text-white px-4">
-          <div className="header text-[40px] md:text-[50px] max-w-[700px] leading-none">
-            Level Up Your Productivity, <br className="hidden md:block" />
-            One Game at a Time
-            <div className="text-[15px] md:text-[20px] mt-4 leading-6">
-              Transform your productivity with Achieve Arcade. 
-              Track progress, conquer goals, build habits, slay tasks, 
-              manage your schedule, and earn rewards. 
-              Unlock your full potential and make every day a winning day.
-            </div>
-          </div>
-          <div className="feature-select flex flex-wrap justify-center mt-8 w-full max-w-[700px]">
+        <section id="features" className="min-h-[875px] md:min-h-[1100px] w-full flex flex-col justify-center items-center text-white px-4">
+        <div className="header text-[40px] md:text-[50px] max-w-[700px] leading-none">
+          <h1>Level Up Your Productivity, One Game at a Time<span className="hidden">with our productivity tools</span></h1>
+          <h2 className="text-[15px] md:text-[20px] mt-4 leading-6">
+            Transform your productivity with Achieve Arcade. 
+            Track progress, conquer goals, build habits, slay tasks, 
+            manage your schedule, and earn rewards. 
+            Unlock your full potential and make every day a winning day.
+          </h2>
+        </div>
+        <div className="feature-select flex flex-wrap justify-center mt-8 w-full max-w-[700px]">
               <FeatureSelect />
           </div>
         </section>
 
 
         {/* 3: DEMO */}
-        <section id="demo" className="min-h-[1300px] w-full flex flex-col justify-center items-center text-white px-4">
+        <section id="demo" className="min-h-[1000px] md:min-h-[1300px] w-full flex flex-col justify-center items-center text-white px-4">
           <div className="header text-[30px] md:text-[50px] max-w-[700px] leading-none md:text-left">
-            FOR FUTURE PLAYERS
-            <div className="text-[15px] md:text-[20px] mt-4 md:mt-[45px] leading-6">
-              Hey, it&apos;s Derrick!
-              <div className="mt-4 md:mt-[45px] leading-6 md:leading-7 text-[15px] md:text-[20px]">
-                I know, I know. It&apos;s another productivity app, but I made this because I&apos;ve always struggled with 
-                 using existing productivity apps...
-                None of them could ever motivate me enough to use them long-term.  
-                So, I created this product as a solution to my very own problem. 
-                There wasn&apos;t much thought put into it, I just wanted to make something cool 
-                that I would use. I don&apos;t expect that you&apos;ll love it fully, but I really hope that you do! :D
-              </div>
-            </div>
+            <h2>FOR FUTURE PLAYERS</h2>
+            <p className="text-[15px] md:text-[20px] mt-4 md:mt-[45px] leading-8">
+              Hey, it&apos;s Derrick! <br/><br/>I know, it&apos;s another productivity app... <br/> But I made this because I&apos;ve always struggled with 
+              using existing productivity apps. None of them could ever motivate me enough to use them long-term.  
+              So, I created this product as a solution to my very own problem. There wasn&apos;t much thought put into it, I just wanted to make something cool 
+              that I would use. I don&apos;t expect that you&apos;ll love it fully, but I really hope that you do! :D
+            </p>
           </div>
           <div className="w-full md:w-[854px] h-[240px] md:h-[480px] mt-8 md:mt-[60px] relative flex justify-center items-center border-white" style={{ borderWidth: '5px', borderStyle: 'solid', borderRadius: '12px' }}>
-            DEMO
-          </div>
-          <div className="testimonial mt-8 md:mt-[80px] flex flex-col text-[20px] md:text-[25px] text-center md:text-left">
-            <div>
-              &quot;THIS IS WHAT I&apos;VE BEEN LOOKING FOR!&quot; <br/>
-            </div>
-            <div className="flex items-center mt-4 justify-center md:justify-start">
-              <div className="rounded-3xl bg-white w-10 h-10 inline-block mr-4"></div>
-              <div>GUY GUY</div>
-            </div>
+            <iframe
+              width="100%"
+              height="100%"
+              src="https://www.youtube.com/embed/TKsPGsSD4QM"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
         </section>
 
+
+
         {/*4: PRICING  */}
-        <section id="pricing" className="min-h-[1100px] w-full flex flex-col justify-center items-center text-white px-4">
+        <section id="pricing" className="min-h-[875px] md:min-h-[1100px] w-full flex flex-col justify-center items-center text-white px-4">
           <div className="header max-w-[700px] w-full text-center md:text-left">
             <div className="text-[20px] md:text-[25px] text-[#FFA501] w-full">
               PRICING
@@ -224,19 +214,15 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="w-full flex items-center justify-center mt-6 max-w-[300px] self-center">
-                <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4 py-2 text-[16px] md:text-[20px] 
-                text-black flex items-center justify-center hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
-                  <span className="inline-block md:hidden">
-                    <HeartCrack className="inline-block mr-2 text-black group-hover:text-[#FFA501] w-5 h-5" />
-                    Not Yet on Mobile
-                  </span>
-                  <span className="hidden md:inline-block">
-                    <Link href="/auth/register" className="w-full flex items-center justify-center">
+                <Link href="/auth/register" className="w-full flex items-center justify-center">
+                  <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4 py-2 text-[16px] md:text-[20px] 
+                    text-black flex items-center justify-center hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
+                    <span className="">
                       <Gamepad2 className="inline-block mr-2 text-black group-hover:text-[#FFA501] w-6 h-6" />
                       START PLAYING
-                    </Link>
-                  </span>
+                    </span>
                 </button>
+                </Link>
               </div>
             </div>
             <div className="price-card border border-[#FFA501] bg-[#424242] rounded-xl flex flex-col w-full md:w-1/2 h-full py-4 px-6 md:px-10">
@@ -293,20 +279,16 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="w-full flex self-center items-center justify-center mt-6 max-w-[300px]">
-                <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4
-                 py-2 text-[16px] md:text-[20px] text-black flex items-center justify-center 
-                 hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
-                  <span className="inline-block md:hidden">
-                    <HeartCrack className="inline-block mr-2 text-black group-hover:text-[#FFA501] w-5 h-5" />
-                    Not Available on Mobile
-                  </span>
-                  <span className="hidden md:inline-block">
-                    <Link href="/auth/premium-register" className="w-full flex items-center justify-center">
+                <Link href="/auth/premium-register" className="w-full flex items-center justify-center">
+                  <button className="bg-[#FFA501] border border-[#FFA501] rounded-md px-4
+                    py-2 text-[16px] md:text-[20px] text-black flex items-center justify-center 
+                    hover:text-[#FFA501] hover:bg-black group mt-auto mb-4 w-full">
+                    <span className="">
                       <Gamepad2 className="inline-block mr-2 text-black group-hover:text-[#FFA501] w-6 h-6" />
                       START PLAYING
-                    </Link>
-                  </span>
-                </button>
+                    </span>
+                  </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -316,7 +298,7 @@ export default function LandingPage() {
           <section className="FAQ min-h-[800px] w-full flex flex-col md:flex-row justify-center items-center text-white px-4">
             <div className="text-[20px] md:text-[30px] w-full md:w-1/2 text-center md:text-left mb-8 md:mb-0">
               FAQ? <br/>
-              FREQUENTLY ASKED QUESTIONS
+              FREQUENTLY ASKED QUESTIONS ABOUT OUR PRODUCTIVITY TOOLS
               <div className="text-[15px] mt-2">
                 HAVE ANOTHER QUESTION? CONTACT ME @ EMAIL
               </div>
@@ -324,17 +306,17 @@ export default function LandingPage() {
             <div className="questions w-full md:w-1/2 text-[20px] md:text-[25px]">
               <Accordion type="single" collapsible className="text-[20px] md:text-[25px]">
                 <AccordionItem value="item-1">
-                  <AccordionTrigger>Is this a subscription based product?</AccordionTrigger>
+                  <AccordionTrigger>Is this a subscription-based product?</AccordionTrigger>
                   <AccordionContent>
-                    Achieve Arcade offers both free and subscription-based versions. The free version provides essential features, while the Pro version unlocks additional benefits for a subscription fee. Notably, 
+                    Achieve Arcade offers both free and subscription-based versions of our productivity tools. The free version provides essential features, while the Pro version unlocks additional benefits for a subscription fee. Notably, 
                     the first 50 users who sign up will enjoy Pro version access for free, forever.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-2">
-                  <AccordionTrigger>Is this on mobile?</AccordionTrigger>
+                  <AccordionTrigger>Is this on the app store or play store?</AccordionTrigger>
                   <AccordionContent>
-                    Sadly, Achieve Arcade is currently available only on web platforms. I plan to develop a 
-                    mobile version once this application reaches a certain number of pro players.
+                    Sadly, Achieve Arcade is currently available only on web and mobile browsers. I plan to develop a 
+                    mobile app for our productivity tools once this application reaches a certain number of pro players.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-3">
@@ -350,7 +332,7 @@ export default function LandingPage() {
                   <AccordionTrigger>What features are included in the Pro version?</AccordionTrigger>
                   <AccordionContent>
                     The Pro version of Achieve Arcade includes the following features: 
-                    Unlimited Goals, Max Number of Habits, and Unlimited Tasks.
+                    Unlimited Goals, Max Number of Habits, and Unlimited Tasks. These features enhance our goal tracker and habit tracker functionalities.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -360,44 +342,38 @@ export default function LandingPage() {
 
       </div>
      
-<section className="Footer w-full py-10 flex flex-col justify-center items-center border-t border-white">
-  <div className="text-white w-full max-w-[1200px] flex flex-col md:flex-row justify-between items-center px-4 space-y-6 md:space-y-0">
-    <div className="first-col flex flex-col w-full md:w-1/3 gap-4 items-center md:items-start h-[150px] md:h-[200px] text-center md:text-left">
-      <div className="flex items-center justify-center md:justify-start">
-        <Image src={'/icons/logo.png'} alt="Achieve Arcade Logo" width={24} height={34} />
-        <p className="leading-none text-[18px] ml-2 hover:text-[#FFA501]">ACHIEVE<br/>ARCADE</p>
-      </div>
-      <div className="text-[15px]">
-        Turn tasks into quests, earn rewards, and boost <br/>
-        productivity with Achieve Arcade.
-      </div>
-      <div className="flex items-center justify-center md:justify-start">
-        COPYRIGHT <Copyright className="inline-block mr-2" size={15} /> 2024 * All rights reserved
-      </div>
-    </div>
-    <div className="second-col flex flex-col items-center md:items-start h-[150px] md:h-[200px] text-center md:text-left w-full md:w-1/4 space-y-2">
-      <div className="text-[#808080]">LINKS</div>
-      <Link href='/auth/signin' className="hover:text-[#FFA501] cursor-pointer">
-        LOGIN
-      </Link>
-      <a href="#features" className="hover:text-[#FFA501] cursor-pointer">FEATURES</a>
-      <a href="#demo" className="hover:text-[#FFA501] cursor-pointer">DEMO</a>
-      <a href="#pricing" className="hover:text-[#FFA501] cursor-pointer">PRICING</a>
-    </div>
-    <div className="third-col flex flex-col items-center md:items-start h-[150px] md:h-[200px] text-center md:text-left w-full md:w-1/4 space-y-2">
-      <div className="text-[#808080]">LEGAL</div>
-      <Link href='/terms-of-service' className="hover:text-[#FFA501] cursor-pointer">
-        TERMS OF SERVICE
-      </Link>
-      <Link href='/privacy-policy' className="block hover:text-[#FFA501] cursor-pointer">
-        PRIVACY POLICY
-      </Link>
-    </div>
-  </div>
-  <div className="mt-4 w-full text-white text-center px-4">
-    Hello! I&apos;m Derrick, creator of Achieve Arcade. You can follow me on X for more updates!
-  </div>
-</section>
+      <section className="Footer w-full py-10 flex flex-col justify-center items-center border-t border-white">
+        <div className="text-white w-full max-w-[1200px] flex flex-col md:flex-row justify-between items-center px-4 space-y-6 md:space-y-0">
+          <div className="first-col flex flex-col w-full md:w-1/3 gap-4 items-center md:items-start h-[150px] md:h-[200px] text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start">
+              <Image src={'/icons/logo.png'} alt="Achieve Arcade - Gamified Productivity Tools" width={24} height={34} />
+              <p className="leading-none text-[18px] ml-2 hover:text-[#FFA501]">ACHIEVE<br/>ARCADE</p>
+            </div>
+            <div className="text-[15px]">
+              Turn tasks into quests, earn rewards, and boost <br/>
+              productivity with Achieve Arcade.
+            </div>
+            <div className="flex items-center justify-center md:justify-start">
+              COPYRIGHT <Copyright className="inline-block mr-2" size={15} /> 2024 * All rights reserved
+            </div>
+          </div>
+          <div className="second-col flex flex-col items-center md:items-start h-[150px] md:h-[200px] text-center md:text-left w-full md:w-1/4 space-y-2">
+            <div className="text-[#808080]">LINKS</div>
+            <Link href='/auth/signin' className="hover:text-[#FFA501] cursor-pointer">LOGIN</Link>
+            <a href="#features" className="hover:text-[#FFA501] cursor-pointer">FEATURES</a>
+            <a href="#demo" className="hover:text-[#FFA501] cursor-pointer">DEMO</a>
+            <a href="#pricing" className="hover:text-[#FFA501] cursor-pointer">PRICING</a>
+          </div>
+          <div className="third-col flex flex-col items-center md:items-start h-[150px] md:h-[200px] text-center md:text-left w-full md:w-1/4 space-y-2">
+            <div className="text-[#808080]">LEGAL</div>
+            <Link href='/terms-of-service' className="hover:text-[#FFA501] cursor-pointer">TERMS OF SERVICE</Link>
+            <Link href='/privacy-policy' className="block hover:text-[#FFA501] cursor-pointer">PRIVACY POLICY</Link>
+          </div>
+        </div>
+        <div className="mt-4 w-full text-white text-center px-4">
+          Hello! I&apos;m Derrick, creator of Achieve Arcade. You can follow me on X at <Link href='https://x.com/DerrickHua_'>@derrickhua_</Link> for more updates!
+        </div>
+      </section>
 
     </div>
   );

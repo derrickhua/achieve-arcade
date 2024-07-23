@@ -20,7 +20,6 @@ const GoalKnight: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
   useEffect(() => {
     const fetchGoals = async () => {
-      const startTime = Date.now();
       const data = await getAllGoals();
       console.log(data);
       setGoals(data);
@@ -73,11 +72,11 @@ const GoalKnight: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   }
 
   return (
-    <div className="p-8 h-full overflow-auto flex flex-col items-center w-full">
+    <div className="md:p-4 flex flex-col items-center w-full h-full">
       <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full">
         <div className="flex items-center">
-          <span className='text-[50px] mr-4'>GOAL KNIGHT</span>
-          <div className="flex items-center space-x-4 text-[20px]">
+          <span className='text-[25px] sm:text-[35px] md:text-[50px] mr-4'>GOAL KNIGHT</span>
+          <div className="hidden md:flex items-center space-x-4 text-[20px]">
             {['Wellness', 'Career', 'Finance', 'Leisure'].map(category => (
               <button
                 key={category}
@@ -95,10 +94,10 @@ const GoalKnight: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
         </div>
         <AddButton name="ADD GOAL" onClick={openAddGoalForm} />
       </div>
-      <div className={`flex flex-wrap justify-between max-w-[1800px] w-full ${filteredGoals.length === 0 ? 'h-full' : ''}`}>
+      <div className={`flex flex-wrap justify-between max-w-[1800px] min-h-[500px] w-full ${filteredGoals.length === 0 ? 'h-full' : ''}`}>
         {filteredGoals.length > 0 ? (
           filteredGoals.map(goal => (
-            <div key={goal._id} className="w-full md:w-1/2 p-4">
+            <div key={goal._id} className="w-full md:w-1/2 py-2 md:p-4">
               <GoalCard
                 goal={goal}
                 onOpenEditGoalForm={() => openEditGoalForm(goal)}

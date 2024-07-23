@@ -11,7 +11,7 @@ const router = express.Router();
 
 // Stripe routes
 router.post('/create-checkout-session', createCheckoutSession);
-router.post('/cancel-subscription', authenticate, cancelSubscription);
+router.post('/cancel-subscription', authenticate, cancelSubscription); // Ensure this line is correct
 router.post('/refund-all-payments', refundAllPayments);
 
 // Webhook route

@@ -42,12 +42,12 @@ const ScheduleSection: React.FC<{ timeBlocks: TimeBlockType[], onEdit: (timeBloc
   const timeSlots = generateTimeSlots();
 
   return (
-    <div className="grid grid-cols-[4rem_1fr] grid-rows-24 h-full w-[40%]">
+    <div className="grid grid-cols-[3rem_1fr] md:grid-cols-[4rem_1fr] grid-rows-24 min-h-[559px] md:h-[80vh] w-full md:w-[40%]">
       <div className="col-span-1">
         {timeSlots.map((slot, index) => (
           <div
             key={slot.key}
-            className={`flex justify-end text-[20px] ${index !== timeSlots.length - 1 ? 'border-b' : ''} border-black border-dashed`}
+            className={`flex justify-end text-[12px] md:text-[20px] ${index !== timeSlots.length - 1 ? 'border-b' : ''} border-black border-dashed`}
             style={{ height: '4.1667%' /* Adjusted height */ }}
           >
             <p className="flex h-full w-full items-center justify-center border-r border-black border-dashed">
@@ -69,16 +69,16 @@ const ScheduleSection: React.FC<{ timeBlocks: TimeBlockType[], onEdit: (timeBloc
         {timeBlocks.map(block => (
           <div
             key={block._id}
-            className="absolute rounded-lg shadow-md"
+            className="absolute rounded-lg shadow-md bg-blue-500" // Adjust the background color as needed
             style={{
               top: `${getBlockPosition(new Date(block.startTime))}%`,
               height: `${getBlockHeight(new Date(block.startTime), new Date(block.endTime))}%`,
-              width: '100%',
+              width: '95%', // Adjust width for mobile
+              left: '2.5%' // Center the block within the container
             }}
           >
             <TimeBlock
               block={block}
-
               onEdit={onEdit}
               onDelete={onDelete}
               fetchSchedule={fetchSchedule}

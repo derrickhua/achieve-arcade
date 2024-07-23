@@ -120,10 +120,11 @@ const ExpandTimeBlock: React.FC<ExpandTimeBlockProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`dialog-content ${colorClass} text-[#FEFDF2]`}>
+      <DialogContent className={`dialog-content ${colorClass} 
+      text-[#FEFDF2] p-4 md:p-8 w-[90%] max-w-[600px]`}>
         <DialogTitle className="dialog-title">
           <div className="flex justify-center items-center">
-            <p className="text-[40px] mr-2">{block.name}</p>
+          <p className="text-[30px] md:text-[40px] mr-2">{block.name}</p>
             {
               (block.tasks.length === 0) &&
               <input
@@ -136,7 +137,8 @@ const ExpandTimeBlock: React.FC<ExpandTimeBlockProps> = ({
           </div>
         </DialogTitle>
         <div className="flex justify-center items-center mb-4">
-          <span className="text-[50px]">{`${Math.floor(timerDuration / 3600)
+        <span className="text-[30px] md:text-[50px]">
+            {`${Math.floor(timerDuration / 3600)
             .toString()
             .padStart(2, '0')}:${Math.floor((timerDuration % 3600) / 60)
             .toString()
@@ -147,31 +149,31 @@ const ExpandTimeBlock: React.FC<ExpandTimeBlockProps> = ({
             <>
               <Button
                 onClick={handleTimerPause}
-                className="h-[50px] w-[150px] text-[20px] bg-transparent hover:bg-[#FEFDF2] hover:text-transparent text-[#FEFDF2] border-[4px] border-[#FEFDF2] rounded px-4 py-2 mr-2"
+                className="h-[40px] md:h-[50px] w-[120px] md:w-[150px] text-[16px] md:text-[20px] bg-transparent hover:bg-[#FEFDF2] hover:text-transparent text-[#FEFDF2] border-[4px] border-[#FEFDF2] rounded px-4 py-2 mr-2"
               >
                 PAUSE TIMER
               </Button>
               <Button
                 onClick={handleTimerEnd}
-                className="h-[50px] w-[150px] text-[20px] bg-transparent hover:bg-[#FEFDF2] hover:text-transparent text-[#FEFDF2] border-[4px] border-[#FEFDF2] rounded px-4 py-2"
+                className="h-[40px] md:h-[50px] w-[120px] md:w-[150px] text-[16px] md:text-[20px] bg-transparent hover:bg-[#FEFDF2] hover:text-transparent text-[#FEFDF2] border-[4px] border-[#FEFDF2] rounded px-4 py-2"
               >
                 END TIMER
               </Button>
             </>
           ) : (
-            <Button
-              onClick={handleTimerStart}
-              className="h-[50px] w-[150px] text-[20px] bg-transparent hover:bg-[#FEFDF2] hover:text-transparent text-[#FEFDF2] border-[4px] border-[#FEFDF2] rounded px-4 py-2"
-            >
+              <Button
+                onClick={handleTimerStart}
+                className="h-[40px] md:h-[50px] w-[120px] md:w-[150px] text-[16px] md:text-[20px] bg-transparent hover:bg-[#FEFDF2] hover:text-transparent text-[#FEFDF2] border-[4px] border-[#FEFDF2] rounded px-4 py-2"
+              >
               START TIMER
             </Button>
           )}
         </div>
-        <div className="dialog-tasks grid grid-cols-2 gap-2 w-full px-2">
+        <div className="dialog-tasks grid grid-cols-1 md:grid-cols-2 gap-2 w-full px-2">
           {localTasks && localTasks.map((task, index) => (
             <div
               key={index}
-              className="text-[20px] px-4 dialog-task flex items-center justify-between p-2 rounded-xl border border-[#FEFDF2] border-[4px] mb-2"
+              className="text-[16px] md:text-[20px] px-2 md:px-4 dialog-task flex items-center justify-between p-2 rounded-xl border border-[#FEFDF2] border-[4px] mb-2"
             >
               <span>{task.name}</span>
               <input

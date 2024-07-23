@@ -4,10 +4,10 @@ import Image from 'next/image';
 
 const images = [
   { src: '/icons/landing/images/heart.png', alt: 'Heart', width: 40, height: 40, mobileWidth: 30, mobileHeight: 30, style: {}, video: 'player-data.mp4' },
-  { src: '/icons/landing/images/warrior.png', alt: 'Warrior', width: 60, height: 60, mobileWidth: 60, mobileHeight: 60, style: { top: '4px' }, video: 'goal-knight.mp4' },
+  { src: '/icons/landing/images/warrior.png', alt: 'Warrior', width: 85, height: 85, mobileWidth: 60, mobileHeight: 60, style: { top: '4px' }, video: 'goal-knight.mp4' },
   { src: '/icons/landing/images/sunflower.png', alt: 'Sunflower', width: 40, height: 40, mobileWidth: 30, mobileHeight: 30, style: {}, video: 'habit-farm.mp4' },
-  { src: '/icons/landing/images/knight.png', alt: 'Knight', width: 50, height: 80, mobileWidth: 25, mobileHeight: 55, style: { top: '5px' }, video: 'task-slayer.mp4' },
-  { src: '/icons/landing/images/calendar.png', alt: 'Calendar', width: 60, height: 50, mobileWidth: 25, mobileHeight: 35, style: {}, video: 'daily-sched.mp4' },
+  { src: '/icons/landing/images/knight.png', alt: 'Knight', width: 35, height: 80, mobileWidth: 25, mobileHeight: 55, style: { top: '5px' }, video: 'task-slayer.mp4' },
+  { src: '/icons/landing/images/calendar.png', alt: 'Calendar', width: 50, height: 40, mobileWidth: 25, mobileHeight: 35, style: {}, video: 'daily-sched.mp4' },
   { src: '/icons/landing/images/gold-chest.png', alt: 'Gold Chest', width: 72, height: 48, mobileWidth: 54, mobileHeight: 36, style: { top: '15px', left: '19px' }, video: 'rewards.mp4' },
 ];
 
@@ -23,7 +23,7 @@ const FeatureSelect = () => {
 
   return (
     <div className="feature-select flex flex-col items-center mt-8 w-full max-w-[700px]">
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
         {images.map((image, index) => (
           <div
             key={index}
@@ -45,6 +45,7 @@ const FeatureSelect = () => {
                 height={image.mobileHeight} 
                 className="md:hidden" 
                 style={{ imageRendering: 'pixelated' }} 
+                
               />
               <Image 
                 src={image.src} 
@@ -53,6 +54,7 @@ const FeatureSelect = () => {
                 height={image.height} 
                 className="hidden md:block" 
                 style={{ imageRendering: 'pixelated' }} 
+                
               />
             </div>
           </div>

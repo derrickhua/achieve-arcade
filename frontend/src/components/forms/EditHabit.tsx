@@ -95,16 +95,16 @@ const EditHabitForm: React.FC<EditHabitFormProps> = ({ isOpen, onClose, fetchHab
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[40px] mr-4">EDIT HABIT</h2>
-        <p className="text-[#BDBDBD] mb-4 text-[20px]">Update your habit details here!</p>
+        <h2 className="text-[30px] md:text-[40px] mr-4">EDIT HABIT</h2>
+        <p className="text-[#BDBDBD] mb-4 text-[15px] md:text-[20px]">Update your habit details here!</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="name">Name</label>
+            <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="name">Name</label>
             <input
               className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="text"
@@ -115,12 +115,12 @@ const EditHabitForm: React.FC<EditHabitFormProps> = ({ isOpen, onClose, fetchHab
               maxLength={maxNameLength}
               required
             />
-            <div className="text-right text-[14px] text-[#BDBDBD]">
-              {name.length}/{maxNameLength} characters
-            </div>
+          <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
+            {name.length}/{maxNameLength} characters
+          </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px]" htmlFor="habitPeriod">Habit Period</label>
+            <label className="block text-black text-[20px] md:text-[25px]" htmlFor="habitPeriod">Habit Period</label>
             <Select onValueChange={setHabitPeriod} value={habitPeriod}>
               <SelectTrigger className="w-full bg-white border border-[#BDBDBD]">
                 <SelectValue placeholder="Select Habit Period" />
@@ -133,7 +133,7 @@ const EditHabitForm: React.FC<EditHabitFormProps> = ({ isOpen, onClose, fetchHab
           </div>
 
           <div className="mb-4">
-            <label className="block text-black text-[25px]" htmlFor="goal">Consistency Goal</label>
+            <label className="block text-black text-[20px] md:text-[25px]" htmlFor="goal">Consistency Goal</label>
             <input
               className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="number"
@@ -145,8 +145,8 @@ const EditHabitForm: React.FC<EditHabitFormProps> = ({ isOpen, onClose, fetchHab
             />
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
-            <Select onValueChange={setDifficulty} value={difficulty}>
+           <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
+           <Select onValueChange={setDifficulty} value={difficulty}>
               <SelectTrigger className="w-full border border-[#BDBDBD] bg-white">
                 <SelectValue placeholder="Select Difficulty" />
               </SelectTrigger>
@@ -160,7 +160,7 @@ const EditHabitForm: React.FC<EditHabitFormProps> = ({ isOpen, onClose, fetchHab
           {showAlert && (
             <Alert variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
               <AlertTitle>{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
-              <AlertDescription>
+              <AlertDescription className="text-[12px] md:text-[14px]">
                 {alertMessage}
               </AlertDescription>
             </Alert>
@@ -168,9 +168,9 @@ const EditHabitForm: React.FC<EditHabitFormProps> = ({ isOpen, onClose, fetchHab
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[20px]"
+              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[15px] md:text-[20px]"
             >
-              Update Habit
+              SAVE HABIT
             </button>
           </div>
         </form>

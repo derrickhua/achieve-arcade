@@ -31,26 +31,26 @@ export const DashboardLayout: React.FC = () => {
       case 'PlayerData':
         return <PlayerData />;
       case 'GoalKnight':
-        return <GoalKnight fetchCoins={fetchCoins}/>;
+        return <GoalKnight fetchCoins={fetchCoins} />;
       case 'HabitFarm':
-        return <HabitFarm fetchCoins={fetchCoins}/>;
+        return <HabitFarm fetchCoins={fetchCoins} />;
       case 'TaskSlayer':
-        return <TaskSlayer fetchCoins={fetchCoins}/>;
+        return <TaskSlayer fetchCoins={fetchCoins} />;
       case 'DailySchedule':
-        return <DailySched fetchCoins={fetchCoins}/>;
+        return <DailySched fetchCoins={fetchCoins} />;
       case 'Shop':
-        return <Shop fetchCoins={fetchCoins}/>;
+        return <Shop fetchCoins={fetchCoins} />;
       default:
         return <PlayerData />;
     }
   };
 
   return (
-    <div className="flex flex-col h-screen bg-black">
+    <div className="flex flex-col h-full bg-black">
       <Topbar coins={coins} />
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden md:flex-row flex-col">
         <Navbar setActiveComponent={setActiveComponent} />
-        <main className="flex-1 p-4 bg-[#FEFDF2]" style={{ borderTopLeftRadius: '3rem' }}>
+        <main className="overflow-y-auto flex-1 p-4 bg-[#FEFDF2] rounded-[2rem] pb-[66px] md:pb-0 md:rounded-tl-[3rem] md:rounded-tr-none md:rounded-bl-none md:rounded-br-none">
           {renderComponent()}
         </main>
       </div>

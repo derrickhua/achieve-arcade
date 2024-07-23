@@ -3,15 +3,30 @@ import User from '../models/user.js';
 import Goal from '../models/goal.js';
 import Task from '../models/task.js';
 import Habit from '../models/habit.js';
+import { sendPurchaseConfirmationEmail, sendCancellationEmail } from './email.js'; // Adjust the import path accordingly
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-const YOUR_DOMAIN = 'http://localhost:3000';
+
 
 export const createCheckoutSession = async (req, res) => {
     const { userId } = req.body;
     console.log('Received request to create checkout session for user ID:', userId);
 
     try {
-        const priceId = 'price_1PTRT6P21qukNQhzpzmYWp5T'; // Replace with your actual Price ID
+        const totalUserCount = await User.countDocuments();
+        let priceId;
+        let mode;
+
+        //  when there are 50 paid users ill switch it ofter 
+        priceId = 'price_1PX4Q7P21qukNQhzF3ze6I8K'; // One-time fee for lifetime
+        mode = 'payment';
+        // if (totalUserCount < 100) {
+        //     priceId = 'price_1PX4Q7P21qukNQhzF3ze6I8K'; // One-time fee for lifetime
+        //     mode = 'payment';
+        // } else {
+        //     priceId = 'price_1PX4M3P21qukNQhzACg5mbm1'; // Recurring fee
+        //     mode = 'subscription';
+        // }
 
         const session = await stripe.checkout.sessions.create({
             line_items: [
@@ -20,16 +35,16 @@ export const createCheckoutSession = async (req, res) => {
                     quantity: 1,
                 },
             ],
-            mode: 'subscription',
-            success_url: `${YOUR_DOMAIN}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${YOUR_DOMAIN}/dashboard?canceled=true`,
+            mode: mode,
+            success_url: `${process.env.NEXTAUTH_URL}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.NEXTAUTH_URL}/dashboard?canceled=true`,
             automatic_tax: { enabled: true },
             metadata: {
                 userId: userId.toString(), // Attach the user ID to the metadata
             },
+            currency: 'cad'
         });
 
-      
         res.redirect(303, session.url);
     } catch (error) {
         console.error('Error creating checkout session:', error);
@@ -37,17 +52,63 @@ export const createCheckoutSession = async (req, res) => {
     }
 };
 
+
 export const cancelSubscription = async (req, res) => {
     try {
-        const user = await User.findById(req.user._id).select('stripeCustomerId');
+        const user = await User.findById(req.user._id).select('stripeCustomerId subscription');
 
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
 
+        // If user is part of the first 50 users (who don't have a Stripe customer ID)
         if (!user.stripeCustomerId) {
-            return res.status(400).json({ error: 'User does not have a Stripe customer ID' });
+            console.log('User is part of the first 50 free users');
+
+            // Check and delete tasks, goals, and habits if user has too many active items
+            const maxGoals = 2;
+            const maxHabits = 2;
+            const maxTasks = 4;
+
+            // Delete extra active goals
+            const activeGoals = await Goal.find({ user: req.user._id, completed: false }).sort({ createdAt: 1 });
+            if (activeGoals.length > maxGoals) {
+                const goalsToDelete = activeGoals.slice(0, activeGoals.length - maxGoals);
+                await Goal.deleteMany({ _id: { $in: goalsToDelete.map(goal => goal._id) } });
+            }
+
+            // Delete extra active habits
+            const activeHabits = await Habit.find({ user: req.user._id }).sort({ createdAt: 1 });
+            if (activeHabits.length > maxHabits) {
+                const habitsToDelete = activeHabits.slice(0, activeHabits.length - maxHabits);
+                await Habit.deleteMany({ _id: { $in: habitsToDelete.map(habit => habit._id) } });
+            }
+
+            // Delete extra active tasks
+            const activeTasks = await Task.find({ userId: req.user._id, completed: false }).sort({ createdAt: 1 });
+            if (activeTasks.length > maxTasks) {
+                const tasksToDelete = activeTasks.slice(0, activeTasks.length - maxTasks);
+                await Task.deleteMany({ _id: { $in: tasksToDelete.map(task => task._id) } });
+            }
+
+            // Update user subscription information
+            await User.updateOne(
+                { _id: req.user._id },
+                {
+                    $set: {
+                        subscription: 'free',
+                        subscriptionType: 'freeLifetime'
+                    }
+                }
+            );
+
+            return res.status(200).json({
+                message: 'Subscription updated to free',
+            });
         }
+
+        // For users with a Stripe customer ID
+        console.log('User has a Stripe customer ID');
 
         // Fetch all active subscriptions for the customer
         const subscriptions = await stripe.subscriptions.list({
@@ -130,6 +191,8 @@ export const cancelSubscription = async (req, res) => {
     }
 };
 
+
+
 export const refundAllPayments = async (req, res) => {
     try {
         const user = await User.findById(req.user._id).select('stripeCustomerId');
@@ -160,7 +223,7 @@ export const refundAllPayments = async (req, res) => {
     }
 };
 
-const lifetimePriceId = 'price_1PTlqFP21qukNQhz03LpRxiX'; 
+const lifetimePriceId = 'price_1PX4Q7P21qukNQhzF3ze6I8K'; 
 
 export const handleStripeWebhook = async (req, res) => {
     const sig = req.headers['stripe-signature'];
@@ -183,29 +246,46 @@ export const handleStripeWebhook = async (req, res) => {
             const customerId = session.customer;
             const userId = session.metadata.userId;
             const mode = session.mode;
+            const userEmail = session.customer_details.email;
 
             console.log(`Handling checkout.session.completed for user ${userId} with mode ${mode}`);
 
-            const sessionWithLineItems = await stripe.checkout.sessions.retrieve(session.id, {
-                expand: ['line_items'],
-            });
+            try {
+                const sessionWithLineItems = await stripe.checkout.sessions.retrieve(session.id, {
+                    expand: ['line_items'],
+                });
 
-            const isLifetime = sessionWithLineItems.line_items.data.some(item => item.price.id === lifetimePriceId);
+                const isLifetime = sessionWithLineItems.line_items.data.some(item => item.price.id === lifetimePriceId);
 
-            await User.updateOne(
-                { _id: userId },
-                {
-                    $set: {
-                        stripeCustomerId: customerId,
-                        subscription: 'pro',
-                        subscriptionType: isLifetime ? 'paidLifetime' : (mode === 'subscription' ? 'recurring' : 'oneTime'),
-                        subscriptionStartDate: new Date(),
-                        subscriptionEndDate: isLifetime ? null : (mode === 'subscription' ? new Date(session.current_period_end * 1000) : null)
-                    }
+                const user = await User.findById(userId);
+
+                if (!user) {
+                    throw new Error(`User with ID ${userId} not found`);
                 }
-            );
 
-            console.log(`User ${userId} updated successfully with subscriptionType: ${isLifetime ? 'paidLifetime' : (mode === 'subscription' ? 'recurring' : 'oneTime')}`);
+                const totalUserCount = await User.countDocuments();
+
+                const subscriptionType = totalUserCount < 100 ? 'paidLifetime' : (isLifetime ? 'paidLifetime' : (mode === 'subscription' ? 'recurring' : 'oneTime'));
+
+                await User.updateOne(
+                    { _id: userId },
+                    {
+                        $set: {
+                            stripeCustomerId: customerId,
+                            subscription: 'pro',
+                            subscriptionType,
+                            subscriptionStartDate: new Date(),
+                            subscriptionEndDate: isLifetime ? null : (mode === 'subscription' ? new Date(session.current_period_end * 1000) : null)
+                        }
+                    }
+                );
+
+                await sendPurchaseConfirmationEmail(userEmail, user.username);
+
+                console.log(`User ${userId} updated successfully with subscriptionType: ${subscriptionType}`);
+            } catch (err) {
+                console.error(`Failed to handle checkout.session.completed for user ${userId}:`, err.message);
+            }
             break;
         }
         case 'customer.subscription.deleted': {
@@ -214,19 +294,31 @@ export const handleStripeWebhook = async (req, res) => {
 
             console.log(`Handling customer.subscription.deleted for customer ${customerId}`);
 
-            await User.updateOne(
-                { stripeCustomerId: customerId },
-                {
-                    $set: {
-                        subscription: 'free',
-                        subscriptionType: 'freeLifetime',
-                        subscriptionStartDate: null,
-                        subscriptionEndDate: null
-                    }
-                }
-            );
+            try {
+                const user = await User.findOne({ stripeCustomerId: customerId });
 
-            console.log(`User subscription cancelled for customer ${customerId}`);
+                if (!user) {
+                    throw new Error(`User with customerId ${customerId} not found`);
+                }
+
+                await User.updateOne(
+                    { stripeCustomerId: customerId },
+                    {
+                        $set: {
+                            subscription: 'free',
+                            subscriptionType: 'free',
+                            subscriptionStartDate: null,
+                            subscriptionEndDate: null
+                        }
+                    }
+                );
+
+                await sendCancellationEmail(user.email, user.username);
+
+                console.log(`User subscription cancelled for customer ${customerId}`);
+            } catch (err) {
+                console.error(`Failed to handle customer.subscription.deleted for customer ${customerId}:`, err.message);
+            }
             break;
         }
         default:

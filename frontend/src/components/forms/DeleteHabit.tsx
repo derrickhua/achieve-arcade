@@ -40,15 +40,12 @@ const DeleteHabitForm: React.FC<DeleteHabitFormProps> = ({ isOpen, onClose, fetc
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
-        <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
-          X
-        </button>
+      <div className="bg-[#FEFDF2] rounded-xl p-6 relative w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <span className='flex items-center mb-2'>
-            <h2 className="text-[40px] text-[#EB5757] mr-2">DELETE HABIT: </h2>
-            <p className='text-[30px]'>{habit.name}</p>
+          <h2 className="text-[18px] md:text-[30px] text-[#EB5757] mr-2">DELETE HABIT: </h2>
+          <p className='text-[18px] md:text-[30px]'>{habit.name}</p>
         </span>
-        <p className="text-black mb-6 text-[20px]">Are you sure you want to delete this habit?</p>
+        <p className="text-black mb-6 text-[15px] md:text-[20px]">Are you sure you want to delete this habit?</p>
 
         {showAlert && (
           <Alert variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
@@ -60,15 +57,15 @@ const DeleteHabitForm: React.FC<DeleteHabitFormProps> = ({ isOpen, onClose, fetc
         <div className="flex justify-end space-x-4">
           <button
             onClick={onClose}
-            className="bg-gray-200 text-black px-4 py-2 rounded-lg hover:bg-gray-300 text-[20px]"
+            className="bg-gray-200 text-black px-4 py-2 rounded-lg hover:bg-gray-300 text-[15px] md:text-[20px]"
           >
-            Cancel
+            CANCEL
           </button>
           <button
             onClick={handleDelete}
-            className="bg-[#EB5757] text-white px-4 py-2 rounded-lg hover:bg-red-700 text-[20px]"
+            className="bg-[#EB5757] text-white px-4 py-2 rounded-lg hover:bg-red-700 text-[15px] md:text-[20px]"
           >
-            Delete
+            DELETE
           </button>
         </div>
       </div>

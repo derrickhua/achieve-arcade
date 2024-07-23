@@ -67,17 +67,17 @@ const EditMilestoneForm: React.FC<EditMilestoneFormProps> = ({ milestone, goalId
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
-        <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
+      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+       <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[40px] mr-4">EDIT MILESTONE</h2>
-        <p className="text-[#BDBDBD] mb-4 text-[20px]">Update your milestone details here!</p>
+        <h2 className="text-[30px] md:text-[40px] mr-4">EDIT QUEST</h2>
+        <p className="text-[#BDBDBD] mb-4 text-[15px] md:text-[20px]">Update your quest details here!</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="title">Milestone Title</label>
-            <input
+          <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="title">Quest Title</label>
+          <input
               className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="text"
               id="title"
@@ -92,9 +92,9 @@ const EditMilestoneForm: React.FC<EditMilestoneFormProps> = ({ milestone, goalId
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="description">Description</label>
-            <textarea
-              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
+          <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="description">Description</label>
+          <textarea
+              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg bg-white"
               id="description"
               value={description}
               onChange={handleDescriptionChange}
@@ -102,14 +102,14 @@ const EditMilestoneForm: React.FC<EditMilestoneFormProps> = ({ milestone, goalId
               maxLength={maxDescriptionLength}
               rows={4}
             />
-            <div className="text-right text-[14px] text-[#BDBDBD]">
+            <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
               {description.length}/{maxDescriptionLength} characters
             </div>
           </div>
           {showAlert && (
             <Alert variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
               <AlertTitle>{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
-              <AlertDescription>
+              <AlertDescription className="text-[12px] md:text-[14px]">
                 {alertMessage}
               </AlertDescription>
             </Alert>
@@ -117,9 +117,9 @@ const EditMilestoneForm: React.FC<EditMilestoneFormProps> = ({ milestone, goalId
           <div className="flex justify-end">
             <button
               type="submit"
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[20px]"
+              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[15px] md:text-[20px]"
             >
-              Update Milestone
+              SAVE QUEST
             </button>
           </div>
         </form>

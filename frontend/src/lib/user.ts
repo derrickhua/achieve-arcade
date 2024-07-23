@@ -7,51 +7,40 @@ const api = axios.create({
     'Content-Type': 'application/json',
   }
 });
+
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
   const session = await getSession();
   if (session?.accessToken) {
-    config.headers.authorization = `Bearer ${session.accessToken}`;
+    config.headers.Authorization = `Bearer ${session.accessToken}`;
   } else {
     console.log("No access token found in session.");
   }
 
   return config;
 }, error => {
+  console.error("Error in request interceptor:", error);
   return Promise.reject(error);
 });
 
-/**
- * Attempts to refresh the access token using a refresh token that is passed as an argument.
- * This function sends the refresh token to the server endpoint, which manages the token securely
- * and only requires a simple POST request with the refresh token to initiate a token refresh.
- * 
- * @param {string} refreshToken - The refresh token needed to request a new access token.
- * @returns {Promise<{accessToken: string, accessTokenExpires: number, error?: string}>}
- *          Returns a promise that resolves with the new access token and its expiration time, or an error if something goes wrong.
- */
 export async function refreshAccessToken(refreshToken) {
   try {
-    // Make a POST request to the refresh token endpoint, including the refresh token in the request body
-    const response = await axios.post('http://localhost:8000/api/users/refresh-token', {
-      refreshToken  // Sending refreshToken in the body
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE_URL}/users/refresh-token`, {
+      refreshToken
     });
 
-    // Check if the response includes the necessary data
-    console.log(response.data)
     if (response.data.accessToken && response.data.accessTokenExpires) {
+      console.log("Access token successfully refreshed:", response.data);
       return {
         accessToken: response.data.accessToken,
-        accessTokenExpires: response.data.accessTokenExpires  // Use directly from the response
+        accessTokenExpires: response.data.accessTokenExpires
       };
     } else {
-      // Handle any cases where the expected data isn't returned
+      console.error("Invalid refresh token response:", response.data);
       throw new Error("Invalid refresh token response");
     }
   } catch (error) {
     console.error('Error refreshing access token: ', error);
-
-    // Return an object indicating an error has occurred, ensuring to maintain the shape of the expected return type
     return {
       accessToken: "",
       accessTokenExpires: 0,
@@ -60,13 +49,6 @@ export async function refreshAccessToken(refreshToken) {
   }
 }
 
-/**
- * Retrieves the user's profile information including username, email, and preferences.
- * Throws an error if there is a problem fetching the user from the database.
- *
- * @returns {Promise<Object>} The user's profile data.
- * @throws {Error} If there is an issue with the API request.
- */
 export async function getUser() {
   try {
     const response = await api.get('/profile');
@@ -77,16 +59,11 @@ export async function getUser() {
   }
 }
 
-/**
- * Retrieves the user's preferences.
- * Throws an error if there is a problem fetching the preferences from the database.
- *
- * @returns {Promise<Object>} The user's preferences.
- * @throws {Error} If there is an issue with the API request.
- */
 export async function getUserPreferences() {
   try {
+    console.log('Attempting to fetch user preferences');
     const response = await api.get('/profile/preferences');
+    console.log('User preferences response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching user preferences:', error);
@@ -94,13 +71,6 @@ export async function getUserPreferences() {
   }
 }
 
-/**
- * Retrieves the user's coins.
- * Throws an error if there is a problem fetching the coins from the database.
- *
- * @returns {Promise<Number>} The user's coins.
- * @throws {Error} If there is an issue with the API request.
- */
 export async function getUserCoins() {
   try {
     const response = await api.get('/coins');
@@ -111,17 +81,11 @@ export async function getUserCoins() {
   }
 }
 
-/**
- * Updates the user's profile including username, email, password, and preferences.
- * Throws an error if there is a problem updating the user in the database.
- *
- * @param {Object} updates - An object containing the updates to be made.
- * @returns {Promise<Object>} The updated user profile data.
- * @throws {Error} If there is an issue with the API request.
- */
 export async function updateUser(updates) {
   try {
-    const response = await api.put('/update', updates);  // No userId needed here
+    console.log('Attempting to update user profile with updates:', updates);
+    const response = await api.put('/update', updates);
+    console.log('Update user profile response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error updating user profile:', error);
@@ -129,16 +93,11 @@ export async function updateUser(updates) {
   }
 }
 
-/**
- * Deletes the user profile.
- * Throws an error if there is a problem deleting the user from the database.
- *
- * @returns {Promise<Object>} The response from the server.
- * @throws {Error} If there is an issue with the API request.
- */
 export async function deleteUser() {
   try {
+    console.log('Attempting to delete user profile');
     const response = await api.delete('/delete');
+    console.log('Delete user profile response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error deleting user profile:', error);
@@ -146,17 +105,11 @@ export async function deleteUser() {
   }
 }
 
-/**
- * Retrieves the user's ID.
- * Throws an error if there is a problem fetching the user ID from the database.
- *
- * @returns {Promise<string>} The user's ID.
- * @throws {Error} If there is an issue with the API request.
- */
 export async function getUserId() {
   try {
+    console.log('Attempting to fetch user ID');
     const response = await api.get('/user-id');
-    console.log('User ID:', response.data);
+    console.log('User ID response:', response.data);
     return response.data;
   } catch (error) {
     console.error('Error fetching user ID:', error);

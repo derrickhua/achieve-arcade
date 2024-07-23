@@ -50,56 +50,60 @@ interface HabitHeatmapProps {
     cellSize?: number;
 }
 
-const daysOfWeek = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const formatDataIntoWeeks = (data: DataItem[]): FormattedData => {
     const weeks: any = [];
     const months = [];
     let currentWeek = new Array(7).fill(null).map(() => ({ completions: 0, date: '', isActive: false }));
     let currentWeekStartDate: any = null;
-
-    let firstMonthDate = new Date(data[0].date + "T12:00:00");
+  
+    let firstMonthDate = new Date(data[0].date + "T00:00:00Z"); // Treat as UTC
     let firstMonth = firstMonthDate.toLocaleString('default', { month: 'short' });
     let weekCount = 0;
-
+  
     data.forEach((item, index) => {
-        const date = new Date(item.date);
-        const dayIndex = date.getDay();
-
-        if (!currentWeekStartDate) {
-            currentWeekStartDate = new Date(date.getFullYear(), date.getMonth(), date.getDate() - dayIndex);
+      const date = new Date(item.date + "T00:00:00Z"); // Treat as UTC
+      let dayIndex = date.getUTCDay();
+  
+      if (currentWeekStartDate === null) {
+        currentWeekStartDate = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() - dayIndex));
+      }
+  
+      currentWeek[dayIndex] = { ...item, isActive: true };
+  
+      if (dayIndex === 6 || index === data.length - 1) {
+        while (currentWeek[0] === null) {
+          currentWeek.unshift({ completions: 0, date: '', isActive: false });
+          currentWeek.pop();
         }
-
-        currentWeek[dayIndex] = { ...item, isActive: true };
-
-        if (dayIndex === 6 || index === data.length - 1) {
-            weeks.push([...currentWeek]);
-            currentWeek = new Array(7).fill(null).map(() => ({ completions: 0, date: '', isActive: false }));
-            currentWeekStartDate = null;
-            weekCount++;
-        }
+        weeks.push([...currentWeek]);
+        currentWeek = new Array(7).fill(null).map(() => ({ completions: 0, date: '', isActive: false }));
+        currentWeekStartDate = null;
+        weekCount++;
+      }
     });
-
+  
     if (weekCount > 0) {
-        months.push({ month: firstMonth, count: weekCount, startWeek: 0 });
+      months.push({ month: firstMonth, count: weekCount, startWeek: 0 });
     }
-
+  
     for (let i = 1; i <= 2; i++) {
-        firstMonthDate.setMonth(firstMonthDate.getMonth() + 1);
-        let nextMonth = firstMonthDate.toLocaleString('default', { month: 'short' });
-        let startWeek = 0;
-
-        for (let j = 0; j < weeks.length; j++) {
-            const weekStartDate = new Date(weeks[j][0].date + "T12:00:00");
-            if (weekStartDate.getMonth() === firstMonthDate.getMonth()) {
-                startWeek = j;
-                break;
-            }
+      firstMonthDate.setUTCMonth(firstMonthDate.getUTCMonth() + 1);
+      let nextMonth = firstMonthDate.toLocaleString('default', { month: 'short' });
+      let startWeek = 0;
+  
+      for (let j = 0; j < weeks.length; j++) {
+        const weekStartDate = new Date(weeks[j][0].date + "T00:00:00Z");
+        if (weekStartDate.getUTCMonth() === firstMonthDate.getUTCMonth()) {
+          startWeek = j;
+          break;
         }
-
-        months.push({ month: nextMonth, count: weeks.length - startWeek, startWeek });
+      }
+  
+      months.push({ month: nextMonth, count: weeks.length - startWeek, startWeek });
     }
-
+  
     return { weeks, months };
 };
 
@@ -117,7 +121,9 @@ const interpolateColor = (completions: number, maxCompletions: number) => {
 };
 
 const HabitHeatmap = ({ data, cellSize = 15 }: HabitHeatmapProps) => {
+
     const { weeks, months } = formatDataIntoWeeks(data);
+    
     const maxCompletions = Math.max(...data.map(item => item.completions), 1);
 
     return (
@@ -161,7 +167,7 @@ const HabitHeatmap = ({ data, cellSize = 15 }: HabitHeatmapProps) => {
                                         />
                                     </TooltipTrigger>
                                     <TooltipContent className='flex flex-col justify-center items-center'>
-                                        <p>{dayData.date || 'No Data'}</p>
+                                        <p>{new Date(dayData.date + "T00:00:00Z").toLocaleDateString() || 'No Data'}</p> {/* Convert UTC date to local date string */}
                                         <p>activity: {dayData.completions}</p>
                                     </TooltipContent>
                                 </Tooltip>

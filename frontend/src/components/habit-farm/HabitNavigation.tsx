@@ -3,7 +3,7 @@ import { SunMedium } from 'lucide-react';
 
 const HabitNavigation: React.FC<{ habits: any[], selectedHabitId: string, onSelectHabit: (habit: any) => void }> = ({ habits, selectedHabitId, onSelectHabit }) => {
   return (
-    <div className="habit-navigation mt-[50px] grid grid-cols-6 grid-rows-2 gap-2 max-w-[1800px] mx-auto h-[200px] w-full px-2">
+    <div className="habit-navigation hidden md:grid mt-[50px] grid grid-cols-6 grid-rows-2 gap-2 max-w-[1800px] mx-auto h-[200px] w-full px-2">
       {habits.map((habit) => (
         <button 
           key={habit._id} 

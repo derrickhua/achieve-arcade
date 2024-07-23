@@ -9,7 +9,7 @@ import DeleteHabitForm from '../forms/DeleteHabit';
 import { getHabits, updateHabitCompletion } from '@/lib/habit';
 import Image from 'next/image';
 import LoadingComponent from './LoadingComponent';
-
+import { useMediaQuery } from 'react-responsive';
 const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [habits, setHabits] = useState([]);
   const [selectedHabit, setSelectedHabit] = useState(null);
@@ -17,6 +17,7 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
   const [isEditHabitFormOpen, setIsEditHabitFormOpen] = useState(false);
   const [isDeleteHabitFormOpen, setIsDeleteHabitFormOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const isMobile = useMediaQuery({ query: '(max-width: 768px)' });
 
   const fetchHabits = async () => {
     try {
@@ -59,22 +60,28 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
 
   const handleCompletionUpdate = async (habit, newCount) => {
     try {
-      await updateHabitCompletion(habit._id, newCount, new Date().toISOString());
+      const updatedHabit = await updateHabitCompletion(habit._id, newCount);
+  
+      if (!updatedHabit) {
+        console.error('Failed to update habit:', updatedHabit);
+        throw new Error('Failed to update habit');
+      }
+  
       const updatedHabits = await getHabits(); // Fetch updated habits
-
+  
       if (!Array.isArray(updatedHabits)) {
         console.error('Fetched updated data is not an array:', updatedHabits);
         throw new Error('Fetched updated data is not an array');
       }
-
+  
       setHabits(updatedHabits);
-      const updatedHabit = updatedHabits.find(h => h._id === habit._id);
-      setSelectedHabit(updatedHabit); // Update the selected habit with the new data
+      const updatedHabitData = updatedHabits.find(h => h._id === habit._id);
+      setSelectedHabit(updatedHabitData); // Update the selected habit with the new data
       fetchCoins(); // Fetch coins after updating habits
     } catch (error) {
       console.error('Error updating completions:', error);
     }
-  };
+  };  
 
   const handleHabitSelect = (habit) => {
     setSelectedHabit(habit);
@@ -92,12 +99,11 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
     return <LoadingComponent />;
   }
 
-
   return (
-    <div className="p-8 h-full overflow-auto flex flex-col items-center w-full">
-      <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full">
+    <div className="md:p-4 overflow-y-auto overflow-x-hidden flex flex-col items-center w-full">
+      <div className="flex flex-wrap justify-between items-center mb-4 max-w-[1800px] w-full h-full">
         <div className="flex items-center">
-          <span className="text-[50px] mr-4">HABIT FARM</span>
+          <span className="text-[25px] sm:text-[35px] md:text-[50px] mr-4">HABIT FARM</span>
         </div>
         <AddButton name="ADD HABIT" onClick={() => setIsAddHabitFormOpen(true)} />
       </div>
@@ -117,33 +123,33 @@ const HabitFarm: React.FC<{ fetchCoins: () => void }> = ({ fetchCoins }) => {
               selectedHabitId={selectedHabit?._id}
               onSelectHabit={handleHabitSelect} 
             />
-            <div className='max-w-[2000px]'>
-            </div>
+            <div className='max-w-[2000px]'></div>
           </>
         ) : (
-          <div className="text-center text-[30px] h-[400px] relative flex flex-col items-center justify-center">
-          <div className="relative">
-            <Image 
-              src="/icons/habit-farm/where-habits.gif" 
-              width={200} 
-              height={200} 
-              alt="No habits available"  
-              style={{ imageRendering: 'pixelated', margin: 'auto' }}
-              className="mx-auto"
-            />
-            <div className="absolute top-1/2 left-2/3 ml-4 transform -translate-y-1/2 text-black p-2  text-center text-base">
-              - Where are my carrots?
+          <div className="text-center text-[30px] md:h-[400px] relative flex flex-col items-center justify-center">
+            <div className="relative">
+              <Image 
+                src="/icons/habit-farm/where-habits.gif" 
+                width={isMobile ? 150 : 200} 
+                height={isMobile ? 150 : 200} 
+                alt="No habits available"  
+                style={{ imageRendering: 'pixelated', margin: 'auto' }}
+                className="mx-auto"
+                onContextMenu={(e) => e.preventDefault()}
+              />
+              <div className="text-[10px] md:text-[1rem] absolute top-1/2 left-2/3 ml-4 transform -translate-y-1/2 text-black p-2  text-center text-base">
+                - Where are my carrots?
+              </div>
             </div>
+            <p className='text-[20px] md:text-[40px] text-[#8DB15C] md:mt-4'>No habits available. Add a new habit to get started!</p>
           </div>
-          <p className='text-[40px] text-[#8DB15C] mt-4'>No habits available. Add a new habit to get started!</p>
-        </div>
-          )}
-          <HabitFarmVisual
-            habits={habits}
-            selectedHabitId={selectedHabit?._id}
-            onSelectHabit={handleHabitSelect}
-            handleCompletionUpdate={handleCompletionUpdate} // Pass the handleCompletionUpdate function
-          />
+        )}
+        <HabitFarmVisual
+          habits={habits}
+          selectedHabitId={selectedHabit?._id}
+          onSelectHabit={handleHabitSelect}
+          handleCompletionUpdate={handleCompletionUpdate} // Pass the handleCompletionUpdate function
+        />
       </div>
 
       {isAddHabitFormOpen && (

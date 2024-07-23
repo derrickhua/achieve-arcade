@@ -24,7 +24,7 @@ export const addTask = async (req, res, next) => {
           return res.status(404).json({ message: 'User not found' });
       }
 
-      if (user.subscriptionType !== 'pro') {
+      if (user.subscription !== 'pro') {
           const uncompletedTaskCount = await Task.countDocuments({ userId: req.user._id, completed: false });
           if (uncompletedTaskCount >= 4) {
               return res.status(400).json({ message: 'Free tier users can only have a maximum of 4 uncompleted tasks' });
@@ -53,16 +53,22 @@ export const addTask = async (req, res, next) => {
  */
 export const getTasks = async (req, res, next) => {
   try {
-      const userId = req.user._id;
-      const completedTaskCount = await Task.countDocuments({ userId, completed: true });
-      const uncompletedTasks = await Task.find({ userId, completed: false, timeBlockId: { $exists: false } });
-  
-      res.json({
-          completedTaskCount,
-          uncompletedTasks
-      });
+    const userId = req.user._id;
+
+    // Count completed tasks
+    const completedTaskCount = await Task.countDocuments({ userId, completed: true });
+
+    // Find uncompleted tasks
+    const uncompletedTasks = await Task.find({ userId, completed: false });
+
+    // Return the task data
+    res.json({
+      completedTaskCount,
+      uncompletedTasks
+    });
   } catch (error) {
-      next(error);
+    console.error('Error retrieving tasks:', error);
+    next(error);
   }
 };
 

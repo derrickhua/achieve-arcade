@@ -14,7 +14,9 @@ const LoadingComponent = () => {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full">
-      <Image src={`/icons/loading/frog-run.gif`} alt={'frog running'} width={100} height={100} style={{ imageRendering: 'pixelated' }} />
+      <Image src={`/icons/loading/frog-run.gif`} alt={'frog running'} 
+      width={100} height={100} style={{ imageRendering: 'pixelated' }} 
+      />
       <p className="text-xl">LOADING{dots}</p>
     </div>
   );

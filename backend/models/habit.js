@@ -99,7 +99,7 @@ HabitSchema.methods.updateGoal = async function(newGoal, effectiveDate) {
  */
 HabitSchema.methods.calculateStreak = async function() {
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  today.setUTCHours(0, 0, 0, 0);
 
   const lastGoal = this.consistencyGoals; // Access consistencyGoals directly
 
@@ -151,11 +151,11 @@ HabitSchema.methods.calculateStreak = async function() {
  */
 HabitSchema.methods.changeCompletion = async function(date, change) {
   const targetDate = new Date(date);
-  targetDate.setHours(0, 0, 0, 0); // Normalize the date for consistent comparison
+  targetDate.setUTCHours(0, 0, 0, 0); // Normalize the date to UTC
 
   let occurrence = this.occurrences.find(o => {
     const occurrenceDate = new Date(o.date);
-    occurrenceDate.setHours(0, 0, 0, 0);
+    occurrenceDate.setUTCHours(0, 0, 0, 0);
     return occurrenceDate.getTime() === targetDate.getTime();
   });
 
@@ -166,6 +166,9 @@ HabitSchema.methods.changeCompletion = async function(date, change) {
   } else {
     this.occurrences.push({ date: targetDate, completions: Math.max(0, change) });
   }
+
+  // Ensure no duplicate dates
+  this.occurrences = this.occurrences.filter((v,i,a)=>a.findIndex(t=>(t.date.getTime() === v.date.getTime()))===i);
 
   const increment = change - previousCompletions;
 
@@ -181,8 +184,11 @@ HabitSchema.methods.changeCompletion = async function(date, change) {
   await mongoose.model('User').findByIdAndUpdate(this.user, { $inc: { coins } });
 
   await this.save();
+  
   this.streak = await this.calculateStreak(); // Update streak
+
   await this.save();
+  
   return { success: true, message: "Completions updated successfully and coins adjusted." };
 };
 
@@ -195,17 +201,17 @@ HabitSchema.methods.changeCompletion = async function(date, change) {
 */
 HabitSchema.methods.getWeeklyOccurrences = function() {
  const today = new Date();
- today.setHours(0, 0, 0, 0); // Reset time part
+ today.setUTCHours(0, 0, 0, 0); // Reset time part to UTC
 
- const dayOfWeek = today.getDay();
+ const dayOfWeek = today.getUTCDay();
  const diffToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
- const startOfWeek = new Date(today.setDate(today.getDate() + diffToMonday));
+ const startOfWeek = new Date(today.setUTCDate(today.getUTCDate() + diffToMonday));
  const endOfWeek = new Date(startOfWeek);
- endOfWeek.setDate(endOfWeek.getDate() + 6);
+ endOfWeek.setUTCDate(endOfWeek.getUTCDate() + 6);
 
  const daysInWeek = Array.from({ length: 7 }).map((_, i) => {
    const date = new Date(startOfWeek);
-   date.setDate(date.getDate() + i);
+   date.setUTCDate(date.getUTCDate() + i);
    return { date, completions: 0 }; // Default object structure
  });
 
@@ -217,7 +223,7 @@ HabitSchema.methods.getWeeklyOccurrences = function() {
  return daysInWeek.map(day => {
    const found = this.occurrences.find(occurrence => {
      const occurrenceDate = new Date(occurrence.date);
-     occurrenceDate.setHours(0, 0, 0, 0);
+     occurrenceDate.setUTCHours(0, 0, 0, 0);
      return occurrenceDate.getTime() === day.date.getTime();
    });
    if (found) {
@@ -235,16 +241,16 @@ HabitSchema.methods.getWeeklyOccurrences = function() {
  */
 HabitSchema.methods.getHeatmapData = async function() {
     const today = new Date();
-    const currentYear = today.getFullYear();
-    const currentMonth = today.getMonth();
+    const currentYear = today.getUTCFullYear();
+    const currentMonth = today.getUTCMonth();
 
     // Set start date to the first day of the month, two months prior to the current month
-    const startDate = new Date(currentYear, currentMonth - 2, 1);
-    startDate.setHours(0, 0, 0, 0);
+    const startDate = new Date(Date.UTC(currentYear, currentMonth - 2, 1));
+    startDate.setUTCHours(0, 0, 0, 0);
 
     // Set end date to the last day of the current month
-    const endDate = new Date(currentYear, currentMonth + 1, 0);
-    endDate.setHours(23, 59, 59, 999);
+    const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 0));
+    endDate.setUTCHours(23, 59, 59, 999);
 
     const occurrences = await this.model('Habit').aggregate([
         { $match: { _id: this._id } },
@@ -267,7 +273,7 @@ HabitSchema.methods.getHeatmapData = async function() {
 
     // Fill in the gaps
     const heatmapData = [];
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(startDate); d <= endDate; d.setUTCDate(d.getUTCDate() + 1)) {
         const dateKey = d.toISOString().split('T')[0];
         heatmapData.push({
             date: dateKey,
@@ -277,7 +283,6 @@ HabitSchema.methods.getHeatmapData = async function() {
 
     return heatmapData;
 };
-  
 
 const Habit = mongoose.model('Habit', HabitSchema);
 

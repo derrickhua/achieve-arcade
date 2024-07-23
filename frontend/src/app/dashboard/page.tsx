@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { DashboardLayout } from "../../components/layout/Dashboard";
 import { Metadata } from 'next';
 

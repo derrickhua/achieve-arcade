@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { getUserId } from '@/lib/user';
 
 interface PurchasePopUpProps {
   isOpen: boolean;
@@ -10,13 +9,12 @@ interface PurchasePopUpProps {
 
 const PurchasePopUp: React.FC<PurchasePopUpProps> = ({ isOpen, onClose, userId }) => {
   const formRef = useRef<HTMLFormElement>(null);
-  console.log('userId:', userId);
+
   useEffect(() => {
     if (formRef.current) {
       const hiddenInput = formRef.current.querySelector('input[name="userId"]');
       if (hiddenInput) {
         hiddenInput.value = userId;
-        console.log('Set hidden input value:', hiddenInput.value);
       }
     }
   }, [isOpen, userId]);
@@ -25,14 +23,18 @@ const PurchasePopUp: React.FC<PurchasePopUpProps> = ({ isOpen, onClose, userId }
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-none rounded-2xl p-8 relative w-[745px] h-[871px]" onClick={e => e.stopPropagation()}>
+      <div className="relative w-full max-w-lg md:max-w-2xl h-auto" onClick={e => e.stopPropagation()}>
         <button className="absolute top-4 right-4 text-white text-xl" onClick={onClose}>
           X
         </button>
-        <Image src={'/icons/purchase/purchased-card.png'} alt="Purchase Card" layout="fill" objectFit="contain" style={{ imageRendering: 'pixelated' }} />
-        <form ref={formRef} action="http://localhost:8000/api/stripe/create-checkout-session" method="POST">
+        <div className="relative w-full h-0 pb-[116.85%] md:pb-[117.5%]">
+          <Image src={'/icons/purchase/purchased-card.png'} alt="Purchase Card" 
+          layout="fill" objectFit="contain" style={{ imageRendering: 'pixelated' }} 
+          onContextMenu={(e) => e.preventDefault()}/>
+        </div>
+        <form ref={formRef} action={`${process.env.NEXT_PUBLIC_API_BASE_URL}/stripe/create-checkout-session`} method="POST">
           <input type="hidden" name="userId" value={userId} />
-          <button type="submit" className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-[#FFA501] border border-white text-white px-4 rounded-lg hover:bg-white hover:text-[#FFA501] text-[50px] w-[550px] h-[70px]">
+          <button type="submit" className="absolute bottom-[6%] left-1/2 transform -translate-x-1/2 bg-[#FFA501] border border-white text-white px-4 rounded-lg hover:bg-white hover:text-[#FFA501] text-[20px] md:text-[50px] w-[80%] md:w-[550px] h-[50px] md:h-[70px]">
             PURCHASE
           </button>
         </form>

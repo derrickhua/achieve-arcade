@@ -39,15 +39,17 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, fetchSchedule }) => {
   };
 
   return (
-    <div className="mb-4 p-4 max-h-[580px] overflow-y-auto bg-[#FEFDF2] border-[2px] text-[#FEFDF2] border-dashed border-black rounded-3xl w-full">
-      <h2 className="text-black text-[30px] mb-2">TODAY&apos;S TASKS</h2>
+    <div className="my-4 md:my-0 md:mb-4 p-2 md:p-4 
+    md:max-h-[580px] md:overflow-y-auto bg-[#FEFDF2] border-[2px] 
+    text-[#FEFDF2] border-dashed border-black rounded-xl md:rounded-3xl w-full">
+      <h2 className="text-black md:text-[30px] mb-2">TODAY&apos;S TASKS</h2>
       <div className="grid grid-cols-2 gap-4">
         {tasks.map((task) => (
           <div
             key={task._id}
-            className={`flex items-center p-2 text-[20px] border rounded-xl border-black ${getCategoryColor(task.category)}`}
+            className={`flex items-center p-2 text-[15px] leading-none md:text-[20px] border rounded-lg md:rounded-xl border-black ${getCategoryColor(task.category)}`}
           >
-            <label className="flex items-center cursor-pointer w-full px-4">
+            <label className="flex items-center cursor-pointer w-full md:px-4">
               <span className="flex-grow">{task.name}</span>
               <input
                 type="checkbox"

@@ -106,16 +106,16 @@ const EditGoalForm: React.FC<EditGoalFormProps> = ({ isOpen, onClose, fetchGoals
     if (!isOpen) return null;
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" onClick={onClose}>
-      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[600px]" onClick={e => e.stopPropagation()}>
+      <div className="bg-[#FEFDF2] rounded-xl p-8 relative w-[90vw] max-w-[600px] max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <button className="absolute top-4 right-4 text-black text-xl" onClick={onClose}>
           X
         </button>
-        <h2 className="text-[40px] mr-4">EDIT GOAL</h2>
-        <p className="text-[#BDBDBD] mb-4 text-[20px]">Update your goal details here!</p>
+        <h2 className="text-[30px] md:text-[40px] mr-4">EDIT GOAL</h2>
+        <p className="text-[#BDBDBD] mb-4 text-[15px] md:text-[20px]">Update your goal details here!</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="title">Goal Title</label>
+            <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="title">Goal Title</label>
             <input
               className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
               type="text"
@@ -126,33 +126,33 @@ const EditGoalForm: React.FC<EditGoalFormProps> = ({ isOpen, onClose, fetchGoals
               maxLength={maxTitleLength}
               required
             />
-            <div className="text-right text-[14px] text-[#BDBDBD]">
-              {title.length}/{maxTitleLength} characters
-            </div>
+          <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
+            {title.length}/{maxTitleLength} characters
+          </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="description">Description</label>
+            <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="description">Description</label>
             <textarea
-              className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg"
-              id="description"
-              value={description}
-              onChange={handleDescriptionChange}
-              placeholder="Describe your goal"
-              maxLength={maxDescriptionLength}
-              rows={4}
-            />
-            <div className="text-right text-[14px] text-[#BDBDBD]">
+            className="w-full px-3 py-2 border border-[#BDBDBD] rounded-lg bg-white"
+            id="description"
+            value={description}
+            onChange={handleDescriptionChange}
+            placeholder="Describe your goal"
+            maxLength={maxDescriptionLength}
+            rows={4}
+          />
+            <div className="text-right text-[12px] md:text-[14px] text-[#BDBDBD]">
               {description.length}/{maxDescriptionLength} characters
             </div>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="deadline">Deadline</label>
-            <Popover>
+          <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="deadline">Deadline</label>
+          <Popover>
               <PopoverTrigger asChild>
-                <button className="bg-white w-full px-3 py-2 border border-[#BDBDBD] rounded-lg flex items-center justify-between">
-                  {deadline ? deadline : 'Select Deadline'}
-                  <CalendarDays className="ml-2" />
-                </button>
+              <button className="bg-white w-full px-3 py-2 border border-[#BDBDBD] rounded-lg flex items-center justify-between">
+                {deadline ? deadline : 'Select Deadline'}
+                <CalendarDays className="ml-2" />
+              </button>
               </PopoverTrigger>
               <PopoverContent>
               <Calendar
@@ -164,8 +164,8 @@ const EditGoalForm: React.FC<EditGoalFormProps> = ({ isOpen, onClose, fetchGoals
             </Popover>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
-            <Select onValueChange={setDifficulty} value={difficulty}>
+          <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="difficulty">Difficulty</label>
+          <Select onValueChange={setDifficulty} value={difficulty}>
               <SelectTrigger className="w-full bg-white border border-[#BDBDBD]">
                 <SelectValue placeholder="Select Difficulty" />
               </SelectTrigger>
@@ -177,7 +177,7 @@ const EditGoalForm: React.FC<EditGoalFormProps> = ({ isOpen, onClose, fetchGoals
             </Select>
           </div>
           <div className="mb-4">
-            <label className="block text-black text-[25px] mb-2" htmlFor="category">Category</label>
+            <label className="block text-black text-[20px] md:text-[25px] mb-2" htmlFor="category">Category</label>
             <Select onValueChange={setCategory} value={category}>
               <SelectTrigger className="w-full bg-white border border-[#BDBDBD]">
                 <SelectValue placeholder="Select Category" />
@@ -194,17 +194,17 @@ const EditGoalForm: React.FC<EditGoalFormProps> = ({ isOpen, onClose, fetchGoals
           {showAlert && (
             <Alert variant={alertMessage.includes("successfully") ? 'default' : 'destructive'}>
               <AlertTitle>{alertMessage.includes("successfully") ? "Success!" : "Error!"}</AlertTitle>
-              <AlertDescription>
-                {alertMessage}
+              <AlertDescription className="text-[12px] md:text-[14px]">
+                  {alertMessage}
               </AlertDescription>
             </Alert>
           )}
           <div className="flex justify-end">
             <button
-              type="submit"
-              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[20px]"
-            >
-              Update Goal
+                type="submit"
+                className="bg-black text-white px-4 py-2 rounded-lg hover:bg-white border-[3px] border-black hover:text-black text-[15px] md:text-[20px]"
+              >
+              SAVE GOAL
             </button>
           </div>
         </form>

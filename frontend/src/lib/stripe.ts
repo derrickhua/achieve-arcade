@@ -10,11 +10,11 @@ const api = axios.create({
 
 // Interceptor to add the JWT token from NextAuth.js session
 api.interceptors.request.use(async (config) => {
-  const session:any = await getSession();
+  const session = await getSession();
   if (session?.accessToken) {
-      config.headers.authorization = `Bearer ${session.accessToken}`;
+    config.headers.authorization = `Bearer ${session.accessToken}`;
   } else {
-      console.log("No access token found in session.");
+    console.log("No access token found in session.");
   }
 
   return config;
@@ -35,7 +35,7 @@ export async function createPayment(amount, paymentMethodId, email) {
   try {
     const response = await api.post('/create-payment', {
       amount,
-      currency: 'usd',
+      currency: 'cad',
       paymentMethodId,
       email,
     });
@@ -54,14 +54,22 @@ export async function createPayment(amount, paymentMethodId, email) {
  */
 export async function cancelSubscription() {
   try {
-    const response = await api.post('/cancel-subscription');
+    const response = await api.post('/cancel-subscription'); // Use api instance instead of axios
+    console.log('Subscription canceled:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error canceling subscription:', error);
+    if (error.response) {
+      console.error('Error response:', error.response.data);
+      console.error('Error status:', error.response.status);
+      console.error('Error headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('Error request:', error.request);
+    } else {
+      console.error('Error message:', error.message);
+    }
     throw new Error('Failed to cancel subscription');
   }
 }
-
 
 /**
  * Refunds all payments for a user on the backend.

@@ -12,7 +12,6 @@ interface Task {
 interface CenterSectionProps {
   tasks: Task[];
   notes: string;
-  date: string;
   onNotesChange: (notes: string) => void;
   fetchSchedule: () => void;
 }
@@ -20,7 +19,7 @@ interface CenterSectionProps {
 const CenterSection: React.FC<CenterSectionProps> = ({ tasks, notes, date, onNotesChange, fetchSchedule }) => {
   return (
     <div className="flex flex-col w-[40%] h-full p-4 rounded-lg ">
-      <DateDisplay date={date} />
+      <DateDisplay />
       <TaskList tasks={tasks} fetchSchedule={fetchSchedule} />
       <NotesSection notes={notes} onNotesChange={onNotesChange} />
     </div>
