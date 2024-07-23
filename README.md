@@ -1,10 +1,6 @@
-Here's the updated README file with sections for inputting images or linking Imgur images:
-
----
-
 # Achieve Arcade
 
-![Introduction](https://i.imgur.com/FATralS.png)
+![Introduction](https://i.imgur.com/RHnS4yy.png)
 
 Achieve Arcade is a productivity app that turns achieving your goals into a fun and engaging experience through gamification. With Achieve Arcade, you can boost your productivity, stay motivated, and track your progress with a unique gaming twist.
 
