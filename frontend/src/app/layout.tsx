@@ -42,7 +42,7 @@ export default function RootLayout({ children }) {
         <link rel="canonical" href="https://www.achievearcade.com/" />
       </Head>
       <head>
-        <PlausibleProvider domain="achievearcade.com" />
+        <PlausibleProvider domain="" />
         <script type="application/ld+json" dangerouslySetInnerHTML={{
           __html: JSON.stringify({
             "@context": "https://schema.org",
